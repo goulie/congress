@@ -12,7 +12,7 @@ return [
 
     'user' => [
         'add_default_role_on_register' => true,
-        'default_role'                 => 'user',
+        'default_role'                 => 'participant',
         'default_avatar'               => 'users/default.png',
         'redirect'                     => '/admin',
     ],
@@ -104,7 +104,7 @@ return [
         /*
          * Select default language
          */
-        'default' => 'en',
+        'default' => app()->getLocale()=='fr' ? 'fr' : 'en',
 
         /*
          * Select languages that are supported.
@@ -206,7 +206,7 @@ return [
     ],
 
     // Activate compass when environment is NOT local
-    'compass_in_production' => false,
+    'compass_in_production' => true,
 
     'media' => [
         // The allowed mimetypes to be uploaded through the media-manager.

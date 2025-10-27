@@ -1,65 +1,77 @@
-@extends('layouts.app')
+@extends('auth.layout')
+
+@section('header', __('Reset Password'))
 
 @section('content')
-<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+        <h3 class="text-center mb-4 text-primary fw-bold">
+            <i class="fas fa-key me-2"></i>{{ __('Set a New Password') }}
+        </h3>
 
-                <div class="card-body">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-4">
+
                     <form method="POST" action="{{ route('password.update') }}">
                         @csrf
 
+                        {{-- Token --}}
                         <input type="hidden" name="token" value="{{ $token }}">
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+                        {{-- Email --}}
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">
+                                <i class="fas fa-envelope text-muted me-2"></i>{{ __('Email Address') }}
+                            </label>
+                            <input id="email" type="email"
+                                class="form-control form-control-lg @error('email') is-invalid @enderror" name="email"
+                                value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus
+                                placeholder="exemple@email.com">
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+                        {{-- Password --}}
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">
+                                <i class="fas fa-lock text-muted me-2"></i>{{ __('Password') }}
+                            </label>
+                            <input id="password" type="password"
+                                class="form-control form-control-lg @error('password') is-invalid @enderror" name="password"
+                                required autocomplete="new-password" placeholder="********">
 
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
+                        {{-- Confirm Password --}}
+                        <div class="mb-3">
+                            <label for="password-confirm" class="form-label fw-semibold">
+                                <i class="fas fa-lock text-muted me-2"></i>{{ __('Confirm Password') }}
+                            </label>
+                            <input id="password-confirm" type="password" class="form-control form-control-lg"
+                                name="password_confirmation" required autocomplete="new-password" placeholder="********">
                         </div>
 
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Reset Password') }}
-                                </button>
-                            </div>
+                        {{-- Submit --}}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                <i class="fas fa-check-circle me-2"></i>{{ __('Reset Password') }}
+                            </button>
+                        </div>
+
+                        {{-- Back to login --}}
+                        <div class="text-center mt-4">
+                            <a href="{{ route('login') }}" class="text-decoration-none fw-semibold text-primary">
+                                <i class="fas fa-arrow-left me-1"></i>{{ __('Back to Login') }}
+                            </a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection

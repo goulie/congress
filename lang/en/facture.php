@@ -1,0 +1,42 @@
+
+<?php
+
+return [
+    'member_code' => "MEMBERSHIP CODE",
+    'vir_bank' => "BANK TRANSFER",
+    'smsVbank' => "Use the following bank details :",
+    'bank' => "Bank",
+    'namebank' => "SOCIETE GENERALE COTE D’IVOIRE (SGCI)",
+    'afwa' => "AFRICAN WATER AND SANITATION ASSOCIATION",
+    'bankAdresse' => "5 avenue J. ANOMA ABIDJAN IVORY COAST",
+    'codebank' => "Code Bank",
+    'codeguichet' => "Branch Code",
+    'rib' => "Rib",
+    'swift' => "SWIFT",
+    'bank_instructions' => "Please ensure your payment/bank transfer includes all bank charges",
+    'payer' => "Pay",
+    'transId' => "Transaction ID",
+    'quitter' => "Exit",
+    'prelmontant' => "Amount withdrawn",
+    'descrp' => "Description",
+    'cout' => "Cost",
+    'titre' => "BILLING INFORMATION",
+    'fonction' => "Your job",
+    'numcompte' => "Account Number",
+    'facture' => "INVOICE",
+    'impaye' => "UNPAID",
+    'paye' => 'PAID',
+    'noticereqcode' => "To find your membership number please enter your email address and the name of your organization.",
+    'sendcodesms' => "Send a message",
+    'codetitle' => "Request for membership number",
+    'pinline' => "Online payment",
+    'paddress' => "In case of payment by bank transfer, please send us the swift and/or a copy of the transfer made to the following email address",
+    'comptabilite' => "Accountancy Department",
+    'invdownload' => "Download my bill",
+
+    'branch_code' => "Branch Code",
+    'adresse' => "Adress",
+    'name' => "Name",
+    'invoiceto' => "Charged to",
+
+];

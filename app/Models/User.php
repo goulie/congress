@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 
+//class User extends \TCG\Voyager\Models\User,Authenticatable implements MustVerifyEmail
+//class User extends \TCG\Voyager\Models\User,Authenticatable implements MustVerifyEmail
 class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, GeneratesOtp;
@@ -30,6 +32,7 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
         'email',
         'password',
         'user_id',
+        'email_verified_at',
     ];
 
     /**

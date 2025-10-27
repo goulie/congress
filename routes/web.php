@@ -1,10 +1,18 @@
 <?php
 
+use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\Registration\AccompagningRegistrant;
+use App\Http\Controllers\Registration\GroupeRegistrant;
+use App\Http\Controllers\Registration\ParticipantRegistrant;
+use App\Http\Controllers\Voyager\AdminController;
+use App\Http\Controllers\Voyager\VoyagerUserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use TCG\Voyager\Facades\Voyager;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,50 +26,37 @@ use Illuminate\Support\Facades\Auth;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/home');
 });
 
-Auth::routes();
-
-
+Auth::routes(['verify' => true]);
 
 Route::group(['prefix' => 'admin'], function () {
+
     Voyager::routes();
+    //Single registration
+    Route::post('/step1', [ParticipantRegistrant::class, 'step1'])->name('form.step1');
+    Route::post('/step2', [ParticipantRegistrant::class, 'step2'])->name('form.step2');
+    Route::post('/step3', [ParticipantRegistrant::class, 'step3'])->name('form.step3');
+    Route::get('/previous', [ParticipantRegistrant::class, 'previous'])->name('form.previous');
+
+    //Session registration
+    Route::post('/add-accompagning-participant', [AccompagningRegistrant::class, 'store'])->name('add.accompagning.form');
+    //
+    Route::get('/invoices/download/{participant}', [InvoiceController::class, 'downloadByParticipant'])
+        ->name('invoices.download.participant');
+
+    //Group registration
+    Route::get('participants/import', [GroupeRegistrant::class, 'showImportForm'])->name('participants.importForm');
+    Route::get('participants/download-template', [GroupeRegistrant::class, 'downloadTemplate'])->name('participants.downloadTemplate');
+    Route::post('participants/import', [GroupeRegistrant::class, 'storeMultiple'])->name('participants.store.multiple');
 });
 
-//route groupe
-/* Route::middleware(['otp.verified'])->group(function () {
-    
-}); */
-//Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('verified');
-/* Route::post('/otp/send', [OtpController::class, 'sendOtp'])->name('otp.send');
-Route::post('/otp/verify', [OtpController::class, 'verifyOtp'])->name('otp.verify');
-Route::get('/otp/verify/form', [OtpController::class, 'verifyOtpForm'])->name('otp.verify.form'); */
+//redirect admin/login to /login
+// web.php
 
 
-Route::get('/email/verify', function () {
-    return view('auth.verify');
-})->middleware('auth')->name('verification.notice');
+//changer de langue
+Route::get('lang/{lang}', [HomeController::class, 'switch'])->name('lang.switch');
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-
-    return redirect('/home');
-})->middleware(['auth', 'verified'])->name('verification.verify');
-
-
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-
-    return back()->with('message', 'Verification link sent!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-/* Route::middleware(['auth', 'verified'])->get('/home', function () {
-    return view('home');
-})->name('home');
- */
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware(['auth', 'verified']);
-Route::get('/logout', function () {
-    Auth::logout();
-    return redirect('/');
-});
+Route::get('/home', [HomeController::class, 'index'])->name('home')->middleware(['auth', 'verified']);

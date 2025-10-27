@@ -8,7 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Participant extends Model
 {
     protected $table = 'participants';
-    protected $fillable = ['civility_id', 'fname', 'lname', 'student_level_id', 'gender_id', 'nationality_id', 'email', 'phone', 'organisation', 'organisation_type_id', 'job', 'participant_category_id', 'type_member_id', 'membership_code', 'diner', 'visite', 'passeport_number', 'passeport_pdf', 'invitation_letter', 'author'];
+    protected $fillable = ['civility_id', 'fname', 'lname', 'student_level_id', 'gender_id', 
+    'nationality_id', 'email', 'phone', 'organisation', 
+    'organisation_type_id', 'job', 'participant_category_id', 
+    'type_member_id', 'membership_code', 'diner', 'visite', 
+    'passeport_number', 'passeport_pdf', 'invitation_letter', 
+    'author','user_id','registration_id','organisation_type_other',
+    'student_level_other','congres_id','type_participant','type_accompagning_id','invoice_number','amount','currency','status'];
 
     public function country()
     {
@@ -43,5 +49,25 @@ class Participant extends Model
     public function typeMember()
     {
         return $this->belongsTo(TypeMember::class, 'type_member_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function type_accompagning()
+    {
+        return $this->belongsTo(AccompanyingPersonType::class, 'type_accompagning_id');
+    }
+
+    public function congres()
+    {
+        return $this->belongsTo(Congress::class, 'congres_id');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'participant_id');
     }
 }

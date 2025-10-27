@@ -21,6 +21,7 @@
         integrity="sha512-t7Few9xlddEmgd3oKZQahkNI4dS6l80+eGEzFQiqtyVYdvcSG2D3Iub77R20BdotfRPA9caaRkg1tyaJiPmO0g=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -447,15 +448,11 @@
         <div></div>
         <div></div>
     </div>
-    {{-- @if ($event->event_background)
-        <div class="banner text-center"
-            style="background-image: url('{{ TCG\Voyager\Facades\Voyager::image($event->event_background) }}');">
-        @else
-            <div class="banner text-center" style="background-image: url('/public/image_bg.jpg');">
-    @endif --}}
 
+    <div class="banner text-center"
+        style="background-image: url('https://iso.500px.com/wp-content/uploads/2016/03/stock-photo-144748015-1.jpg');">
 
-    <h1>{{ __('eventform.form_header') }}</h1>
+        <h1>@yield('header')</h1>
     </div>
 
     <div class="container">
@@ -472,52 +469,18 @@
                         style="float: right" width="auto" height="60"> --}}
                 </div>
             </div>
+            <form method="GET" action="{{ url()->current() }}">
+                <i class="bi bi-globe"></i>
+                <select name="lang" onchange="this.form.submit()">
+                    <option value="fr" {{ app()->getLocale() == 'fr' ? 'selected' : '' }}>Français</option>
+                    <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
+                </select>
+            </form>
+            
 
-            <h2 class="form-title text-primary">
-               {{--  {{ $event->translate(app()->getLocale(), 'fallbackLocale')->theme ?? 'Evenement AAEA' }}</h2>
-            @if ($event->description != '')
-                <div class="alert alert-light shadow p-3 mb-5 bg-body rounded" role="alert"
-                    style="text-align: justify">
-                    <p>
-                        {{ $event->translate(app()->getLocale(), 'fallbackLocale')->description }}
-                    </p>
+                <div class="container">
+                    @yield('content')
                 </div>
-            @endif --}}
-            <div class="container pb-5">
-                <div class="row">
-                    <div class="col-md-6">
-
-                        {{-- @php
-                            use Carbon\Carbon;
-
-                            $dateBeginFr = Carbon::parse($event->date_begin)->locale('fr')->isoFormat('D MMMM YYYY');
-                            $dateEndFr = Carbon::parse($event->date_end)->locale('fr')->isoFormat('D MMMM YYYY');
-
-                            $dateBeginEn = Carbon::parse($event->date_begin)->locale('en')->isoFormat('MMMM D');
-                            $dateEndEn = Carbon::parse($event->date_end)->locale('en')->isoFormat('MMMM D, YYYY');
-                        @endphp --}}
-
-                        <i class="bi bi-calendar-range-fill text-primary"></i>
-                        {{-- @if (app()->getLocale() == 'fr')
-                            <strong>Du {{ $dateBeginFr }} au {{ $dateEndFr }}</strong>
-                        @else
-                            <strong>From {{ $dateBeginEn }} to {{ $dateEndEn }}</strong>
-                        @endif --}}
-
-                    </div>
-
-                    <div class="col-md-6">
-                        <i class="bi bi-geo-alt-fill text-primary"></i>
-                       {{--  {{ app()->getLocale() == 'fr' ? $event->country->libelle_fr : $event->country->libelle_en }},
-                        {{ $event->event_place }} --}}
-                    </div>
-                </div>
-            </div>
-
-
-            @yield('content')
-
-
         </div>
     </div>
     <script>
