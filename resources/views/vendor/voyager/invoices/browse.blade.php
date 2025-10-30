@@ -82,113 +82,146 @@
                                 @endif
                             </form>
                         @endif
-                        <div class="table-responsive">
-                            <table id="dataTable" class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        @if ($showCheckboxColumn)
-                                            <th class="dt-not-orderable">
-                                                <input type="checkbox" class="select_all">
-                                            </th>
-                                        @endif
-                                        {{-- 
-                                        num facture, date, montant, statut,payment_method,payment_date --}}
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Facture N°' : 'Invoice N°' }}
-                                        </th>
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Date' : 'Date' }}
-                                        </th>
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Montant' : 'Amount' }}
-                                        </th>
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Statut' : 'Status' }}
-                                        </th>
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Moyen de paiement' : 'Payment Method' }}
-                                        </th>
-                                        <th>
-                                            {{ app()->getLocale() == 'fr' ? 'Date de paiement' : 'Payment Date' }}
-                                        </th>
-                                        <th class="actions text-right dt-not-orderable">
-                                            {{ __('voyager::generic.actions') }}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($dataTypeContent as $data)
+                        <form method="POST" action="{{ route('participants.invoices.export') }}" target="_blank">
+                            @csrf
+                            <div class="panel panel-default panel-custom" style="padding-top: 50px">
+                                <!-- Toolbar -->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading clearfix">
+                                        <h4 class="pull-left">
+                                            <i class="glyphicon glyphicon-list-alt"></i>
+                                            {{ app()->getLocale() == 'fr' ? 'Liste des Factures' : 'Invoices List' }}
+                                        </h4>
+                                        <div class="pull-right">
+                                            <button class="btn btn-success">
+                                                <i class="glyphicon glyphicon-credit-card"></i>
+                                                {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay Invoice' }}
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="glyphicon glyphicon-download-alt"></i>
+                                                {{ app()->getLocale() == 'fr' ? 'Télécharger les factures groupées' : 'Download Grouped Invoices' }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table id="dataTable" class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            @if ($showCheckboxColumn)
-                                                <td>
-                                                    <input type="checkbox" name="row_id"
-                                                        id="checkbox_{{ $data->getKey() }}" value="{{ $data->getKey() }}">
-                                                </td>
-                                            @endif
-                                            <td>
-                                                {{ app()->getLocale() == 'fr' ? $data->invoice_number : $data->invoice_number }}
-                                            </td>
-                                            <td>
-                                                {{ app()->getLocale() == 'fr' ? $data->invoice_date : $data->invoice_date }}
-                                            </td>
-                                            <td>
-                                                <span style="text-weight:bold !important">
-                                                    {{ $data->total_amount . ' ' . ($data->currency === 'USD' ? '$' : ($data->currency === 'EUR' ? '€' : $data->currency)) }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                @php
-                                                    switch ($data->status) {
-                                                        case 'paid':
-                                                        case 'Payé':
-                                                            $badgeClass = 'badge-success';
-                                                            break;
-                                                        case 'pending':
-                                                        case 'En attente':
-                                                            $badgeClass = 'badge-warning';
-                                                            break;
-                                                        case 'cancelled':
-                                                        case 'Annulé':
-                                                            $badgeClass = 'badge-danger';
-                                                            break;
-                                                        default:
-                                                            $badgeClass = 'badge-secondary';
-                                                            break;
-                                                    }
-                                                @endphp
-
-                                                <span class="badge {{ $badgeClass }}">
-                                                    {{ app()->getLocale() == 'fr' ? $data->status : ucfirst($data->status) }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {{ $data->payment_method ?? 'N/A' }}
-                                            </td>
-                                            <td>
-                                                {{ $data->payment_date ?? 'N/A' }}
-                                            </td>
-
-                                            <td class="no-sort no-click bread-actions">
-                                                @foreach ($actions as $action)
-                                                    @if (!method_exists($action, 'massAction'))
-                                                        @include('voyager::bread.partials.actions', [
-                                                            'action' => $action,
-                                                        ])
-                                                    @endif
-                                                @endforeach
-                                                <a href="{{ route('invoices.download.participant', $data->participant_id) }}"
-                                                    class="btn btn-xs btn-success"> <i class="voyager-download"></i>
-                                                    {{ app()->getLocale() == 'fr' ? 'Télécharger la facture' : 'Download the invoice' }}
-                                                </a>
-                                                <a href="#" class="btn btn-xs btn-info"> <i class="bi bi-wallet2"></i>
-                                                    {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
-                                                </a>
-                                            </td>
+                                            <th><input type="checkbox" id="selectAll"></th>
+                                            
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Facture N°' : 'Invoice N°' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Date' : 'Date' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Nom complet' : 'Full Name' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Email' : 'Email' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Montant' : 'Amount' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Statut' : 'Status' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Moyen de paiement' : 'Payment Method' }}
+                                            </th>
+                                            <th>
+                                                {{ app()->getLocale() == 'fr' ? 'Date de paiement' : 'Payment Date' }}
+                                            </th>
+                                            <th class="actions text-right dt-not-orderable">
+                                                {{ __('voyager::generic.actions') }}
+                                            </th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+
+                                        @foreach ($dataTypeContent as $data)
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" name="participant_ids[]"
+                                                        value="{{ $data->participant_id }}" >
+                                                </td>
+                                                <td>
+                                                    {{ app()->getLocale() == 'fr' ? $data->invoice_number : $data->invoice_number }}
+                                                </td>
+                                                <td>
+                                                    {{ app()->getLocale() == 'fr' ? $data->invoice_date : $data->invoice_date }}
+                                                </td>
+                                                <td>
+                                                    {{ $data->participant->lname . ' ' . $data->participant->fname }}
+                                                </td>
+                                                <td>
+                                                    {{ $data->participant->email }}
+                                                </td>
+                                                <td>
+                                                    <span style="text-weight:bold !important">
+                                                        {{ $data->total_amount . ' ' . ($data->currency === 'USD' ? '$' : ($data->currency === 'EUR' ? '€' : $data->currency)) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @php
+                                                        switch ($data->status) {
+                                                            case 'paid':
+                                                            case 'Payé':
+                                                                $badgeClass = 'badge-success';
+                                                                break;
+                                                            case 'pending':
+                                                            case 'En attente':
+                                                                $badgeClass = 'badge-warning';
+                                                                break;
+                                                            case 'cancelled':
+                                                            case 'Annulé':
+                                                                $badgeClass = 'badge-danger';
+                                                                break;
+                                                            default:
+                                                                $badgeClass = 'badge-secondary';
+                                                                break;
+                                                        }
+                                                    @endphp
+
+                                                    <span class="badge {{ $badgeClass }}">
+                                                        {{ app()->getLocale() == 'fr' ? $data->status : ucfirst($data->status) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {{ $data->payment_method ?? 'N/A' }}
+                                                </td>
+                                                <td>
+                                                    {{ $data->payment_date ?? 'N/A' }}
+                                                </td>
+
+                                                <td class="no-sort no-click bread-actions">
+                                                    @foreach ($actions as $action)
+                                                        @if (!method_exists($action, 'massAction'))
+                                                            @include('voyager::bread.partials.actions', [
+                                                                'action' => $action,
+                                                            ])
+                                                        @endif
+                                                    @endforeach
+                                                    <a href="{{ route('invoices.download.participant', $data->participant_id) }}"
+                                                        class="btn btn-xs btn-success"> <i class="voyager-download"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Télécharger la facture' : 'Download the invoice' }}
+                                                    </a>
+                                                    <a href="#" class="btn btn-xs btn-info"> <i
+                                                            class="bi bi-wallet2"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </form>
                         @if ($isServerSide)
                             <div class="pull-left">
                                 <div role="status" class="show-res" aria-live="polite">
@@ -326,6 +359,13 @@
                 }
             });
             $('.selected_ids').val(ids);
+        });
+    </script>
+
+    <script>
+        document.getElementById('selectAll').addEventListener('change', function(e) {
+            const checkboxes = document.querySelectorAll('input[name="participant_ids[]"]');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
         });
     </script>
 @stop

@@ -13,8 +13,6 @@ class TypeMember extends Model
     protected $fillable = ['libelle', 'congres_id', 'amount', 'currency'];
     protected $translatable = ['libelle'];
 
-    public function congres()
-    {
-        return $this->belongsTo(Congress::class, 'congres_id');
-    }
+
+
 }

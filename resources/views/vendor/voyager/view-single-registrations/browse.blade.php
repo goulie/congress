@@ -3,9 +3,7 @@
 @section('css')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/AdminLTE.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css"
-/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
 
     <style>
         body {
@@ -187,9 +185,21 @@
     @php
         $step = Session::get('step') ?? 1;
         $congres = App\Models\Congress::latest('id')->first();
-        $participant = App\Models\Participant::where(['registration_id'=>auth()->user()->user_id, 'congres_id'=>$congres->id])
+        $participant = App\Models\Participant::where([
+            'registration_id' => auth()->user()->user_id,
+            'congres_id' => $congres->id,
+            'type_participant' => 'individual',
+        ])
             ->latest()
             ->first();
+        if (!$participant) {
+            $participant = App\Models\Participant::create([
+                'user_id' => auth()->user()->id,
+                'registration_id' => auth()->user()->user_id,
+                'congres_id' => $congres->id,
+                'type_participant' => 'individual'
+            ]);
+        }
     @endphp
     <div class="container">
         <div class="row">

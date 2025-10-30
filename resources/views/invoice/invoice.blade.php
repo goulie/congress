@@ -196,7 +196,7 @@
         <!-- En-tête avec logo pleine largeur -->
         <div class="header">
             <div class="logo-container">
-                <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="width: 200px;">
+                <img src="{{ Voyager::image(setting('site.logo')) }}" alt="Logo" style="width: 200px;">
             </div>
 
             @php

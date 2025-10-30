@@ -53,7 +53,8 @@
                     @endforelse
                 </select>
             </div>
-            <div class="col-md-4 d-none" id="autre_type_org_div">
+            <div class="col-md-4 {{ isset($participant) && $participant->organisation_type_id == 10 ? '' : 'd-none' }}"
+                id="autre_type_org_div">
                 <label class="control-label font-weight-bold text-dark">
                     <i class="bi bi-pencil-square"></i>
                     {{ __('registration.step2.fields.autre_type_org') }}
@@ -61,7 +62,7 @@
                 <input type="text" class="form-control" name="autre_type_org"
                     placeholder="{{ __('registration.step2.placeholders.autre_type_org') }}"
                     @isset($participant) value="{{ $participant->organisation_type_other }}" @endisset
-                    required>
+                    {{ isset($participant) && $participant->organisation_type_id == 10 ? 'required' : '' }}>
             </div>
             <div class="col-md-4">
                 <label class="control-label font-weight-bold text-dark">

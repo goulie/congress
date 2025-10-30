@@ -176,6 +176,102 @@
         .form-control.iti-input {
             padding-left: 52px !important;
         }
+
+        .required::after {
+            content: ' *';
+            color: red;
+            font-weight: bold;
+        }
+
+        /* DataTable Small visual polish */
+        .panel-custom {
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(1, 33, 160, 0.08);
+            border: 1px solid rgba(1, 33, 160, 0.08);
+        }
+
+        .table-toolbar {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef3ff;
+            background: #ffffff;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .table-toolbar .btn+.btn {
+            margin-left: 8px;
+        }
+
+        .table-responsive {
+            padding: 12px 16px;
+        }
+
+        .table>tbody>tr>td.actions {
+            white-space: nowrap;
+            width: 210px;
+        }
+
+        .action-btn {
+            margin-right: 6px;
+        }
+
+        .table>tbody>tr:hover {
+            background: #fbfdff;
+        }
+
+        .small-muted {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .search-input {
+            max-width: 320px;
+            display: inline-block;
+            margin-left: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .table-toolbar {
+                text-align: center;
+            }
+
+            .search-input {
+                display: block;
+                margin: 8px auto 0;
+            }
+        }
+
+        /* View details */
+        .view-details {
+            transition: all 0.3s ease;
+        }
+
+        .view-details:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        .participant-photo-container img {
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .table-sm td {
+            padding: 0.3rem 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.75em;
+        }
     </style>
 @endsection
 
@@ -183,24 +279,39 @@
 
 @section('content')
     @php
-
+        $congres = App\Models\Congress::latest('id')->first();
         $participants = App\Models\Participant::where([
-            'registration_id' => auth()->user()->user_id,
-            'congres_id' => App\Models\Congress::latest('id')->first()->id,
+            'user_id' => auth()->user()->id,
+            'congres_id' => $congres->id,
             'type_participant' => 'accompagning',
         ])->get();
+
+        $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
+        $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
+        $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
+        $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
+
     @endphp
-    <div class="container">
+
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-10 col-md-offset-1">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="box-header">
-                        <h3 class="box-title">@lang('Register in 3 Easy Steps')</h3>
-                        <p class="help-block">@lang("S'inscrire en 3 étapes simples")</p>
+                        <h1>{{ app()->getLocale() == 'fr' ? 'Enregistrement de personne accompagnante' : 'Accompanying person registration' }}
+                        </h1>
                     </div>
 
-                    @include('vendor.voyager.view-accompagning-registration.form')
+                    @php
+                        $edit = $edit ?? false;
 
+                    @endphp
+
+                    @if ($edit)
+                        @include('vendor.voyager.view-accompagning-registration.edit')
+                    @else
+                        @include('vendor.voyager.view-accompagning-registration.form')
+                    @endif
                 </div>
             </div>
         </div>
@@ -228,6 +339,65 @@
             } else {
                 autreDiv.classList.add('d-none');
             }
+        });
+    </script>
+
+    <!-- Inclure SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Script pour gérer les alertes -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gérer les alertes SweetAlert
+            @if (session('swal'))
+                Swal.fire({
+                    icon: '{{ session('swal.icon') }}',
+                    title: '{{ session('swal.title') }}',
+                    text: '{{ session('swal.text') }}',
+                    confirmButtonText: '{{ session('swal.confirmButtonText') }}',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            @endif
+
+            // Gérer les alertes classiques (fallback)
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: '{{ app()->getLocale() == 'fr' ? 'Succès !' : 'Success!' }}',
+                    text: '{{ session('success') }}',
+                    confirmButtonText: '{{ app()->getLocale() == 'fr' ? 'OK' : 'OK' }}',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ app()->getLocale() == 'fr' ? 'Erreur !' : 'Error!' }}',
+                    text: '{{ session('error') }}',
+                    confirmButtonText: '{{ app()->getLocale() == 'fr' ? 'OK' : 'OK' }}',
+                });
+            @endif
+
+            @if (session('warning'))
+                Swal.fire({
+                    icon: 'warning',
+                    title: '{{ app()->getLocale() == 'fr' ? 'Attention !' : 'Warning!' }}',
+                    text: '{{ session('warning') }}',
+                    confirmButtonText: '{{ app()->getLocale() == 'fr' ? 'OK' : 'OK' }}',
+                });
+            @endif
+
+            @if (session('info'))
+                Swal.fire({
+                    icon: 'info',
+                    title: '{{ app()->getLocale() == 'fr' ? 'Information' : 'Information' }}',
+                    text: '{{ session('info') }}',
+                    confirmButtonText: '{{ app()->getLocale() == 'fr' ? 'OK' : 'OK' }}',
+                });
+            @endif
         });
     </script>
 @endsection

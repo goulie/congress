@@ -1,6 +1,6 @@
 @extends('auth.layout')
 
-@section('header', __('Login'))
+@section('header', app()->getLocale() == 'fr' ? 'Congres AAEA' : 'AfWASA Congress')
 
 @section('content')
 

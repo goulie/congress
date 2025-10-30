@@ -1,4 +1,11 @@
-<form method="POST" action="{{ route('form.step3') }}" enctype="multipart/form-data">
+@php
+    $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
+    $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
+    $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
+    $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
+@endphp
+
+<form class="ajax-form" method="POST" action="{{ route('form.step3') }}" enctype="multipart/form-data">
     @csrf
     <div class="box-body">
         <input type="hidden" name="participant_id" value="{{ $participant->id ?? '' }}">
@@ -27,23 +34,18 @@
                     <i class="bi bi-person"></i>
                     {{ __('registration.step3.fields.membership') }}
                 </label>
+
                 <select class="form-control" name="membership" id="membership" required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
 
-                    @forelse (App\Models\TypeMember::get()->translate(app()->getLocale(), 'fallbackLocale') as $typeMember)
-                        <option data-amount="{{ $typeMember->amount }}" data-currency="{{ $typeMember->currency }}"
+                    @forelse ($categories as $typeMember)
+                        <option data-amount="{{ $typeMember->montant }}" data-currency="{{ $congres->currency }}"
                             value="{{ $typeMember->id }}"
                             {{ isset($participant) && $participant->type_member_id == $typeMember->id ? 'selected' : '' }}>
 
-                            {{ $typeMember->libelle . ' - ' }}
-
-                            @if ($typeMember->currency == 'EUR')
-                                <strong>{{ $typeMember->amount }} €</strong>
-                            @elseif (in_array($typeMember->currency, ['US', 'USD']))
-                                <strong>${{ $typeMember->amount }}</strong>
-                            @else
-                                <strong>{{ $typeMember->amount }} {{ $typeMember->currency }}</strong>
-                            @endif
+                            {{ $typeMember->libelle }} -
+                            <strong>{{ $typeMember->montant }} {{ $congres->currency }}</strong>
+                            ({{ $typeMember->periode }})
                         </option>
                     @empty
                         <option disabled>{{ __('registration.no_data') ?? 'No data' }}</option>
@@ -60,18 +62,18 @@
                     {{ __('registration.step3.fields.diner_gala') }}
 
                     @if ($congres->currency == 'EUR')
-                        <strong style="font-weight: bold"> {{ $congres->amount_diner }} € </strong>
+                        <strong style="font-weight: bold"> {{ $dinner->montant ?? 0 }} € </strong>
                     @elseif ($congres->currency == 'US' || $congres->currency == 'USD')
-                        <strong style="font-weight: bold"> ${{ $congres->amount_diner }}</strong>
+                        <strong style="font-weight: bold"> ${{ $dinner->montant ?? 0 }}</strong>
                     @else
-                        <strong style="font-weight: bold"> {{ $congres->amount_diner }}
+                        <strong style="font-weight: bold"> {{ $dinner->montant ?? 0 }}
                             {{ $congres->currency }}</strong>
                     @endif
 
                 </label>
                 <select id="diner_gala" class="form-control" name="diner_gala" required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option data-amount ="{{ $congres->amount_diner }}" value="oui"
+                    <option data-amount ="{{ $dinner->montant ?? 0 }}" value="oui"
                         {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
                     <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
@@ -79,17 +81,15 @@
                 </select>
             </div>
         </div>
-        <div class="row" style="margin-top:15px;display:none" id="membershipcode_row">
-            <div class="col-md-12 d-none" id="membershipcode_div">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-key"></i>
-                    {{ __('registration.step3.fields.membershipcode') }}
-                </label>
-                <input type="text" class="form-control" name="membershipcode"
-                    placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
-                    @isset($participant) value="{{ $participant->membership_code }}" @endisset>
-            </div>
 
+        <div class="col-md-12 hidden" id="membershipcode_div">
+            <label class="control-label font-weight-bold text-dark">
+                <i class="bi bi-key"></i>
+                {{ __('registration.step3.fields.membershipcode') }}
+            </label>
+            <input type="text" class="form-control" name="membershipcode"
+                placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
+                @isset($participant) value="{{ $participant->membership_code }}" @endisset>
         </div>
 
         <div class="row" style="margin-top:15px;">
@@ -99,16 +99,16 @@
                     {{ __('registration.step3.fields.visite_touristique') }}
                 </label>
                 @if ($congres->currency == 'EUR')
-                    <strong style="font-weight: bold"> {{ $congres->amount_visit }} € </strong>
+                    <strong style="font-weight: bold"> {{ $tours->montant ?? 0 }} € </strong>
                 @elseif ($congres->currency == 'US' || $congres->currency == 'USD')
-                    <strong style="font-weight: bold"> ${{ $congres->amount_visit }}</strong>
+                    <strong style="font-weight: bold"> ${{ $tours->montant ?? 0 }}</strong>
                 @else
-                    <strong style="font-weight: bold"> {{ $congres->amount_visit }} {{ $congres->currency }}</strong>
+                    <strong style="font-weight: bold"> {{ $tours->montant ?? 0 }} {{ $congres->currency }}</strong>
                 @endif
 
                 <select class="form-control" id="visite_touristique" name="visite_touristique" required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option value="oui" data-amount="{{ $congres->amount_visit }}"
+                    <option value="oui" data-amount="{{ $tours->montant ?? 0 }}"
                         {{ isset($participant) && $participant->visite == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
                     <option value="non"
@@ -246,10 +246,10 @@
             }
 
 
-            // Afficher ou masquer le code d'adhésion
+            /* // Afficher ou masquer le code d'adhésion
             $('#membership').on('change', function() {
                 const selectedVal = $(this).val();
-                if (selectedVal == '1') {
+                if (selectedVal == 1) {
                     $('#membershipcode_row').slideDown(200);
                     $('#membershipcode').attr('required', true);
                 } else {
@@ -257,13 +257,34 @@
                     $('#membershipcode').removeAttr('required').val('');
                 }
                 calculateTotal();
-            });
+            }); */
 
             // Recalcul du total sur tout changement
             $('#diner_gala, #visite_touristique').on('change', calculateTotal);
 
             // Calcul initial si valeurs préremplies
             calculateTotal();
+
+
+
+            function toggleMembershipCode() {
+                let selected = $('#membership').val();
+
+                if (selected == "1") {
+                    $('#membershipcode_div').show();
+                    $('#membershipcode_div').removeClass('hidden');
+                    $('input[name="membershipcode"]').prop('required', true);
+                } else {
+                    $('#membershipcode_div').hide();
+                    $('input[name="membershipcode"]').prop('required', false).val('');
+                }
+            }
+
+            // Call on change
+            $('#membership').on('change', toggleMembershipCode);
+
+            // Call on page load (important for edit mode)
+            toggleMembershipCode();
         });
     </script>
 @endsection

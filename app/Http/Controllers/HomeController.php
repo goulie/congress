@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller
@@ -25,7 +26,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        return redirect()->route('voyager.dashboard');
     }
 
 
@@ -45,5 +46,29 @@ class HomeController extends Controller
 
         // Redirige vers la page précédente
         return redirect()->back();
+    }
+
+    public function changeLocale(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'locale' => 'required|in:fr,en'
+            ]);
+
+            
+            // Mettre à jour la locale de l'utilisateur
+            $user = Auth::user();
+            $user->locale = $request->locale;
+            $user->save();
+        
+
+            app()->setLocale($request->locale);
+
+            return redirect()->back();
+        } catch (\Exception $ex) {
+
+            dd($ex->getMessage());
+        }
     }
 }

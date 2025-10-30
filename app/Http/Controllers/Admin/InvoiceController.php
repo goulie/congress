@@ -38,4 +38,43 @@ class InvoiceController extends Controller
         // Télécharger le PDF directement
         return $pdfService->download($invoice);
     }
+
+    public function export(Request $request)
+    {
+        $ids = $request->input('participant_ids', []);
+        if (empty($ids)) {
+            return back()->with('error', 'Veuillez sélectionner au moins un participant.');
+        }
+
+        $participants = Participant::with(['invoices.items', 'participantCategory'])
+            ->whereIn('id', $ids)
+            ->get();
+
+        // Calculer le total global
+        $totalAmount = 0;
+        $currency = 'EUR'; // par défaut
+        foreach ($participants as $participant) {
+            $invoice = $participant->invoices->first();
+            if ($invoice) {
+                $totalAmount += $invoice->total_amount;
+                $currency = $invoice->currency ?? $currency;
+            }
+        }
+
+        $pdf = Pdf::loadView('invoice.invoiceGroup', [
+            'participants' => $participants,
+            'totalAmount' => $totalAmount,
+            'currency' => $currency,
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download('facture_groupee.pdf');
+    }
+
+    public function index()
+    {
+
+        $participants = Participant::with(['invoices.items', 'participantCategory'])->get();
+        dd($participants);
+       // return view('invoice.index');
+    }
 }

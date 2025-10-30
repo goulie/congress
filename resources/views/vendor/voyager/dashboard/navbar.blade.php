@@ -39,11 +39,8 @@
         </div>
         <ul class="nav navbar-nav @if (__('voyager::generic.is_rtl') == 'true') navbar-left @else navbar-right @endif">
             <li style="padding:20px;">
-                <form method="POST" action="{{ route('voyager.users.update', Auth::user()->id) }}">
+                <form method="POST" action="{{ route('admin.change.locale') }}">
                     @csrf
-                    @method('PUT')
-                    <input type="hidden" name="name" value="{{ Auth::user()->name }}">
-                    <input type="hidden" name="email" value="{{ Auth::user()->email }}">
                     <i class="bi bi-globe text-primary"></i>
                     <select name="locale" onchange="this.form.submit()" class="form-select form-select-sm"
                         style="width:auto; display:inline-block;">

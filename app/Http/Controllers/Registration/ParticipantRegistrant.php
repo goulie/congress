@@ -53,7 +53,7 @@ class ParticipantRegistrant extends Controller
             ]);
         }
 
-        session(['step' => 2]);
+        session(['step' => 2, 'participant_id' => $participant->id]);
 
         return redirect()->back();
     }
@@ -89,6 +89,7 @@ class ParticipantRegistrant extends Controller
             'passeport_number' => $request->num_passeport,
             'invitation_letter' => $request->lettre_invitation,
             'author' => $request->auteur,
+            'type_participant'=>'individual',
         ];
 
         //Ajouter `passeport_pdf` seulement si un fichier a été uploadé
@@ -97,7 +98,7 @@ class ParticipantRegistrant extends Controller
         }
         //Update du participant
         $Participant->update($data);
-
+/* 
         //Créer la facture
         $data = [
             'participant_id' => $Participant->id,
@@ -115,7 +116,7 @@ class ParticipantRegistrant extends Controller
         ];
 
         $invoice = $invoiceService->createOrUpdateInvoice($data, $items);
-
+ */
         session(['step' => 1]);
 
         return redirect()->back();
