@@ -53,13 +53,13 @@
                     @endforelse
                 </select>
             </div>
-            <div class="col-md-4 {{ isset($participant) && $participant->organisation_type_id == 10 ? '' : 'd-none' }}"
+            <div class="col-md-4 hidden {{ isset($participant) && $participant->organisation_type_id == 10 ? '' : 'd-none' }}"
                 id="autre_type_org_div">
                 <label class="control-label font-weight-bold text-dark">
                     <i class="bi bi-pencil-square"></i>
                     {{ __('registration.step2.fields.autre_type_org') }}
                 </label>
-                <input type="text" class="form-control" name="autre_type_org"
+                <input type="text" class="form-control" id="autre_type_org" name="autre_type_org"
                     placeholder="{{ __('registration.step2.placeholders.autre_type_org') }}"
                     @isset($participant) value="{{ $participant->organisation_type_other }}" @endisset
                     {{ isset($participant) && $participant->organisation_type_id == 10 ? 'required' : '' }}>
@@ -125,5 +125,22 @@
                 });
             }
         });
+
+        function toggleTypeOrg() {
+            const typeOrg = $('#type_organisation').val();
+            const $AutretypeOrg = $('#autre_type_org_div');
+            const $AutretypeOrgInput = $('#autre_type_org');
+
+            if (typeOrg == 10) {
+                $AutretypeOrg.removeClass('hidden').slideDown(200);
+                $AutretypeOrgInput.attr('required', true);
+            } else {
+                $AutretypeOrg.slideUp(200);
+                $AutretypeOrgInput.removeAttr('required').val('');
+            }
+        }
+
+        $('#type_organisation').on('change', toggleTypeOrg);
+        $(document).ready(toggleMembershipCode);
     </script>
 @endsection

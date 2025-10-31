@@ -34,6 +34,11 @@ class Periode extends Model
             ->first();
     }
 
+    public function joursRestants()
+    {
+        return Carbon::now()->diffInDays(Carbon::parse($this->end_date), false);
+    }
+
     public function participants()
     {
         return $this->hasMany(Participant::class);

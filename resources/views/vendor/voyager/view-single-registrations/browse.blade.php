@@ -197,7 +197,7 @@
                 'user_id' => auth()->user()->id,
                 'registration_id' => auth()->user()->user_id,
                 'congres_id' => $congres->id,
-                'type_participant' => 'individual'
+                'type_participant' => 'individual',
             ]);
         }
     @endphp
@@ -237,6 +237,12 @@
                         </div>
                     </div>
 
+                    @if (session()->has('success'))
+                        <div class="alert alert-success">
+                            {{ session()->get('success') }}
+                        </div>
+                    @endif
+                    
                     @if ($step == 1)
                         @include('vendor.voyager.view-single-registrations.step1')
                     @endif

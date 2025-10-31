@@ -17,7 +17,7 @@
                     {{ __('registration.step3.fields.category') }}
                 </label>
                 <select class="form-control" name="category" id="category" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     @forelse (App\Models\CategoryParticipant::get()->translate(app()->getLocale(), 'fallbackLocale') as $category)
                         <option value="{{ $category->id }}"
                             {{ isset($participant) && $participant->participant_category_id == $category->id ? 'selected' : '' }}>
@@ -36,7 +36,7 @@
                 </label>
 
                 <select class="form-control" name="membership" id="membership" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
 
                     @forelse ($categories as $typeMember)
                         <option data-amount="{{ $typeMember->montant }}" data-currency="{{ $congres->currency }}"
@@ -72,7 +72,7 @@
 
                 </label>
                 <select id="diner_gala" class="form-control" name="diner_gala" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option data-amount ="{{ $dinner->montant ?? 0 }}" value="oui"
                         {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
@@ -81,8 +81,9 @@
                 </select>
             </div>
         </div>
-
-        <div class="col-md-12 hidden" id="membershipcode_div">
+    
+    <div class="row hidden" id="membershipcode_div">
+        <div class="col-md-12">
             <label class="control-label font-weight-bold text-dark">
                 <i class="bi bi-key"></i>
                 {{ __('registration.step3.fields.membershipcode') }}
@@ -91,7 +92,7 @@
                 placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
                 @isset($participant) value="{{ $participant->membership_code }}" @endisset>
         </div>
-
+    </div>
         <div class="row" style="margin-top:15px;">
             <div class="col-md-4">
                 <label class="control-label font-weight-bold text-dark">
@@ -107,7 +108,7 @@
                 @endif
 
                 <select class="form-control" id="visite_touristique" name="visite_touristique" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option value="oui" data-amount="{{ $tours->montant ?? 0 }}"
                         {{ isset($participant) && $participant->visite == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
@@ -122,7 +123,7 @@
                     {{ __('registration.step3.fields.lettre_invitation') }}
                 </label>
                 <select class="form-control" name="lettre_invitation" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option value="oui"
                         {{ isset($participant) && $participant->invitation_letter == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
@@ -137,7 +138,7 @@
                     {{ __('registration.step3.fields.auteur') }}
                 </label>
                 <select class="form-control" name="auteur" required>
-                    <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option value="oui"
                         {{ isset($participant) && $participant->author == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
@@ -213,64 +214,40 @@
             // Fonction de calcul du total
             function calculateTotal() {
                 let total = 0;
-                let selectedCurrency = null;
+                let selectedCurrency = '{{ $congres->currency }}'; // Devise par défaut
 
-                // Membership
+                // Membership - CORRECTION : Récupérer le montant correctement
                 let membershipOption = $('#membership option:selected');
-                let membershipAmount = parseFloat(membershipOption.data('amount')) || 0;
-                let membershipCurrency = membershipOption.data('currency');
-                total += membershipAmount;
-                selectedCurrency = membershipCurrency || selectedCurrency;
-
-                // Dîner gala
-                let dinerOption = $('#diner_gala option:selected');
-                let dinerAmount = parseFloat(dinerOption.data('amount')) || 0;
-                let dinerCurrency = dinerOption.data('currency');
-                total += dinerAmount;
-                selectedCurrency = dinerCurrency || selectedCurrency;
-
-                // Visite touristique
-                let visiteOption = $('#visite_touristique option:selected');
-                let visiteAmount = parseFloat(visiteOption.data('amount')) || 0;
-                let visiteCurrency = visiteOption.data('currency');
-                total += visiteAmount;
-                selectedCurrency = visiteCurrency || selectedCurrency;
-
-                // --- Affichage dans le span ---
-                if (total > 0) {
-                    const symbol = getCurrencySymbol(selectedCurrency);
-                    $('#amount2').text(total.toLocaleString('fr-FR') + ' ' + symbol);
-                } else {
-                    $('#amount2').text('0');
+                if (membershipOption.length > 0 && membershipOption.val() !== '') {
+                    let membershipAmount = parseFloat(membershipOption.data('amount')) || 0;
+                    total += membershipAmount;
                 }
+
+                // Dîner gala - CORRECTION : Vérifier si "oui" est sélectionné
+                let dinerOption = $('#diner_gala option:selected');
+                if (dinerOption.length > 0 && dinerOption.val() === 'oui') {
+                    let dinerAmount = parseFloat(dinerOption.data('amount')) || 0;
+                    total += dinerAmount;
+                }
+
+                // Visite touristique - CORRECTION : Vérifier si "oui" est sélectionné
+                let visiteOption = $('#visite_touristique option:selected');
+                if (visiteOption.length > 0 && visiteOption.val() === 'oui') {
+                    let visiteAmount = parseFloat(visiteOption.data('amount')) || 0;
+                    total += visiteAmount;
+                }
+
+                // Affichage du total
+                const symbol = getCurrencySymbol(selectedCurrency);
+                $('#amount2').text(total.toLocaleString('fr-FR') + ' ' + symbol);
             }
 
-
-            /* // Afficher ou masquer le code d'adhésion
-            $('#membership').on('change', function() {
-                const selectedVal = $(this).val();
-                if (selectedVal == 1) {
-                    $('#membershipcode_row').slideDown(200);
-                    $('#membershipcode').attr('required', true);
-                } else {
-                    $('#membershipcode_row').slideUp(200);
-                    $('#membershipcode').removeAttr('required').val('');
-                }
-                calculateTotal();
-            }); */
-
-            // Recalcul du total sur tout changement
-            $('#diner_gala, #visite_touristique').on('change', calculateTotal);
-
-            // Calcul initial si valeurs préremplies
-            calculateTotal();
-
-
-
+            // Fonction pour gérer l'affichage du code de membership - CORRECTION : Logique améliorée
             function toggleMembershipCode() {
-                let selected = $('#membership').val();
+                let selectedMembershipId = $('#membership').val();
 
-                if (selected == "1") {
+                // Afficher le champ code de membership uniquement si l'ID du membership est "1"
+                if (selectedMembershipId == "1") {
                     $('#membershipcode_div').show();
                     $('#membershipcode_div').removeClass('hidden');
                     $('input[name="membershipcode"]').prop('required', true);
@@ -280,10 +257,14 @@
                 }
             }
 
-            // Call on change
-            $('#membership').on('change', toggleMembershipCode);
+            // Événements pour le recalcul du total
+            $('#membership, #diner_gala, #visite_touristique').on('change', function() {
+                calculateTotal();
+                toggleMembershipCode(); // Mettre à jour l'affichage du code membership
+            });
 
-            // Call on page load (important for edit mode)
+            // Initialisation au chargement de la page
+            calculateTotal();
             toggleMembershipCode();
         });
     </script>

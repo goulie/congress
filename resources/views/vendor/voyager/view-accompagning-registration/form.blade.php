@@ -135,18 +135,18 @@
             </div>
 
 
-          
 
-          
+
+
 
             {{-- Étape 3 : Détails du congrès --}}
             <div class="col-md-2">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-person-badge"></i>
-                    {{app()->getLocale() == 'fr' ? 'Type de personne' : 'Person type' }}
+                    {{ app()->getLocale() == 'fr' ? 'Type de personne' : 'Person type' }}
                 </label>
-                <select class="form-control @error('category') is-invalid @enderror" name="type_accompanying" id="category"
-                    required>
+                <select class="form-control @error('category') is-invalid @enderror" name="type_accompanying"
+                    id="category" required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     @forelse (App\Models\AccompanyingPersonType::get()->translate(app()->getLocale(), 'fallbackLocale') as $category)
                         <option data-amount="{{ $congres->accompagning_amount }}" value="{{ $category->id }}"
@@ -176,8 +176,8 @@
                             {{ $congres->currency }}</strong>
                     @endif
                 </label>
-                <select id="diner_gala" class="form-control @error('diner_gala') is-invalid @enderror"
-                    name="diner_gala" required>
+                <select id="diner_gala" class="form-control @error('diner_gala') is-invalid @enderror" name="diner_gala"
+                    required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option data-amount="{{ $dinner->montant }}" value="oui"
                         {{ old('diner_gala') == 'oui' ? 'selected' : (session('participant_data.diner_gala') == 'oui' ? 'selected' : '') }}>
@@ -206,8 +206,8 @@
                             {{ $congres->currency }}</strong>
                     @endif
                 </label>
-                <select class="form-control @error('visite_touristique') is-invalid @enderror"
-                    id="visite_touristique" name="visite_touristique" required>
+                <select class="form-control @error('visite_touristique') is-invalid @enderror" id="visite_touristique"
+                    name="visite_touristique" required>
                     <option selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
                     <option value="oui" data-amount="{{ $tours->montant }}"
                         {{ old('visite_touristique') == 'oui' ? 'selected' : (session('participant_data.visite_touristique') == 'oui' ? 'selected' : '') }}>
@@ -270,7 +270,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-8 text-center">
+            <div class="col-md-2 text-center" style="float: right">
                 <div class="alert text-center" style="border: 2px solid #0121a0">
                     <p>
                         <span style="font-size: 1.5em;font-weight: bold;color:black">Amount to pay :</span><br>
@@ -290,15 +290,24 @@
     <div class="box-footer">
         <div class="navigation-buttons">
             <a href="{{ route('voyager.dashboard') }}" class="btn btn-outline btn-danger">
-                <i class="bi bi-arrow-left"></i> {{app()->getLocale() == 'fr' ? 'Annuler' : 'Cancel'}}
+                <i class="bi bi-arrow-left"></i> {{ app()->getLocale() == 'fr' ? 'Annuler' : 'Cancel' }}
             </a>
             <button type="submit" class="btn btn-primary">
-                {{app()->getLocale() == 'fr' ? 'Enregistrer ' : 'Save'}} <i class="bi bi-arrow-right"></i>
+                {{ app()->getLocale() == 'fr' ? 'Enregistrer ' : 'Save' }} <i class="bi bi-arrow-right"></i>
             </button>
         </div>
     </div>
 </form>
 
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <div class="panel panel-default panel-custom" style="padding-top: 50px">
     <!-- Toolbar -->
@@ -308,7 +317,7 @@
                 <i class="glyphicon glyphicon-list-alt"></i>
                 {{ app()->getLocale() == 'fr' ? 'Liste des personnes accompagnantes' : 'Accompaniment List' }}
             </h4>
-            <div class="pull-right">
+            {{-- <div class="pull-right">
                 <button class="btn btn-success">
                     <i class="glyphicon glyphicon-credit-card"></i>
                     {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay Invoice' }}
@@ -317,7 +326,7 @@
                     <i class="glyphicon glyphicon-download-alt"></i>
                     {{ app()->getLocale() == 'fr' ? 'Télécharger les factures groupées' : 'Download Grouped Invoices' }}
                 </button>
-            </div>
+            </div> --}}
         </div>
     </div>
     <!-- Table -->
@@ -342,7 +351,7 @@
             <tbody>
                 @forelse ($participants as $participant)
                     @php
-                        $invoice =App\Models\Invoice::where('participant_id', $participant->id)->first();
+                        $invoice = App\Models\Invoice::where('participant_id', $participant->id)->first();
                     @endphp
                     <tr>
                         <td style="font-wheight: bold;font-size:14px">
@@ -353,7 +362,8 @@
                         <td>{{ $participant->gender->translate(app()->getLocale(), 'fallbackLocale')->libelle ?? '' }}
                         </td>
                         <td>{{ $participant->email ?? '' }}</td>
-                        <td> {{ $participant->type_accompagning->translate(app()->getLocale(), 'fallbackLocale')->libelle ?? '' }} </td>
+                        <td> {{ $participant->type_accompagning->translate(app()->getLocale(), 'fallbackLocale')->libelle ?? '' }}
+                        </td>
 
                         <td>
                             {!! $participant->diner == 'oui'
@@ -464,7 +474,6 @@
         </table>
     </div>
 
-    {{-- Modal for participant --}}
     <!-- Modal pour les détails du participant -->
     <div class="modal fade" id="participantDetailsModal" tabindex="-1" role="dialog"
         aria-labelledby="participantDetailsModalLabel" aria-hidden="true">
@@ -493,6 +502,9 @@
                                             {{ app()->getLocale() == 'fr' ? 'Aucune photo' : 'No photo' }}</p>
                                     </div>
                                 </div>
+                                <p class="text-center">
+                                    <strong>{{ app()->getLocale() == 'fr' ? 'Photo Passeport' : 'Passport Photo' }}</strong>
+                                </p>
                             </div>
                             <div class="col-md-9">
                                 <h4 id="detail-fullname" class="text-primary mb-2"></h4>
@@ -503,10 +515,6 @@
                                 <p class="mb-1">
                                     <strong><i class="bi bi-telephone"></i> Téléphone:</strong>
                                     <span id="detail-phone" class="text-muted"></span>
-                                </p>
-                                <p class="mb-1">
-                                    <strong><i class="bi bi-passport"></i> Passeport:</strong>
-                                    <span id="detail-passeport" class="text-muted"></span>
                                 </p>
                             </div>
                         </div>
@@ -525,21 +533,27 @@
                                         <table class="table table-sm table-borderless">
                                             <tr>
                                                 <td class="font-weight-bold" style="width: 40%">
-                                                    {{ app()->getLocale() == 'fr' ? 'Civilité' : 'Title' }}:
+                                                    {{ app()->getLocale() == 'fr' ? 'Titre' : 'Title' }}:
                                                 </td>
                                                 <td id="detail-title" class="text-muted"></td>
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">
-                                                    {{ app()->getLocale() == 'fr' ? 'Genre' : 'Gender' }}:
+                                                    {{ app()->getLocale() == 'fr' ? 'Prénom' : 'First Name' }}:
                                                 </td>
-                                                <td id="detail-gender" class="text-muted"></td>
+                                                <td id="detail-firstname" class="text-muted"></td>
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">
-                                                    {{ app()->getLocale() == 'fr' ? 'Niveau d\'étude' : 'Education Level' }}:
+                                                    {{ app()->getLocale() == 'fr' ? 'Nom' : 'Last Name' }}:
                                                 </td>
-                                                <td id="detail-education" class="text-muted"></td>
+                                                <td id="detail-lastname" class="text-muted"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">
+                                                    {{ app()->getLocale() == 'fr' ? 'Sexe' : 'Gender' }}:
+                                                </td>
+                                                <td id="detail-gender" class="text-muted"></td>
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">
@@ -547,50 +561,20 @@
                                                 </td>
                                                 <td id="detail-country" class="text-muted"></td>
                                             </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">
+                                                    {{ app()->getLocale() == 'fr' ? 'Numéro Passeport' : 'Passport Number' }}:
+                                                </td>
+                                                <td id="detail-passeport" class="text-muted"></td>
+                                            </tr>
                                         </table>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Colonne 2: Informations professionnelles -->
+                            <!-- Colonne 2: Informations du congrès -->
                             <div class="col-md-6">
                                 <div class="card mb-4">
-                                    <div class="card-header bg-light">
-                                        <h6 class="mb-0">
-                                            <i class="bi bi-briefcase"></i>
-                                            {{ app()->getLocale() == 'fr' ? 'Informations professionnelles' : 'Professional Information' }}
-                                        </h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <table class="table table-sm table-borderless">
-                                            <tr>
-                                                <td class="font-weight-bold" style="width: 40%">
-                                                    {{ app()->getLocale() == 'fr' ? 'Organisation' : 'Organization' }}:
-                                                </td>
-                                                <td id="detail-organisation" class="text-muted"></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="font-weight-bold">
-                                                    {{ app()->getLocale() == 'fr' ? 'Type d\'organisation' : 'Organization Type' }}:
-                                                </td>
-                                                <td id="detail-type-organisation" class="text-muted"></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="font-weight-bold">
-                                                    {{ app()->getLocale() == 'fr' ? 'Fonction' : 'Position' }}:
-                                                </td>
-                                                <td id="detail-fonction" class="text-muted"></td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Informations du congrès -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0">
                                             <i class="bi bi-calendar-event"></i>
@@ -598,107 +582,53 @@
                                         </h6>
                                     </div>
                                     <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <table class="table table-sm table-borderless">
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Catégorie' : 'Category' }}:
-                                                        </td>
-                                                        <td id="detail-category" class="text-muted"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Adhésion' : 'Membership' }}:
-                                                        </td>
-                                                        <td id="detail-membership" class="text-muted"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Code adhésion' : 'Membership Code' }}:
-                                                        </td>
-                                                        <td id="detail-membershipcode" class="text-muted">
-                                                            <span class="badge badge-secondary"
-                                                                id="detail-membershipcode-badge">
-                                                                {{ app()->getLocale() == 'fr' ? 'Non renseigné' : 'Not provided' }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <table class="table table-sm table-borderless">
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Dîner gala' : 'Gala Dinner' }}:
-                                                        </td>
-                                                        <td>
-                                                            <span id="detail-diner" class="badge badge-success">
-                                                                <i class="bi bi-check-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
-                                                            </span>
-                                                            <span id="detail-no-diner"
-                                                                class="badge badge-danger hidden">
-                                                                <i class="bi bi-x-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Visite touristique' : 'Tourist Visit' }}:
-                                                        </td>
-                                                        <td>
-                                                            <span id="detail-visite" class="badge badge-success">
-                                                                <i class="bi bi-check-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
-                                                            </span>
-                                                            <span id="detail-no-visite"
-                                                                class="badge badge-danger hidden">
-                                                                <i class="bi bi-x-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <table class="table table-sm table-borderless">
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Lettre invitation' : 'Invitation Letter' }}:
-                                                        </td>
-                                                        <td>
-                                                            <span id="detail-lettre" class="badge badge-success">
-                                                                <i class="bi bi-check-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
-                                                            </span>
-                                                            <span id="detail-no-lettre"
-                                                                class="badge badge-danger hidden">
-                                                                <i class="bi bi-x-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="font-weight-bold">
-                                                            {{ app()->getLocale() == 'fr' ? 'Auteur' : 'Author' }}:
-                                                        </td>
-                                                        <td>
-                                                            <span id="detail-auteur" class="badge badge-success">
-                                                                <i class="bi bi-check-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
-                                                            </span>
-                                                            <span id="detail-no-auteur"
-                                                                class="badge badge-danger hidden">
-                                                                <i class="bi bi-x-circle"></i>
-                                                                {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </div>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td class="font-weight-bold" style="width: 40%">
+                                                    {{ app()->getLocale() == 'fr' ? 'Dîner Gala' : 'Gala Dinner' }}:
+                                                </td>
+                                                <td>
+                                                    <span id="detail-diner" class="badge badge-success">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
+                                                    </span>
+                                                    <span id="detail-no-diner" class="badge badge-danger hidden">
+                                                        <i class="bi bi-x-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">
+                                                    {{ app()->getLocale() == 'fr' ? 'Visite Touristique' : 'Tourist Visit' }}:
+                                                </td>
+                                                <td>
+                                                    <span id="detail-visite" class="badge badge-success">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
+                                                    </span>
+                                                    <span id="detail-no-visite" class="badge badge-danger hidden">
+                                                        <i class="bi bi-x-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">
+                                                    {{ app()->getLocale() == 'fr' ? 'Lettre d\'invitation' : 'Invitation Letter' }}:
+                                                </td>
+                                                <td>
+                                                    <span id="detail-lettre" class="badge badge-success">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Oui' : 'Yes' }}
+                                                    </span>
+                                                    <span id="detail-no-lettre" class="badge badge-danger hidden">
+                                                        <i class="bi bi-x-circle"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Non' : 'No' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -755,6 +685,7 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
+            // Fonction de gestion des alertes
             $(document).ready(function() {
                 // Configuration globale de SweetAlert
                 const SwalTheme = Swal.mixin({
@@ -930,7 +861,7 @@
                 });
 
                 // =============================================
-                // GESTION DU FORMULAIRE ET CALCUL DU TOTAL
+                // CORRECTION DU CALCUL DES PRIX
                 // =============================================
 
                 // Fonction pour obtenir le symbole selon la devise
@@ -948,65 +879,49 @@
                     }
                 }
 
-                // Fonction de calcul du total
+                // Fonction de calcul du total CORRIGÉE
                 function calculateTotal() {
                     let total = 0;
-                    let selectedCurrency = null;
+                    const currency = '{{ $congres->currency }}';
 
-                    // Membership
-                    let membershipOption = $('#category option:selected');
-                    let membershipAmount = parseFloat(membershipOption.data('amount')) || 0;
-                    let membershipCurrency = membershipOption.data('currency');
-                    total += membershipAmount;
-                    selectedCurrency = membershipCurrency || selectedCurrency;
+                    // 1. Type de personne accompagnante (montant fixe)
+                    let typeOption = $('#category option:selected');
+                    if (typeOption.length > 0 && typeOption.val() !== '') {
+                        let typeAmount = parseFloat(typeOption.data('amount')) || 0;
+                        total += typeAmount;
+                    }
 
-                    // Dîner gala
+                    // 2. Dîner gala - seulement si "oui" est sélectionné
                     let dinerOption = $('#diner_gala option:selected');
-                    let dinerAmount = parseFloat(dinerOption.data('amount')) || 0;
-                    let dinerCurrency = dinerOption.data('currency');
-                    total += dinerAmount;
-                    selectedCurrency = dinerCurrency || selectedCurrency;
+                    if (dinerOption.length > 0 && dinerOption.val() === 'oui') {
+                        let dinerAmount = parseFloat(dinerOption.data('amount')) || 0;
+                        total += dinerAmount;
+                    }
 
-                    // Visite touristique
+                    // 3. Visite touristique - seulement si "oui" est sélectionné
                     let visiteOption = $('#visite_touristique option:selected');
-                    let visiteAmount = parseFloat(visiteOption.data('amount')) || 0;
-                    let visiteCurrency = visiteOption.data('currency');
-                    total += visiteAmount;
-                    selectedCurrency = visiteCurrency || selectedCurrency;
-
-                    // Affichage dans le span et champ hidden
-                    if (total > 0) {
-                        const symbol = getCurrencySymbol(selectedCurrency);
-                        $('#amount2').text(total.toLocaleString('fr-FR') + ' ' + symbol);
-                        $('#total_amount').val(total);
-                    } else {
-                        $('#amount2').text('0');
-                        $('#total_amount').val(0);
+                    if (visiteOption.length > 0 && visiteOption.val() === 'oui') {
+                        let visiteAmount = parseFloat(visiteOption.data('amount')) || 0;
+                        total += visiteAmount;
                     }
-                }
 
-                // Gestion du type d'organisation "autre"
-                function toggleAutreTypeOrg() {
-                    const typeOrg = $('#type_organisation').val();
-                    if (typeOrg == 'autre') {
-                        $('#autre_type_org_div').removeClass('hidden');
-                        $('#autre_type_org').attr('required', true);
-                    } else {
-                        $('#autre_type_org_div').addClass('hidden');
-                        $('#autre_type_org').removeAttr('required').val('');
-                    }
-                }
+                    // Formater et afficher le total
+                    const symbol = getCurrencySymbol(currency);
+                    const formattedAmount = total.toLocaleString('fr-FR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
 
-                // Afficher ou masquer le code d'adhésion
-                function toggleMembershipCode() {
-                    const selectedVal = $('#membership').val();
-                    if (selectedVal == '1') {
-                        $('#membershipcode_row').slideDown(200);
-                        $('#membershipcode').attr('required', true);
-                    } else {
-                        $('#membershipcode_row').slideUp(200);
-                        $('#membershipcode').removeAttr('required').val('');
-                    }
+                    $('#amount2').text(formattedAmount + ' ' + symbol);
+                    $('#total_amount').val(total);
+
+                    console.log('Calcul du total:', {
+                        type: parseFloat(typeOption.data('amount')) || 0,
+                        diner: dinerOption.val() === 'oui' ? parseFloat(dinerOption.data('amount')) || 0 : 0,
+                        visite: visiteOption.val() === 'oui' ? parseFloat(visiteOption.data('amount')) || 0 : 0,
+                        total: total,
+                        currency: currency
+                    });
                 }
 
                 // Événements pour le calcul automatique
@@ -1014,11 +929,8 @@
                     calculateTotal();
                 });
 
-
                 // Initialisation au chargement de la page
                 calculateTotal();
-                toggleAutreTypeOrg();
-                toggleMembershipCode();
 
                 // =============================================
                 // VALIDATION DU FORMULAIRE AVEC SWEETALERT
@@ -1051,22 +963,6 @@
                         return false;
                     }
 
-                    // Vérification spécifique pour le type d'organisation "autre"
-                    if ($('#type_organisation').val() == 'autre' && !$('#autre_type_org').val().trim()) {
-                        e.preventDefault();
-                        const isFrench = '{{ app()->getLocale() }}' === 'fr';
-
-                        SwalTheme.fire({
-                            icon: 'warning',
-                            title: isFrench ? 'Champ manquant' : 'Missing field',
-                            text: isFrench ?
-                                'Veuillez spécifier le type d\'organisation.' :
-                                'Please specify the organization type.',
-                            confirmButtonText: isFrench ? 'Compris' : 'Understood'
-                        });
-                        return false;
-                    }
-
                     // Vérification du montant total
                     const totalAmount = parseFloat($('#total_amount').val()) || 0;
                     if (totalAmount <= 0) {
@@ -1088,272 +984,201 @@
                 });
 
                 // =============================================
-                // GESTION DU TÉLÉPHONE INTERNATIONAL
+                // GESTION DU MODAL DE DÉTAILS AVEC DATA-ATTRIBUTES
                 // =============================================
 
-                // Initialisation du input téléphone si vous utilisez intl-tel-input
-                if (typeof intlTelInput !== 'undefined') {
-                    const phoneInput = document.querySelector("#telephone-input");
-                    if (phoneInput) {
-                        const iti = intlTelInput(phoneInput, {
-                            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-                            separateDialCode: true,
-                            preferredCountries: ['fr', 'us', 'gb'],
-                            initialCountry: "auto",
-                            geoIpLookup: function(callback) {
-                                fetch("https://ipapi.co/json")
-                                    .then(function(res) {
-                                        return res.json();
-                                    })
-                                    .then(function(data) {
-                                        callback(data.country_code);
-                                    })
-                                    .catch(function() {
-                                        callback("fr");
-                                    });
-                            }
-                        });
+                $('.view-details').on('click', function(e) {
+                    e.preventDefault();
 
-                        phoneInput.addEventListener("countrychange", function() {
-                            $('#telephone').val(iti.getNumber());
-                        });
+                    const button = $(this);
+                    const isFrench = '{{ app()->getLocale() }}' === 'fr';
 
-                        phoneInput.addEventListener("input", function() {
-                            $('#telephone').val(iti.getNumber());
-                        });
+                    // Récupérer toutes les données depuis les attributs data-
+                    const participantData = {
+                        id: button.data('id'),
+                        fname: button.data('fname'),
+                        lname: button.data('lname'),
+                        email: button.data('email'),
+                        phone: button.data('phone'),
+                        passeport_number: button.data('passeport'),
+                        passeport_pdf: button.data('photo'),
+                        title: button.data('title'),
+                        gender: button.data('gender'),
+                        country: button.data('country'),
+                        diner: button.data('diner'),
+                        visite: button.data('visite'),
+                        lettre: button.data('lettre'),
+                        status: button.data('status')
+                    };
+
+                    const invoiceData = {
+                        total_amount: button.data('total-amount'),
+                        status: button.data('status')
+                    };
+
+                    // Remplir les informations du modal
+                    fillParticipantDetails(participantData, invoiceData, isFrench, button.data('edit-url'));
+
+                    // Afficher le modal
+                    $('#participantDetailsModal').modal('show');
+                });
+
+                function fillParticipantDetails(participant, invoice, isFrench, editUrl) {
+                    // Informations basiques
+                    $('#detail-fullname').text(`${participant.fname} ${participant.lname}`);
+                    $('#detail-email').text(participant.email || '-');
+                    $('#detail-phone').text(participant.phone || '-');
+                    $('#detail-passeport').text(participant.passeport_number || '-');
+
+                    // Photo du passeport
+                    if (participant.passeport_pdf) {
+                        $('#detail-photo-img').attr('src', `/storage/${participant.passeport_pdf}`).removeClass(
+                            'hidden');
+                        $('#detail-no-photo').addClass('hidden');
+                    } else {
+                        $('#detail-photo-img').addClass('hidden');
+                        $('#detail-no-photo').removeClass('hidden');
+                    }
+
+                    // Informations personnelles
+                    $('#detail-title').text(participant.civility?.libelle || '-');
+                    $('#detail-gender').text(participant.gender?.libelle || '-');
+                    $('#detail-country').text(participant.nationality ?
+                        (isFrench ? participant.nationality.libelle_fr : participant.nationality.libelle_en) : '-');
+
+                    // Informations professionnelles
+                    $('#detail-organisation').text(participant.organisation || '-');
+                    $('#detail-type-organisation').text(participant.organisation_type_other || participant
+                        .organisation_type
+                        ?.libelle || '-');
+                    $('#detail-fonction').text(participant.job || '-');
+
+                    // Informations du congrès
+                    $('#detail-category').text(participant.type_accompagning?.libelle || '-');
+
+                    // Options Oui/Non
+                    toggleYesNoField('diner', participant.diner, isFrench);
+                    toggleYesNoField('visite', participant.visite, isFrench);
+                    toggleYesNoField('lettre', participant.invitation_letter, isFrench);
+                    toggleYesNoField('auteur', participant.author, isFrench);
+
+                    // Informations de facturation
+                    if (invoice && invoice.total_amount > 0) {
+                        const currency = '{{ $congres->currency }}' || 'EUR';
+                        const amount = formatCurrency(invoice.total_amount, currency);
+                        $('#detail-total-amount').text(amount);
+
+                        // Statut
+                        const status = invoice.status || participant.status;
+                        const statusText = isFrench ? getFrenchStatus(status) : getEnglishStatus(status);
+                        const statusClass = getStatusClass(status);
+                        $('#detail-status').text(statusText).removeClass(
+                                'badge-success badge-warning badge-danger badge-secondary')
+                            .addClass(statusClass);
+                    } else {
+                        $('#detail-total-amount').text(isFrench ? 'Non facturé' : 'Not invoiced');
+                        $('#detail-status').text(isFrench ? 'En attente' : 'Pending').removeClass(
+                            'badge-success badge-warning badge-danger badge-secondary').addClass('badge-warning');
+                    }
+
+                    // Lien d'édition
+                    if (editUrl) {
+                        $('#detail-edit-link').attr('href', editUrl).removeClass('hidden');
+                    } else {
+                        $('#detail-edit-link').addClass('hidden');
+                    }
+                }
+
+                function toggleYesNoField(field, value, isFrench) {
+                    const yesText = isFrench ? 'Oui' : 'Yes';
+                    const noText = isFrench ? 'Non' : 'No';
+
+                    if (value === 'oui') {
+                        $(`#detail-${field}`).removeClass('hidden').html(
+                            `<i class="glyphicon glyphicon-ok-circle"></i> ${yesText}`);
+                        $(`#detail-no-${field}`).addClass('hidden');
+                    } else {
+                        $(`#detail-${field}`).addClass('hidden');
+                        $(`#detail-no-${field}`).removeClass('hidden').html(
+                            `<i class="glyphicon glyphicon-remove-circle"></i> ${noText}`);
+                    }
+                }
+
+                function formatCurrency(amount, currency) {
+                    amount = parseFloat(amount) || 0;
+                    switch (currency.toUpperCase()) {
+                        case 'EUR':
+                            return `${amount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+                        case 'USD':
+                        case 'US':
+                            return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        default:
+                            return `${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+                    }
+                }
+
+                function getFrenchStatus(status) {
+                    if (!status) return 'Inconnu';
+
+                    switch (status.toLowerCase()) {
+                        case 'paid':
+                        case 'payé':
+                            return 'Payé';
+                        case 'pending':
+                        case 'en attente':
+                            return 'En attente';
+                        case 'cancelled':
+                        case 'annulé':
+                            return 'Annulé';
+                        case 'draft':
+                        case 'brouillon':
+                            return 'Brouillon';
+                        default:
+                            return status;
+                    }
+                }
+
+                function getEnglishStatus(status) {
+                    if (!status) return 'Unknown';
+
+                    switch (status.toLowerCase()) {
+                        case 'paid':
+                        case 'payé':
+                            return 'Paid';
+                        case 'pending':
+                        case 'en attente':
+                            return 'Pending';
+                        case 'cancelled':
+                        case 'annulé':
+                            return 'Cancelled';
+                        case 'draft':
+                        case 'brouillon':
+                            return 'Draft';
+                        default:
+                            return status;
+                    }
+                }
+
+                function getStatusClass(status) {
+                    if (!status) return 'badge-secondary';
+
+                    switch (status.toLowerCase()) {
+                        case 'paid':
+                        case 'payé':
+                            return 'badge-success';
+                        case 'pending':
+                        case 'en attente':
+                            return 'badge-warning';
+                        case 'cancelled':
+                        case 'annulé':
+                            return 'badge-danger';
+                        case 'draft':
+                        case 'brouillon':
+                            return 'badge-info';
+                        default:
+                            return 'badge-secondary';
                     }
                 }
             });
-        </script>
-
-        <script>
-            // =============================================
-            // GESTION DU MODAL DE DÉTAILS AVEC DATA-ATTRIBUTES
-            // =============================================
-
-            $('.view-details').on('click', function(e) {
-                e.preventDefault();
-
-                const button = $(this);
-                const isFrench = '{{ app()->getLocale() }}' === 'fr';
-
-                // Récupérer toutes les données depuis les attributs data-
-                const participantData = {
-                    id: button.data('id'),
-                    fname: button.data('fname'),
-                    lname: button.data('lname'),
-                    email: button.data('email'),
-                    phone: button.data('phone'),
-                    passeport_number: button.data('passeport'),
-                    passeport_pdf: button.data('photo'),
-                    civility: {
-                        libelle: button.data('title')
-                    },
-                    gender: {
-                        libelle: button.data('gender')
-                    },
-                    student_level: {
-                        libelle: button.data('education')
-                    },
-                    nationality: {
-                        libelle_fr: isFrench ? button.data('country') : '',
-                        libelle_en: !isFrench ? button.data('country') : ''
-                    },
-                    organisation: button.data('organisation'),
-                    organisation_type_other: button.data('type-organisation'),
-                    organisation_type: {
-                        libelle: button.data('type-organisation')
-                    },
-                    job: button.data('fonction'),
-                    participant_category: {
-                        libelle: button.data('category')
-                    },
-                    type_member: {
-                        libelle: button.data('membership')
-                    },
-                    membership_code: button.data('membershipcode'),
-                    diner: button.data('diner'),
-                    visite: button.data('visite'),
-                    invitation_letter: button.data('lettre'),
-                    author: button.data('auteur'),
-                    status: button.data('status')
-                };
-
-                const invoiceData = {
-                    total_amount: button.data('total-amount'),
-                    status: button.data('status')
-                };
-
-                // Remplir les informations du modal
-                fillParticipantDetails(participantData, invoiceData, isFrench, button.data('edit-url'));
-
-                // Afficher le modal
-                $('#participantDetailsModal').modal('show');
-            });
-
-            function fillParticipantDetails(participant, invoice, isFrench, editUrl) {
-                // Informations basiques
-                $('#detail-fullname').text(`${participant.fname} ${participant.lname}`);
-                $('#detail-email').text(participant.email || '-');
-                $('#detail-phone').text(participant.phone || '-');
-                $('#detail-passeport').text(participant.passeport_number || '-');
-
-                // Photo du passeport
-                if (participant.passeport_pdf) {
-                    $('#detail-photo-img').attr('src', `/storage/${participant.passeport_pdf}`).removeClass('hidden');
-                    $('#detail-no-photo').addClass('hidden');
-                } else {
-                    $('#detail-photo-img').addClass('hidden');
-                    $('#detail-no-photo').removeClass('hidden');
-                }
-
-                // Informations personnelles
-                $('#detail-title').text(participant.civility?.libelle || '-');
-                $('#detail-gender').text(participant.gender?.libelle || '-');
-                $('#detail-education').text(participant.student_level?.libelle || '-');
-                $('#detail-country').text(participant.nationality ?
-                    (isFrench ? participant.nationality.libelle_fr : participant.nationality.libelle_en) : '-');
-
-                // Informations professionnelles
-                $('#detail-organisation').text(participant.organisation || '-');
-                $('#detail-type-organisation').text(participant.organisation_type_other || participant.organisation_type
-                    ?.libelle || '-');
-                $('#detail-fonction').text(participant.job || '-');
-
-                // Informations du congrès
-                $('#detail-category').text(participant.participant_category?.libelle || '-');
-                $('#detail-membership').text(participant.type_member?.libelle || '-');
-
-                // Code d'adhésion
-                if (participant.membership_code) {
-                    $('#detail-membershipcode').text(participant.membership_code);
-                    $('#detail-membershipcode-badge').addClass('hidden');
-                } else {
-                    $('#detail-membershipcode').text('');
-                    $('#detail-membershipcode-badge').removeClass('hidden').text(isFrench ? 'Non renseigné' : 'Not provided');
-                }
-
-                // Options Oui/Non
-                toggleYesNoField('diner', participant.diner, isFrench);
-                toggleYesNoField('visite', participant.visite, isFrench);
-                toggleYesNoField('lettre', participant.invitation_letter, isFrench);
-                toggleYesNoField('auteur', participant.author, isFrench);
-
-                // Informations de facturation
-                if (invoice && invoice.total_amount > 0) {
-                    const currency = '{{ $congres->currency }}' || 'EUR';
-                    const amount = formatCurrency(invoice.total_amount, currency);
-                    $('#detail-total-amount').text(amount);
-
-                    // Statut
-                    const status = invoice.status || participant.status;
-                    const statusText = isFrench ? getFrenchStatus(status) : getEnglishStatus(status);
-                    const statusClass = getStatusClass(status);
-                    $('#detail-status').text(statusText).removeClass('badge-success badge-warning badge-danger badge-secondary')
-                        .addClass(statusClass);
-                } else {
-                    $('#detail-total-amount').text(isFrench ? 'Non facturé' : 'Not invoiced');
-                    $('#detail-status').text(isFrench ? 'En attente' : 'Pending').removeClass(
-                        'badge-success badge-warning badge-danger badge-secondary').addClass('badge-warning');
-                }
-
-                // Lien d'édition
-                if (editUrl) {
-                    $('#detail-edit-link').attr('href', editUrl).removeClass('hidden');
-                } else {
-                    $('#detail-edit-link').addClass('hidden');
-                }
-            }
-
-            function toggleYesNoField(field, value, isFrench) {
-                const yesText = isFrench ? 'Oui' : 'Yes';
-                const noText = isFrench ? 'Non' : 'No';
-
-                if (value === 'oui') {
-                    $(`#detail-${field}`).removeClass('hidden').html(
-                    `<i class="glyphicon glyphicon-ok-circle"></i> ${yesText}`);
-                    $(`#detail-no-${field}`).addClass('hidden');
-                } else {
-                    $(`#detail-${field}`).addClass('hidden');
-                    $(`#detail-no-${field}`).removeClass('hidden').html(
-                        `<i class="glyphicon glyphicon-remove-circle"></i> ${noText}`);
-                }
-            }
-
-            function formatCurrency(amount, currency) {
-                amount = parseFloat(amount) || 0;
-                switch (currency.toUpperCase()) {
-                    case 'EUR':
-                        return `${amount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-                    case 'USD':
-                    case 'US':
-                        return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                    default:
-                        return `${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
-                }
-            }
-
-            function getFrenchStatus(status) {
-                if (!status) return 'Inconnu';
-
-                switch (status.toLowerCase()) {
-                    case 'paid':
-                    case 'payé':
-                        return 'Payé';
-                    case 'pending':
-                    case 'en attente':
-                        return 'En attente';
-                    case 'cancelled':
-                    case 'annulé':
-                        return 'Annulé';
-                    case 'draft':
-                    case 'brouillon':
-                        return 'Brouillon';
-                    default:
-                        return status;
-                }
-            }
-
-            function getEnglishStatus(status) {
-                if (!status) return 'Unknown';
-
-                switch (status.toLowerCase()) {
-                    case 'paid':
-                    case 'payé':
-                        return 'Paid';
-                    case 'pending':
-                    case 'en attente':
-                        return 'Pending';
-                    case 'cancelled':
-                    case 'annulé':
-                        return 'Cancelled';
-                    case 'draft':
-                    case 'brouillon':
-                        return 'Draft';
-                    default:
-                        return status;
-                }
-            }
-
-            function getStatusClass(status) {
-                if (!status) return 'badge-secondary';
-
-                switch (status.toLowerCase()) {
-                    case 'paid':
-                    case 'payé':
-                        return 'badge-success';
-                    case 'pending':
-                    case 'en attente':
-                        return 'badge-warning';
-                    case 'cancelled':
-                    case 'annulé':
-                        return 'badge-danger';
-                    case 'draft':
-                    case 'brouillon':
-                        return 'badge-info';
-                    default:
-                        return 'badge-secondary';
-                }
-            }
         </script>
     @endsection

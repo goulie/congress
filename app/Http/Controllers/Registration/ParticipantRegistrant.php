@@ -119,7 +119,7 @@ class ParticipantRegistrant extends Controller
  */
         session(['step' => 1]);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Enregistrement effectué avec succès !');
     }
 
     public function previous()

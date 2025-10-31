@@ -177,11 +177,7 @@
             padding-left: 52px !important;
         }
 
-        .required::after {
-            content: ' *';
-            color: red;
-            font-weight: bold;
-        }
+        
 
         /* DataTable Small visual polish */
         .panel-custom {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use TCG\Voyager\Traits\Translatable;
 
 class CategorieRegistrant extends Model
@@ -44,7 +45,7 @@ class CategorieRegistrant extends Model
         if (!$categorie) {
             return null;
         }
-
+Log::info($categorie);
         return (object) [
             'libelle' => $categorie->libelle,
             'montant' => $categorie->tarifs->first()->montant ?? 0,
