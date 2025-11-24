@@ -11,7 +11,16 @@
                             <img src="{{ Voyager::image($admin_logo_img) }}" alt="Logo Icon">
                         @endif
                     </div>
-                    <div class="title">{{Voyager::setting('admin.title', 'VOYAGER')}}</div>
+                    <div class="title" style="text-transform:none">
+                        @php
+                            $congres = App\Models\Congress::latest()->first();
+                        @endphp
+                        @if(app()->getLocale() == 'fr')
+                        CIE-AAEA {{ \Carbon\Carbon::parse($congres->end_date)->format('Y') }}
+                        @else
+                        ICE-AfWASA {{ \Carbon\Carbon::parse($congres->end_date)->format('Y') }}
+                        @endif
+                    </div>
                 </a>
             </div><!-- .navbar-header -->
 
@@ -22,6 +31,7 @@
                     <img src="{{ $user_avatar }}" class="avatar" alt="{{ Auth::user()->name }} avatar">
                     <h4>{{ ucwords(Auth::user()->name) }}</h4>
                     <p>{{ Auth::user()->email }}</p>
+                    <p>{{ Auth::user()->user_id }}</p>
                     <a href="{{ route('voyager.profile') }}" class="btn btn-primary">{{ __('voyager::generic.profile') }}</a>
                     <div style="clear:both"></div>
                 </div>

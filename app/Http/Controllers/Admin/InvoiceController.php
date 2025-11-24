@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AgeRange;
+use App\Models\Invoice;
 use App\Models\Participant;
 use App\Services\InvoicePdfService;
 use App\Services\InvoiceService;
@@ -72,9 +74,24 @@ class InvoiceController extends Controller
 
     public function index()
     {
-
         $participants = Participant::with(['invoices.items', 'participantCategory'])->get();
         dd($participants);
-       // return view('invoice.index');
+        // return view('invoice.index');
+    }
+
+    public function details($id)
+    {
+        $participant = Participant::with(['congres', 'country', 'gender', 'participantCategory','ageRange','user'])
+            ->findOrFail($id);
+
+        $invoice = Invoice::where('participant_id', $id)
+            ->with('items')
+            ->first();
+
+        return response()->json([
+            'participant' => $participant,
+            'invoice' => $invoice,
+            'items' => $invoice ? $invoice->items : []
+        ]);
     }
 }

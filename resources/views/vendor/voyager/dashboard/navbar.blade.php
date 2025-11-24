@@ -44,8 +44,8 @@
                     <i class="bi bi-globe text-primary"></i>
                     <select name="locale" onchange="this.form.submit()" class="form-select form-select-sm"
                         style="width:auto; display:inline-block;">
-                        <option value="fr" {{ Auth::user()->locale == 'fr' ? 'selected' : '' }}>Français</option>
-                        <option value="en" {{ Auth::user()->locale == 'en' ? 'selected' : '' }}>English</option>
+                        <option value="fr" {{ Auth::user()->locale =='fr'||app()->getLocale() == 'fr' ? 'selected' : '' }}>Français</option>
+                        <option value="en" {{ Auth::user()->locale =='en'||app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
                     </select>
                 </form>
 
@@ -87,7 +87,9 @@
                                     </a>
                                 @endif
                             </li>
+
                         @endforeach
+                        
                     @endif
                 </ul>
             </li>

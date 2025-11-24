@@ -4,13 +4,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/AdminLTE.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
 
     <style>
-        body {
-            background: linear-gradient(135deg, #eaf3ff, #ffffff);
-            font-family: 'Segoe UI', sans-serif;
-            padding: 40px 0;
-        }
+        /* body {
+                    background: linear-gradient(135deg, #eaf3ff, #ffffff);
+                    font-family: 'Segoe UI', sans-serif;
+                    padding: 40px 0;
+                } */
 
         .card {
             border: none;
@@ -176,6 +177,42 @@
         .form-control.iti-input {
             padding-left: 52px !important;
         }
+
+        /* recap CSS */
+        .panel {
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .panel-heading {
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+
+        .panel-heading .bi-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .panel-heading.collapsed .bi-chevron-down {
+            transform: rotate(-90deg);
+        }
+
+        .label {
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .btn-block {
+            border-radius: 5px;
+        }
+
+        .panel-collapse {
+            transition: all 0.3s ease;
+        }
+        .panel-title{
+            color: #fff
+        }
     </style>
 @endsection
 
@@ -201,16 +238,18 @@
             ]);
         }
     @endphp
+    
     <div class="container">
         <div class="row">
-            <div class="col-md-8 col-md-offset-2">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="box-header">
-                        <h3 class="box-title">@lang('Register in 3 Easy Steps')</h3>
-                        <p class="help-block">@lang("S'inscrire en 3 étapes simples")</p>
+                        <h3 class="box-title">{{ __('registration.forms.header_title') }}</h3>
+                        <p class="help-block">{{ __('registration.forms.header_subtitle') }}</p>
                     </div>
 
                     <!-- Étapes -->
+                    
                     <div class="progress-steps">
                         <div class="step {{ $step == 1 ? 'active' : '' }}">
                             <div class="step-circle">1</div>
@@ -242,7 +281,7 @@
                             {{ session()->get('success') }}
                         </div>
                     @endif
-                    
+
                     @if ($step == 1)
                         @include('vendor.voyager.view-single-registrations.step1')
                     @endif
@@ -252,11 +291,14 @@
                     @if ($step == 3)
                         @include('vendor.voyager.view-single-registrations.step3')
                     @endif
+                    @if ($step == 4)
+                        @include('vendor.voyager.view-single-registrations.recap')
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-@endsection
+@stop
 
 @section('javascript')
     <script>
@@ -281,4 +323,16 @@
             }
         });
     </script>
-@endsection
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des flèches
+            $('.panel-heading').on('click', function() {
+                $(this).toggleClass('collapsed');
+            });
+
+            // Tous les collapsibles ouverts par défaut
+            $('.panel-collapse').addClass('in');
+        });
+    </script>
+@stop

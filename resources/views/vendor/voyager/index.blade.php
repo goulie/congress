@@ -64,12 +64,6 @@
             margin-top: 15px;
         }
 
-        .period-prices h4 {
-            font-size: 1rem;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-
         .price-item {
             display: flex;
             justify-content: space-between;
@@ -81,16 +75,7 @@
             border-bottom: none;
         }
 
-        .price-category {
-            color: #555;
-        }
-
-        .price-amount {
-            font-weight: 500;
-            color: #2c3e50;
-        }
-
-        /* === DASHBOARD CARDS === */
+        /* === DASHBOARD BUTTONS === */
         .dash-btn {
             background: #fff;
             border: 1px solid #eaeaea;
@@ -131,144 +116,262 @@
             color: #666;
             margin: 0;
         }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 767px) {
-            .dash-btn {
-                margin-bottom: 15px;
-            }
-            
-            .period-info {
-                flex-direction: column;
-            }
-            
-            .period-info-item {
-                margin-bottom: 15px;
-            }
-        }
     </style>
 @endsection
 
 @section('content')
     @php
         $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
-
-        $locale = app()->getLocale(); // fr ou en
+        $locale = app()->getLocale(); // 'fr' or 'en'
         \Carbon\Carbon::setLocale($locale);
-
         $start = \Carbon\Carbon::parse($periode->start_date);
         $end = \Carbon\Carbon::parse($periode->end_date);
-
         $daysRemaining = $periode->joursRestants();
 
-        // Format date selon locale
         $dateFormattedStart = $locale === 'fr' ? $start->translatedFormat('d F Y') : $start->translatedFormat('F d, Y');
         $dateFormattedEnd = $locale === 'fr' ? $end->translatedFormat('d F Y') : $end->translatedFormat('F d, Y');
     @endphp
-    
+
     <div class="page-content">
         <div class="container">
-            <!-- Carte de période d'inscription -->
+            <!-- Carte / Period Card -->
             <div class="period-card">
-                <h3>Période d'Inscription Actuelle</h3>
-                
+                <h3>
+                    @if ($locale === 'fr')
+                        Période d'Inscription Actuelle
+                    @else
+                        Current Registration Period
+                    @endif
+                </h3>
+
                 <div class="period-info">
                     <div class="period-info-item">
-                        <span>Nom de la période</span>
-                        <strong>{{ $periode->translate(app()->getLocale(), 'fallbackLocale')->libelle }}</strong>
+                        <span>
+                            @if ($locale === 'fr')
+                                PACKAGE APPLIQUE
+                            @else
+                                APPLIED PACKAGE
+                            @endif
+                        </span>
+                        <strong>{{ $periode->translate($locale, 'fallbackLocale')->libelle }}</strong>
                     </div>
                     <div class="period-info-item">
-                        <span>Début</span>
+                        <span>
+                            @if ($locale === 'fr')
+                                Début
+                            @else
+                                Start
+                            @endif
+                        </span>
                         <strong>{{ $dateFormattedStart }}</strong>
                     </div>
                     <div class="period-info-item">
-                        <span>Fin</span>
+                        <span>
+                            @if ($locale === 'fr')
+                                Fin
+                            @else
+                                End
+                            @endif
+                        </span>
                         <strong>{{ $dateFormattedEnd }}</strong>
                     </div>
                     <div class="period-info-item">
-                        <span>Jours restants</span>
-                        <strong>{{ $daysRemaining }} jours</strong>
+                        <span>
+                            @if ($locale === 'fr')
+                                Jours restants
+                            @else
+                                Days remaining
+                            @endif
+                        </span>
+                        <strong>{{ $daysRemaining }} {{ $locale === 'fr' ? 'jours' : 'days' }}</strong>
                     </div>
                 </div>
 
                 <div class="period-prices">
-                    <h2 class="text-primary">Tarifs actuels appliqués</h2>
+                    <h2 class="text-primary">
+                        @if ($locale === 'fr')
+                            Tarifs actuels appliqués
+                        @else
+                            Current Applied Rates
+                        @endif
+                    </h2>
                     @foreach ($periode->tarifs as $tarif)
                         <div class="price-item" style="font-weight: bold;">
-                            <span class="price-category">{{ $tarif->categorie_registrant->libelle }}</span>
-                            <span class="price-amount">{{ $tarif->montant }} {{ $tarif->congres->currency }}</span>
+                            <span class="price-category">
+                                {{ $tarif->categorie_registrant->translate($locale, 'fallbackLocale')->libelle }}
+                            </span>
+                            <span class="price-amount">
+                                {{ $tarif->montant }} {{ $tarif->congres->currency }}
+                            </span>
                         </div>
                     @endforeach
                 </div>
             </div>
 
-            <!-- Actions principales -->
+
+
             <div class="row dashboard">
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="/admin/view-single-registrations" class="dash-btn-link text-decoration-none">
+                <div class="col-md-6 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.view-single-registrations.index') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-person-plus-fill"></i>
-                            <h4>Inscription Individuelle</h4>
-                            <p>Inscription unique</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Inscription Individuelle
+                                @else
+                                    Individual Registration
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Inscription unique
+                                @else
+                                    Register one participant
+                                @endif
+                            </p>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="/admin/view-group-registrations" class="dash-btn-link text-decoration-none">
+                <div class="col-md-6 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.view-group-registrations.index') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-people-fill"></i>
-                            <h4>Inscription de Groupe</h4>
-                            <p>Inscrire plusieurs participants</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Inscription de Groupe
+                                @else
+                                    Group Registration
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Inscrire plusieurs participants
+                                @else
+                                    Register multiple participants
+                                @endif
+                            </p>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="/admin/view-accompagning-registration" class="dash-btn-link text-decoration-none">
+                {{-- <div class="col-md-4 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.view-accompagning-registration.index') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-person-workspace"></i>
-                            <h4>Personne accompagnante</h4>
-                            <p>Ajouter des personnes tierces</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Personne accompagnante
+                                @else
+                                    Accompanying Person
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Ajouter des personnes tierces
+                                @else
+                                    Add accompanying persons
+                                @endif
+                            </p>
                         </div>
                     </a>
-                </div>
+                </div> --}}
             </div>
+
+
 
             <div class="row dashboard">
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="/admin/invoices" class="dash-btn-link text-decoration-none">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.invoices.index') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-file-medical-fill"></i>
-                            <h4>Facturation</h4>
-                            <p>Effectuer et suivre le paiement</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Facturation
+                                @else
+                                    Billing
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Effectuer et suivre le paiement
+                                @else
+                                    Make and track payments
+                                @endif
+                            </p>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="/admin/profile" class="dash-btn-link text-decoration-none">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.profile') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-person-badge-fill"></i>
-                            <h4>Mon Profil</h4>
-                            <p>Voir et mettre à jour le profil</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Mon Profil
+                                @else
+                                    My Profile
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Voir et mettre à jour le profil
+                                @else
+                                    View and update profile
+                                @endif
+                            </p>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="#" class="dash-btn-link text-decoration-none">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.view-badges.index') }}" class="text-decoration-none">
                         <div class="dash-btn">
                             <i class="bi bi-qr-code"></i>
-                            <h4>Mon Badge</h4>
-                            <p>Télécharger le badge QR</p>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Mon Badge
+                                @else
+                                    My Badge
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Télécharger le badge QR
+                                @else
+                                    Download your QR badge
+                                @endif
+                            </p>
                         </div>
                     </a>
                 </div>
+
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <a href="{{ route('voyager.view-badges.index') }}" class="text-decoration-none">
+                        <div class="dash-btn">
+                            <i class="bi bi-qr-code"></i>
+                            <h4>
+                                @if ($locale === 'fr')
+                                    Mon Badge
+                                @else
+                                    My Badge
+                                @endif
+                            </h4>
+                            <p>
+                                @if ($locale === 'fr')
+                                    Télécharger le badge QR
+                                @else
+                                    Download your QR badge
+                                @endif
+                            </p>
+                        </div>
+                    </a>
+                </div>
+                
             </div>
+
+
         </div>
     </div>
-@stop
-
-@section('javascript')
 @stop

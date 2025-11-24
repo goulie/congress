@@ -23,7 +23,7 @@
     <!-- App CSS -->
     <link rel="stylesheet" href="{{ voyager_asset('css/app.css') }}">
 
-    @yield('css')
+    
 
     @if (__('voyager::generic.is_rtl') == 'true')
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-rtl/3.4.0/css/bootstrap-rtl.css">
@@ -53,10 +53,9 @@
             color: {{ config('voyager.primary_color', '#22A7F0') }};
         }
 
-        * Load Awesome v1.1.0 (http://github.danielcardoso.net/load-awesome/)
- * Copyright 2015 Daniel Cardoso <@DanielCardoso>
- * Licensed under MIT
- */
+        /* Load Awesome v1.1.0 (http: //github.danielcardoso.net/load-awesome/)
+
+            * Copyright 2015 Daniel Cardoso <@DanielCardoso> * Licensed under MIT */
         .la-ball-clip-rotate-pulse,
         .la-ball-clip-rotate-pulse>div {
             position: relative;
@@ -311,13 +310,109 @@
             }
         }
 
+        .support-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .support-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #0015ff 0%, #1f02f8 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 47, 255, 0.4);
+            cursor: pointer;
+            border: none;
+            position: relative;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .support-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(2, 2, 253, 0.6);
+        }
+
+        .support-btn i {
+            color: white !important;
+            font-size: 24px;
+        }
+
+        /* Effet de pulsation */
+        .pulse-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #ff0000;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            opacity: 0;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        /* Tooltip */
+        .support-tooltip {
+            position: absolute;
+            right: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .support-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-left-color: #333;
+        }
+
+        .support-btn:hover .support-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .required::after {
             content: ' *';
             color: red;
             font-weight: bold;
         }
     </style>
-
+    
+@yield('css')
     @if (!empty(config('voyager.additional_css')))<!-- Additional CSS -->
         @foreach (config('voyager.additional_css') as $css)
             <link rel="stylesheet" type="text/css" href="{{ asset($css) }}">
@@ -334,9 +429,15 @@
         <div></div>
         <div></div>
     </div>
-     {{-- <div id="voyager-loader"> --}}
-        <?php /* $admin_loader_img = Voyager::setting('admin.loader', ''); */ ?>
-      {{--  @if ($admin_loader_img == '')
+
+    <div id="loader" class="hidden la-ball-clip-rotate-pulse la-3x"
+        style="z-index:9999;display:flex;justify-content:center;align-items:center;position:fixed;top:0px;left:0px;background-color:black;width:100%;height:100%;opacity: 0.75;">
+        <div></div>
+        <div></div>
+    </div>
+    {{-- <div id="voyager-loader"> --}}
+    <?php /* $admin_loader_img = Voyager::setting('admin.loader', ''); */ ?>
+    {{--  @if ($admin_loader_img == '')
             <img src="{{ voyager_asset('images/logo-icon.png') }}" alt="Voyager Loader">
         @else
             <img src="{{ Voyager::image($admin_loader_img) }}" alt="Voyager Loader">
@@ -390,18 +491,162 @@
                     @yield('page_header')
                     <div id="voyager-notifications"></div>
                     @yield('content')
+
+
+
+                    <!-- The modal -->
+                    <div class="modal fade" id="flipFlop" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h4 class="modal-title" id="modalLabel">
+                                        <i class="bi bi-headset me-2"></i>Technical Support
+                                    </h4>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Contact Information Section -->
+                                    <div class="contact-section mb-4">
+                                        <h5 class="text-primary mb-3">
+                                            <i class="bi bi-info-circle"></i> How to Contact Us
+                                        </h5>
+
+                                        <div class="contact-item mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-telephone text-success me-3 fs-5"></i>
+                                                <div>
+                                                    <strong>Phone</strong>
+                                                    <div class="text-muted">+1 234 567 890</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="contact-item mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-whatsapp text-success me-3 fs-5"></i>
+                                                <div>
+                                                    <strong>WhatsApp</strong>
+                                                    <div class="text-muted">+1 234 567 891</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="contact-item mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-envelope text-primary me-3 fs-5"></i>
+                                                <div>
+                                                    <strong>Email</strong>
+                                                    <div class="text-muted">support@congress.com</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Schedule Section -->
+                                    <div class="schedule-section mb-4">
+                                        <h5 class="text-primary mb-3">
+                                            <i class="bi bi-clock"></i> Opening Hours
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Mon - Fri</strong><br>
+                                                8:00 AM - 6:00 PM
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Sat - Sun</strong><br>
+                                                9:00 AM - 1:00 PM
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Help Section -->
+                                    <div class="quick-help-section">
+                                        <h5 class="text-primary mb-3">
+                                            <i class="bi bi-lightning"></i> Quick Assistance
+                                        </h5>
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <i class="bi bi-lightbulb"></i>
+                                                <strong>Tip:</strong> For faster assistance, please have your
+                                                participant number and problem description ready.
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Emergency Section -->
+                                    <div class="emergency-section mt-4">
+                                        <div class="alert alert-warning">
+                                            <h6 class="alert-heading">
+                                                <i class="bi bi-exclamation-triangle"></i> Technical Emergency
+                                            </h6>
+                                            <small class="mb-0">
+                                                For urgent issues preventing your registration, contact us immediately
+                                                by phone.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                        <i class="bi bi-x-circle"></i> Close
+                                    </button>
+                                    <a href="tel:+1234567890" class="btn btn-success">
+                                        <i class="bi bi-telephone"></i> Call
+                                    </a>
+                                    <a href="mailto:support@congress.com" class="btn btn-primary">
+                                        <i class="bi bi-envelope"></i> Email
+                                    </a>
+                                    <a href="https://wa.me/1234567891" class="btn btn-success"
+                                        style="background-color: #25D366; border-color: #25D366;">
+                                        <i class="bi bi-whatsapp"></i> WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
+
+    </div>
+
     @include('voyager::partials.app-footer')
 
     <!-- Javascript Libs -->
 
 
     <script type="text/javascript" src="{{ voyager_asset('js/app.js') }}"></script>
-
     <script>
+        // Initialize tooltip component
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        // Initialize popover component
+        $(function() {
+            $('[data-toggle="popover"]').popover()
+        })
+    </script>
+    <script>
+        $('.ajax-form').on('submit', function() {
+            let submitBtn = $(this).find('button[type="submit"]');
+
+            // Désactiver le bouton pour éviter plusieurs clics
+            submitBtn.prop('disabled', true);
+
+            // Remplacer le texte par un loader
+            submitBtn.html(
+                '<i class="bi bi-hourglass-split spinner-border spinner-border-sm me-2"></i> Enregistrement...'
+            );
+
+            // Le formulaire continue sa soumission normale
+            return true;
+        });
         @if (Session::has('alerts'))
             let alerts = {!! json_encode(Session::get('alerts')) !!};
             helpers.displayAlerts(alerts, toastr);
@@ -426,11 +671,11 @@
     @stack('javascript')
     @if (!empty(config('voyager.additional_js')))<!-- Additional Javascript -->
         @foreach (config('voyager.additional_js') as $js)
-            <script type="text/javascript" src="{{ asset($js) }}"></script>
+            <script type="text/javascript" src="{{ asset($js) }}?v={{ time() }}" defer></script>
         @endforeach
     @endif
 
-    
+
 
 </body>
 

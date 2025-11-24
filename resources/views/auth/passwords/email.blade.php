@@ -1,11 +1,11 @@
 @extends('auth.layout')
 
-@section('header', __('Reset Password'))
+@section('header', __('auth.reset_password'))
 
 @section('content')
     <div class="row justify-content-center">
         <h3 class="text-center mb-4 text-primary fw-bold">
-            <i class="fas fa-key me-2"></i>{{ __('Reset Your Password') }}
+            <i class="fas fa-key me-2"></i>{{ __('auth.reset_your_password') }}
         </h3>
 
         <div class="col-md-8">
@@ -21,7 +21,7 @@
                     @endif
 
                     <p class="mb-4">
-                        {{ __('Enter your email address and we’ll send you a link to reset your password.') }}
+                        {{ __('auth.enter_email') }}
                     </p>
 
                     <form method="POST" action="{{ route('password.email') }}">
@@ -30,12 +30,12 @@
                         {{-- Email --}}
                         <div class="mb-3">
                             <label for="email" class="form-label fw-semibold">
-                                <i class="fas fa-envelope text-muted me-2"></i>{{ __('Email Address') }}
+                                <i class="fas fa-envelope text-muted me-2"></i>{{ __('auth.email_address') }}
                             </label>
                             <input id="email" type="email"
                                 class="form-control form-control-lg @error('email') is-invalid @enderror" name="email"
                                 value="{{ old('email') }}" required autocomplete="email" autofocus
-                                placeholder="exemple@email.com">
+                                placeholder="{{ __('auth.email_placeholder') }}">
 
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -45,14 +45,14 @@
                         {{-- Submit --}}
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill">
-                                <i class="fas fa-paper-plane me-2"></i>{{ __('Send Password Reset Link') }}
+                                <i class="fas fa-paper-plane me-2"></i>{{ __('auth.send_reset_link') }}
                             </button>
                         </div>
 
                         {{-- Back to login --}}
                         <div class="text-center mt-4">
                             <a href="{{ route('login') }}" class="text-decoration-none fw-semibold text-primary">
-                                <i class="fas fa-arrow-left me-1"></i>{{ __('Back to Login') }}
+                                <i class="fas fa-arrow-left me-1"></i>{{ __('auth.back_to_login') }}
                             </a>
                         </div>
                     </form>

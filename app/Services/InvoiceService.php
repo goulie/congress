@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Log;
 
 class InvoiceService
 {
+    protected $emailService;
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
     /**
      * Crée ou met à jour une facture et ses items.
      *
@@ -37,7 +42,8 @@ class InvoiceService
                         'status'    => $data['status'] ?? 'pending',
                         'invoice_date' => Carbon::now(),
                     ]);
-
+                    //envoie email de facture
+                    $this->emailService->SendInvoiceEmail($invoice);
                     // Supprimer les anciens items avant de les recréer (si on remplace tout)
                     $invoice->items()->delete();
                 } else {
@@ -46,13 +52,16 @@ class InvoiceService
 
                     $invoice = Invoice::create([
                         'invoice_number' => $invoiceNumber,
-                        'user_id'        => Auth::id(),
+                        'user_id'        => Auth::user()->user_id ?? Auth::user()->id,
                         'participant_id' => $data['participant_id'],
                         'currency'       => $congres->currency ?? 'FCFA',
                         'status'         => 'pending',
                         'invoice_date'   => Carbon::now(),
                         'congres_id'     => $congres->id,
                     ]);
+
+                    //envoie email de facture
+                    $this->emailService->SendInvoiceEmail($invoice);
                 }
 
                 // Ajout / mise à jour des items

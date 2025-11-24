@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\CategorieRegistrant;
+use App\Models\JourPassDelegue;
 use App\Models\Participant;
 use App\Services\InvoiceService;
 
@@ -20,9 +21,9 @@ class ParticipantInvoiceObserver
      */
     public function created(Participant $participant)
     {
-        if ($participant->diner && $participant->visite) {
+        /*  if ($participant->diner && $participant->visite) {
             $this->generateOrUpdateInvoice($participant);
-        }
+        } */
     }
 
     /**
@@ -30,9 +31,9 @@ class ParticipantInvoiceObserver
      */
     public function updated(Participant $participant)
     {
-        if ($participant->diner && $participant->visite) {
+        /* if ($participant->diner && $participant->visite) {
             $this->generateOrUpdateInvoice($participant);
-        }
+        } */
     }
     /**
      * Handle the Participant "deleted" event.
@@ -78,7 +79,7 @@ class ParticipantInvoiceObserver
         $dinner = CategorieRegistrant::DinnerforCongress($congres_id);
         $accompanying = CategorieRegistrant::accompanyingPersonForCongress($congres_id);
         $tours = CategorieRegistrant::ToursforCongress($congres_id);
-
+        $deleguate = CategorieRegistrant::deleguateForCongress($congres_id);
         $data = [
             'participant_id' => $participant->id,
             'status' => 'pending',
@@ -101,10 +102,48 @@ class ParticipantInvoiceObserver
                     'price' => $participant->visite == 'oui' ? $tours->montant : 0
                 ],
             ];
+        } elseif ($participant->type_participant == 'individual') {
+            //$categorie = CategorieRegistrant::find($participant->type_member_id);
+            //$tarif = $categorie->getTarifForCurrentPeriod($congres_id);
+            $pass = JourPassDelegue::whereIn('id', json_decode($participant->deleguate_day))->get();
+
+
+
+            $items = [
+                
+                [
+                    'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
+                    'price' => $participant->diner == 'oui' ? $dinner->montant : 0
+                ],
+                [
+                    'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
+                    'price' => $participant->visite == 'oui' ? $tours->montant : 0
+                ]
+
+            ];
+
+            // Ajouter les passes seulement s'il y en a
+            if ($pass->count() > 0) {
+                foreach ($pass as $passItem) {
+                    $items[] = [
+                        'description' => app()->getLocale() == 'fr'
+                            ? 'Pass délégué - ' . \Carbon\Carbon::parse($passItem->date)->translatedFormat('d F Y')
+                            : 'Delegate pass - ' . $passItem->date->format('F d, Y'),
+                        'price' => $deleguate->montant ?? 0
+                    ];
+                }
+            }else {
+                $items[] = [
+                    'description' => app()->getLocale() == 'fr'
+                        ? 'Frais d’inscription - ' . $participant->participantCategory->libelle . ' - ' . $participant->typeMember->libelle
+                        : 'Registration fee - ' . $participant->participantCategory->libelle . ' - ' . $participant->typeMember->libelle,
+                    'price' => $tarif->montant ?? 'error'
+                ];
+            }
         } else {
 
             $categorie = CategorieRegistrant::find($participant->type_member_id);
-            $tarif = $categorie->getTarifForCurrentPeriod($congres_id);
+            //$tarif = $categorie->getTarifForCurrentPeriod($congres_id);
             $items = [
                 [
                     'description' => app()->getLocale() == 'fr'

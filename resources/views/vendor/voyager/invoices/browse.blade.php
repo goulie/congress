@@ -111,7 +111,7 @@
                                     <thead>
                                         <tr>
                                             <th><input type="checkbox" id="selectAll"></th>
-                                            
+
                                             <th>
                                                 {{ app()->getLocale() == 'fr' ? 'Facture N°' : 'Invoice N°' }}
                                             </th>
@@ -143,80 +143,105 @@
                                     </thead>
                                     <tbody>
 
-                                        @foreach ($dataTypeContent as $data)
+                                        @forelse ($dataTypeContent->where('total_amount', '>', 0) as $data)
+                                            @if (
+                                                $data->participant->participant_category_id == 4 &&
+                                                    !auth()->user()->isAdmin() &&
+                                                    $data->participant->isYwpOrStudent == false)
+                                                <tr>
+                                                    <td colspan="10" class="text-center text-danger">
+                                                        <div class="alert alert-danger">
+                                                            {{ app()->getLocale() == 'fr' ? 'Votre facture sera accessible une fois votre inscription validée. ' : 'Your invoice will be accessible once your registration is validated.' }}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @else
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" name="participant_ids[]"
+                                                            value="{{ $data->participant_id }}">
+
+                                                    </td>
+                                                    <td>
+                                                        {{ app()->getLocale() == 'fr' ? $data->invoice_number : $data->invoice_number }}
+                                                    </td>
+                                                    <td>
+                                                        {{ app()->getLocale() == 'fr' ? $data->invoice_date : $data->invoice_date }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->participant->lname . ' ' . $data->participant->fname }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->participant->email }}
+                                                    </td>
+                                                    <td>
+                                                        <span style="text-weight:bold !important">
+                                                            {{ $data->total_amount . ' ' . ($data->currency === 'USD' ? '$' : ($data->currency === 'EUR' ? '€' : $data->currency)) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            switch ($data->status) {
+                                                                case 'paid':
+                                                                case 'Payé':
+                                                                    $badgeClass = 'badge-success';
+                                                                    break;
+                                                                case 'pending':
+                                                                case 'En attente':
+                                                                    $badgeClass = 'badge-warning';
+                                                                    break;
+                                                                case 'cancelled':
+                                                                case 'Annulé':
+                                                                    $badgeClass = 'badge-danger';
+                                                                    break;
+                                                                default:
+                                                                    $badgeClass = 'badge-secondary';
+                                                                    break;
+                                                            }
+                                                        @endphp
+
+                                                        <span class="badge {{ $badgeClass }}">
+                                                            {{ app()->getLocale() == 'fr' ? $data->status : ucfirst($data->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->payment_method ?? 'N/A' }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->payment_date ?? 'N/A' }}
+                                                    </td>
+
+                                                    <td class="no-sort no-click bread-actions">
+                                                        @foreach ($actions as $action)
+                                                            @if (!method_exists($action, 'massAction'))
+                                                                @include(
+                                                                    'voyager::bread.partials.actions',
+                                                                    [
+                                                                        'action' => $action,
+                                                                    ]
+                                                                )
+                                                            @endif
+                                                        @endforeach
+                                                        <a href="{{ route('invoices.download.participant', $data->participant_id) }}"
+                                                            class="btn btn-xs btn-success"> <i class="voyager-download"></i>
+                                                            {{ app()->getLocale() == 'fr' ? 'Télécharger la facture' : 'Download the invoice' }}
+                                                        </a>
+                                                        <a href="#" class="btn btn-xs btn-info"> <i
+                                                                class="bi bi-wallet2"></i>
+                                                            {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @endif
+
+                                        @empty
                                             <tr>
-                                                <td>
-                                                    <input type="checkbox" name="participant_ids[]"
-                                                        value="{{ $data->participant_id }}" >
-                                                </td>
-                                                <td>
-                                                    {{ app()->getLocale() == 'fr' ? $data->invoice_number : $data->invoice_number }}
-                                                </td>
-                                                <td>
-                                                    {{ app()->getLocale() == 'fr' ? $data->invoice_date : $data->invoice_date }}
-                                                </td>
-                                                <td>
-                                                    {{ $data->participant->lname . ' ' . $data->participant->fname }}
-                                                </td>
-                                                <td>
-                                                    {{ $data->participant->email }}
-                                                </td>
-                                                <td>
-                                                    <span style="text-weight:bold !important">
-                                                        {{ $data->total_amount . ' ' . ($data->currency === 'USD' ? '$' : ($data->currency === 'EUR' ? '€' : $data->currency)) }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    @php
-                                                        switch ($data->status) {
-                                                            case 'paid':
-                                                            case 'Payé':
-                                                                $badgeClass = 'badge-success';
-                                                                break;
-                                                            case 'pending':
-                                                            case 'En attente':
-                                                                $badgeClass = 'badge-warning';
-                                                                break;
-                                                            case 'cancelled':
-                                                            case 'Annulé':
-                                                                $badgeClass = 'badge-danger';
-                                                                break;
-                                                            default:
-                                                                $badgeClass = 'badge-secondary';
-                                                                break;
-                                                        }
-                                                    @endphp
-
-                                                    <span class="badge {{ $badgeClass }}">
-                                                        {{ app()->getLocale() == 'fr' ? $data->status : ucfirst($data->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    {{ $data->payment_method ?? 'N/A' }}
-                                                </td>
-                                                <td>
-                                                    {{ $data->payment_date ?? 'N/A' }}
-                                                </td>
-
-                                                <td class="no-sort no-click bread-actions">
-                                                    @foreach ($actions as $action)
-                                                        @if (!method_exists($action, 'massAction'))
-                                                            @include('voyager::bread.partials.actions', [
-                                                                'action' => $action,
-                                                            ])
-                                                        @endif
-                                                    @endforeach
-                                                    <a href="{{ route('invoices.download.participant', $data->participant_id) }}"
-                                                        class="btn btn-xs btn-success"> <i class="voyager-download"></i>
-                                                        {{ app()->getLocale() == 'fr' ? 'Télécharger la facture' : 'Download the invoice' }}
-                                                    </a>
-                                                    <a href="#" class="btn btn-xs btn-info"> <i
-                                                            class="bi bi-wallet2"></i>
-                                                        {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
-                                                    </a>
+                                                <td colspan="10" class="text-center">
+                                                    {{ __('voyager::generic.no_results') }}
                                                 </td>
                                             </tr>
-                                        @endforeach
+
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>

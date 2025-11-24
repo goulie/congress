@@ -19,10 +19,8 @@ class Congress extends Model
         'host_name',
         'host_country_id',
         'invitation_letter_id',
-        'amount_visit',
-        'amount_diner',
         'currency',
-        'accompagning_amount'
+        'nbre_place_dinner','banniere',
     ];
     protected $translatable = ['theme', 'title'];
 
@@ -33,7 +31,7 @@ class Congress extends Model
 
     public function invitationLetter()
     {
-        //return $this->belongsTo(InvitationLetter::class, 'invitation_letter_id');
+        return $this->belongsTo(InvitationLetter::class, 'invitation_letter_id');
     }
 
     public function periodes()
@@ -44,6 +42,16 @@ class Congress extends Model
     public function tarifs()
     {
         return $this->hasMany(Tarif::class, 'congres_id');
+    }
+
+    public function LatestCongress()
+    {
+        return self::latest()->first();
+    }
+
+    public function invitationLetters()
+    {
+        return $this->belongsTo(InvitationLetter::class, 'invitation_letter_id');
     }
 
 }

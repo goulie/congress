@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Participant;
+use App\Traits\GenerateCodeQrTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class HomeController extends Controller
 {
+    use GenerateCodeQrTrait;
     /**
      * Create a new controller instance.
      *
@@ -56,12 +61,12 @@ class HomeController extends Controller
                 'locale' => 'required|in:fr,en'
             ]);
 
-            
+
             // Mettre à jour la locale de l'utilisateur
             $user = Auth::user();
             $user->locale = $request->locale;
             $user->save();
-        
+
 
             app()->setLocale($request->locale);
 
@@ -70,5 +75,22 @@ class HomeController extends Controller
 
             dd($ex->getMessage());
         }
+    }
+
+
+
+    public function recap($uuid)
+    {
+        $participant = Participant::where('uuid', $uuid)->first();
+
+        session(['step' => 4]);
+
+        return view('voyager::view-single-registrations.browse', compact('participant'));
+    }
+
+    public function generateCode()
+    {
+        //$this->generateAndStoreQrCode('code');
+        return $this->generateAndStoreQrCode('code');
     }
 }

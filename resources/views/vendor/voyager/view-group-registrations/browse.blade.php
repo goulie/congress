@@ -6,11 +6,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
 
     <style>
-        body {
-            background: linear-gradient(135deg, #eaf3ff, #ffffff);
-            font-family: 'Segoe UI', sans-serif;
-            padding: 40px 0;
-        }
+        /* body {
+                        background: linear-gradient(135deg, #eaf3ff, #ffffff);
+                        font-family: 'Segoe UI', sans-serif;
+                        padding: 40px 0;
+                    } */
 
         .card {
             border: none;
@@ -177,7 +177,11 @@
             padding-left: 52px !important;
         }
 
-        
+        .required::after {
+            content: ' *';
+            color: red;
+            font-weight: bold;
+        }
 
         /* DataTable Small visual polish */
         .panel-custom {
@@ -268,6 +272,12 @@
         .badge {
             font-size: 0.75em;
         }
+
+        .panel-title {
+            color: #fff;
+            font-weight: light;
+        }
+        
     </style>
 @endsection
 
@@ -282,27 +292,36 @@
             'type_participant' => 'grouped',
         ])->get();
 
+        $edit = $edit ?? false;
     @endphp
 
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="box-header">
-                        <h1>{{ app()->getLocale() == 'fr' ? 'Enregistrement de groupe' : 'Group registration' }}
-                        </h1>
+                    <div class="box-header" style="font-weight: bold">
+                        @if ($edit == 'recap')
+                            <h1>{{ app()->getLocale() == 'fr' ? 'Recapitulatif d\'inscription' : 'Registration summary' }}
+                            </h1>
+                        @else
+                            <h1>{{ app()->getLocale() == 'fr' ? 'Enregistrement de groupe' : 'Group registration' }}
+                            </h1>
+                        @endif
                     </div>
-                    
-                    @php
-                        $edit = $edit ?? false;
 
-                    @endphp
 
-                    @if ($edit)
+
+
+                    @if ($edit == 'recap')
+                        @include('vendor.voyager.view-single-registrations.recap')
+                    @else
+                        @include('vendor.voyager.view-group-registrations.create')
+                    @endif
+                    {{-- @if ($edit)
                         @include('vendor.voyager.view-group-registrations.edit_grouped')
                     @else
                         @include('vendor.voyager.view-group-registrations.add_grouped')
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>

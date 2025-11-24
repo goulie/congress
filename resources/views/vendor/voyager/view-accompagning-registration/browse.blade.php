@@ -177,11 +177,7 @@
             padding-left: 52px !important;
         }
 
-        .required::after {
-            content: ' *';
-            color: red;
-            font-weight: bold;
-        }
+
 
         /* DataTable Small visual polish */
         .panel-custom {
@@ -286,7 +282,6 @@
             'type_participant' => 'accompagning',
         ])->get();
 
-        $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
         $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
         $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
         $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);

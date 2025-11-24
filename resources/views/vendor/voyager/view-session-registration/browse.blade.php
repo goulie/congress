@@ -6,11 +6,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
 
     <style>
-        body {
+        /* body {
             background: linear-gradient(135deg, #eaf3ff, #ffffff);
             font-family: 'Segoe UI', sans-serif;
             padding: 40px 0;
-        }
+        } */
 
         .card {
             border: none;

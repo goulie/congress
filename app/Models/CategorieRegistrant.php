@@ -26,7 +26,7 @@ class CategorieRegistrant extends Model
         $periodeActive = Periode::PeriodeActive($congresId, Carbon::now());
 
         if (!$periodeActive) {
-            return null; 
+            return null;
         }
 
         $categorie = self::select('id', 'libelle', 'status')
@@ -45,7 +45,7 @@ class CategorieRegistrant extends Model
         if (!$categorie) {
             return null;
         }
-Log::info($categorie);
+
         return (object) [
             'libelle' => $categorie->libelle,
             'montant' => $categorie->tarifs->first()->montant ?? 0,
@@ -87,6 +87,20 @@ Log::info($categorie);
         });
     }
 
+    public static function student_ywp_memberForCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'student_ywp_member');
+    }
+
+    public static function deleguateForCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'deleguate');
+    }
+    public static function studentForCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'student_ywp');
+    }
+
     public static function DinnerforCongress($congresId)
     {
         return self::getCategoryWithAmount($congresId, 'dinner');
@@ -102,6 +116,20 @@ Log::info($categorie);
         return self::getCategoryWithAmount($congresId, 'technical_tours');
     }
 
+    public static function PassDeleguateforCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'deleguate_pass');
+    }
+
+    public static function NonMemberPriceforCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'non_member');
+    }
+
+    public static function StudentPriceforCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'student_ywp');
+    }
     public function participants()
     {
         return $this->hasMany(Participant::class, 'participant_category_id');
@@ -110,28 +138,28 @@ Log::info($categorie);
 
     public function getTarifForCurrentPeriod($congresId)
     {
-    // Trouver la période active du congrès
-    $periodeActive = Periode::PeriodeActive($congresId, Carbon::now());
+        // Trouver la période active du congrès
+        $periodeActive = Periode::PeriodeActive($congresId, Carbon::now());
 
-    if (!$periodeActive) {
-        return null; // aucune période active
+        if (!$periodeActive) {
+            return null; // aucune période active
+        }
+
+        // Récupérer le tarif correspondant à cette catégorie + période
+        $tarif = $this->tarifs()
+            ->where('congres_id', $congresId)
+            ->where('periode_id', $periodeActive->id)
+            ->first();
+
+        if (!$tarif) {
+            return null;
+        }
+
+        // Retourne un petit objet pratique
+        return (object) [
+            'montant' => $tarif->montant,
+            'periode' => $periodeActive->libelle,
+            'periode_id' => $periodeActive->id,
+        ];
     }
-
-    // Récupérer le tarif correspondant à cette catégorie + période
-    $tarif = $this->tarifs()
-        ->where('congres_id', $congresId)
-        ->where('periode_id', $periodeActive->id)
-        ->first();
-
-    if (!$tarif) {
-        return null;
-    }
-
-    // Retourne un petit objet pratique
-    return (object) [
-        'montant' => $tarif->montant,
-        'periode' => $periodeActive->libelle,
-        'periode_id' => $periodeActive->id,
-    ];
-}
 }

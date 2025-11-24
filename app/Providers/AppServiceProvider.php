@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Participant;
 use App\Observers\ParticipantInvoiceObserver;
+use App\Observers\SingleRegitrantInvoiceObserver;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
@@ -34,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Verify Email Address', $url);
         });
 
-        Participant::observe(ParticipantInvoiceObserver::class);
+        //Participant::observe(ParticipantInvoiceObserver::class);
+        Participant::observe(SingleRegitrantInvoiceObserver::class);
+        
+
     }
 }

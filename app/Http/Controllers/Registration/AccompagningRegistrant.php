@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Congress;
 use App\Models\Participant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AccompagningRegistrant extends Controller
@@ -104,15 +103,9 @@ class AccompagningRegistrant extends Controller
             return redirect()->back()->with('success', $locale == 'fr'
                 ? 'Participant créé avec succès !'
                 : 'Participant created successfully!');
+                
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return back()->withInput()
-                ->with('swal', [
-                    'icon' => 'error',
-                    'title' => $locale == 'fr' ? 'Erreur !' : 'Error!',
-                    'text' => $locale == 'fr' ? 'Une erreur est survenue lors de la création.' : 'An error occurred while creating.',
-                    'confirmButtonText' => $locale == 'fr' ? 'Compris' : 'Understood',
-                ]);
+            return back()->withInput()->with('error',$e->getMessage());
         }
     }
 
@@ -204,13 +197,8 @@ class AccompagningRegistrant extends Controller
 
             $participant->update($updateData);
 
-            return redirect()->to('/admin/view-accompagning-registration')->with('swal', [
-                    'icon' => 'success',
-                    'title' => $locale == 'fr' ? 'Succès !' : 'Success!',
-                    'text' => $locale == 'fr' ? 'Personne accompagnante mise à jour avec succès !' : 'Accompanying person updated successfully!',
-                    'confirmButtonText' => $locale == 'fr' ? 'OK' : 'OK',
-                    'timer' => 3000,
-                ]);
+            return redirect()->to('/admin/view-accompagning-registration')->with('success', $locale == 'fr' ? 'Personne accompagnante mise à jour avec succès !' : 'Accompanying person updated successfully!');
+        
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withInput()
                 ->withErrors($e->errors())

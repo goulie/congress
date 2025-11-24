@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facture #FACT-00124</title>
+    <title>Facture AfWASA - Congress</title>
     <style>
         /* Styles de base */
         body {
@@ -42,14 +42,14 @@
         }
 
 
-        .logo-container {
+        /* .logo-container {
             width: 100%;
             text-align: center;
             margin-bottom: 20px;
             padding: 10px 0;
-            /*  background-color: #f8f9fa; */
+            /*  background-color: #f8f9fa; *
             border-radius: 5px;
-        }
+        } */
 
         .logo {
             font-size: 32px;
@@ -188,22 +188,69 @@
                 background-color: transparent !important;
             } */
         }
+
+
+
+
+        .logo_afwasa img,
+        .logo_host img {
+            width: 200px;
+            height: auto;
+        }
+
+        .congres-text {
+            flex: 1;
+            text-align: center;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            color: #2304a1;
+        }
     </style>
 </head>
 
 <body>
+    @php
+        /* if (app()->getLocale() == 'fr') {
+            \Carbon\Carbon::setLocale('fr');
+        } */
+        $congres = App\Models\Congress::latest()->first();
+        $transfert_info = App\Models\CongressBankTransfer::where('congres_id', $congres->id)->first();
+
+    @endphp
     <div class="invoice-container">
         <!-- En-tête avec logo pleine largeur -->
         <div class="header">
             <div class="logo-container">
-                <img src="{{ Voyager::image(setting('site.logo')) }}" alt="Logo" style="width: 200px;">
+
+                <img src="{{ '/public/storage/' . $invoice->congres->banniere }}" style="width:100%">
+
+                <div class="congres-text">
+                    @if (app()->getLocale() == 'fr')
+                        <h5>CONGRÈS INTERNATIONAL ET EXPOSITION DE L'AAEA <br />
+                            DU {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('d') }} AU
+                            {{ \Carbon\Carbon::parse($invoice->congres->end_date)->isoFormat('D MMMM YYYY') }} -
+                            {{ $invoice->congres->hostCountry->libelle_fr ?? '' }}
+                        </h5>
+                    @else
+                        <h5>AfWASA INTERNATIONAL CONGRESS AND EXHIBITION <br />
+                            FROM {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('F d') }} TO
+                            {{ \Carbon\Carbon::parse($invoice->congres->end_date)->format('F d, Y') }} -
+                            {{ $invoice->congres->hostCountry->libelle_en ?? '' }}
+                        </h5>
+                    @endif
+                    {{-- <p>{!! $invoice->congres->translate(app()->getLocale(), 'fallbackLocale')->theme !!}</p> --}}
+                </div>
+
             </div>
+
 
             @php
                 use Carbon\Carbon;
                 $date = $invoice->payment_date ?? $invoice->created_at;
                 $dateFr = Carbon::parse($date)->locale('fr')->isoFormat('D MMMM YYYY');
                 $dateEn = Carbon::parse($date)->locale('en')->isoFormat('MMMM D, YYYY');
+
             @endphp
 
             <div class="invoice-info">
@@ -272,31 +319,44 @@
             </tbody>
         </table>
 
+
         <!-- Informations de paiement -->
         <div class="payment-info">
+            <div class="card">
+               INFORMATIONS DE PAIEMENT 
+            </div>
             <div class="payment-title">{{ __('facture.vir_bank') }}</div>
             <div class="bank-info">
                 {{ __('facture.smsVbank') }}<br>
-                <strong>{{ __('facture.bank') }}:</strong> {{ __('facture.namebank') }}<br>
-                <strong>{{ __('facture.name') }}:</strong> {{ __('facture.afwa') }}<br>
-                <strong>{{ __('facture.adresse') }}:</strong> {{ __('facture.bankAdresse') }}<br>
-                <strong>{{ __('facture.codebank') }}:</strong> CI008<br>
-                <strong>{{ __('facture.codeguichet') }}:</strong> 01111<br>
-                <strong>{{ __('facture.numcompte') }}:</strong> 0111 166 366-22<br>
-                <strong>RIB :</strong> 71<br>
-                <strong>IBAN :</strong> CI93 CI0080111101111663662271<br>
-                <strong>SWIFT :</strong> CITIUS33<br>
+                <strong>{{ __('facture.name') }}:</strong> {{ $transfert_info->beneficiary_name }}<br>
+                <strong>{{ __('facture.bank') }}:</strong> {{ $transfert_info->bank_name }}<br>
+                <strong>{{ __('facture.adresse') }}:</strong> {{ $transfert_info->bank_address }}<br>
+                <strong>{{ __('facture.numcompte') }}:</strong> {{ $transfert_info->account_number }}<br>
+                {{-- <strong>RIB :</strong> <br> --}}
+                <strong>IBAN :</strong> {{ $transfert_info->iban }}<br>
+                <strong>SWIFT Code:</strong> {{ $transfert_info->swift }}<br>
             </div>
             <p><strong>{{ __('facture.bank_instructions') }}:</strong></p>
         </div>
 
         <!-- Pied de page -->
         <div class="footer">
-            <p style="text-align: center">
+            {{-- <p style="text-align: center">
                 Riviera Palmeraie – Rond point, place de la renaissance-Immeuble SODECI-2ème étage 25 BP 1174 Abidjan 25
                 Côte d’Ivoire /Tél. : +225 27 22 49 96 11 / +225 27 22 49 96 13 - Fax +225 27 22 49 23 30 <br>
                 Email : afwasamembershipservices@afwasa.org
+            </p> --}}
+            <p style="text-align: center">
+                
+                Contact support - Email : event@afwasa.org
             </p>
+            <p style="text-align: center;color: #ff0000">
+                {{ app()->getLocale()=='fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
+            </p>
+            <p style="text-align: center;color: #ff0000">
+                {{ app()->getLocale()=='fr' ? 'Les Montants sur cette facture sont applicables sur la periode du ' : 'The ' }}
+            </p>
+            
         </div>
     </div>
 </body>

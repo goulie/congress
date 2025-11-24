@@ -1,271 +1,219 @@
-@php
-    $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
-    $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
-    $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
-    $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
-@endphp
-
-<form class="ajax-form" method="POST" action="{{ route('form.step3') }}" enctype="multipart/form-data">
+<form method="POST" action="{{ route('form.step2') }}">
     @csrf
+
+    @php
+        $levels = App\Models\TypeOrganisation::get()
+            ->translate(app()->getLocale(), 'fallbackLocale')
+            ->sortBy(function ($level) {
+                return $level->libelle === 'Autre' || $level->libelle === 'Other' ? 'ZZZZZZZZ' : $level->libelle;
+            });
+    @endphp
+
     <div class="box-body">
-        <input type="hidden" name="participant_id" value="{{ $participant->id ?? '' }}">
-        {{-- Étape 3 : Détails du congrès --}}
+        <input type="hidden" name="uuid" value="{{ $participant->uuid }}">
+
+        {{-- Étape 2 : Coordonnées --}}
         <div class="row">
             <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-person-badge"></i>
-                    {{ __('registration.step3.fields.category') }}
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-envelope"></i>
+                    {{ __('registration.step2.fields.email') }}
                 </label>
-                <select class="form-control" name="category" id="category" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    @forelse (App\Models\CategoryParticipant::get()->translate(app()->getLocale(), 'fallbackLocale') as $category)
-                        <option value="{{ $category->id }}"
-                            {{ isset($participant) && $participant->participant_category_id == $category->id ? 'selected' : '' }}>
-                            {{ $category->libelle }}
-                        </option>
-                    @empty
-                        <option disabled>{{ __('registration.no_data') ?? 'No data' }}</option>
-                    @endforelse
-                </select>
+                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                    placeholder="{{ __('registration.step2.placeholders.email') }}" value="{{ auth()->user()->email }}"
+                    required disabled>
+
+                @error('email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-person"></i>
-                    {{ __('registration.step3.fields.membership') }}
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-telephone"></i>
+                    {{ __('registration.step2.fields.telephone') }}
                 </label>
+                <input type="tel" class="form-control @error('telephone') is-invalid @enderror" id="telephone-input"
+                    name="telephone" placeholder="{{ __('registration.step2.placeholders.telephone') }}"
+                    value="{{ old('telephone', $participant->phone ?? '') }}" required>
 
-                <select class="form-control" name="membership" id="membership" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
+                @error('telephone')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
 
-                    @forelse ($categories as $typeMember)
-                        <option data-amount="{{ $typeMember->montant }}" data-currency="{{ $congres->currency }}"
-                            value="{{ $typeMember->id }}"
-                            {{ isset($participant) && $participant->type_member_id == $typeMember->id ? 'selected' : '' }}>
-
-                            {{ $typeMember->libelle }} -
-                            <strong>{{ $typeMember->montant }} {{ $congres->currency }}</strong>
-                            ({{ $typeMember->periode }})
-                        </option>
-                    @empty
-                        <option disabled>{{ __('registration.no_data') ?? 'No data' }}</option>
-                    @endforelse
-                </select>
+                <input type="hidden" id="telephone" name="telephone_complet">
             </div>
-
-
-
 
             <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-egg-fried"></i>
-                    {{ __('registration.step3.fields.diner_gala') }}
-
-                    @if ($congres->currency == 'EUR')
-                        <strong style="font-weight: bold"> {{ $dinner->montant ?? 0 }} € </strong>
-                    @elseif ($congres->currency == 'US' || $congres->currency == 'USD')
-                        <strong style="font-weight: bold"> ${{ $dinner->montant ?? 0 }}</strong>
-                    @else
-                        <strong style="font-weight: bold"> {{ $dinner->montant ?? 0 }}
-                            {{ $congres->currency }}</strong>
-                    @endif
-
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-building"></i>
+                    {{ __('registration.step2.fields.organisation') }}
                 </label>
-                <select id="diner_gala" class="form-control" name="diner_gala" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option data-amount ="{{ $dinner->montant ?? 0 }}" value="oui"
-                        {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
-                    <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.non') ?? 'Non' }}</option>
-                </select>
+                <input type="text" class="form-control @error('organisation') is-invalid @enderror"
+                    name="organisation" placeholder="{{ __('registration.step2.placeholders.organisation') }}"
+                    value="{{ old('organisation', $participant->organisation ?? '') }}" required>
+
+                @error('organisation')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
-    
-    <div class="row hidden" id="membershipcode_div">
-        <div class="col-md-12">
-            <label class="control-label font-weight-bold text-dark">
-                <i class="bi bi-key"></i>
-                {{ __('registration.step3.fields.membershipcode') }}
-            </label>
-            <input type="text" class="form-control" name="membershipcode"
-                placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
-                @isset($participant) value="{{ $participant->membership_code }}" @endisset>
-        </div>
-    </div>
+
+        @php
+            $levels = App\Models\TypeOrganisation::get()
+                ->translate(app()->getLocale(), 'fallbackLocale')
+                ->sortBy(function ($level) {
+                    // Met "Autre" à la fin du tri alphabétique
+                    return $level->libelle === 'Autre' || $level->libelle === 'Other' ? 'ZZZZZZZZ' : $level->libelle;
+                });
+        @endphp
         <div class="row" style="margin-top:15px;">
-            <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-binoculars"></i>
-                    {{ __('registration.step3.fields.visite_touristique') }}
+            <div class="col-md-3">
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-card-checklist"></i>
+                    {{ __('registration.step2.fields.type_organisation') }}
                 </label>
-                @if ($congres->currency == 'EUR')
-                    <strong style="font-weight: bold"> {{ $tours->montant ?? 0 }} € </strong>
-                @elseif ($congres->currency == 'US' || $congres->currency == 'USD')
-                    <strong style="font-weight: bold"> ${{ $tours->montant ?? 0 }}</strong>
-                @else
-                    <strong style="font-weight: bold"> {{ $tours->montant ?? 0 }} {{ $congres->currency }}</strong>
-                @endif
+                <select class="form-control @error('type_organisation') is-invalid @enderror" name="type_organisation"
+                    id="type_organisation" required>
+                    <option selected disabled value="">{{ __('registration.choose') ?? 'Select' }}</option>
+                    @forelse ($levels as $typeOrganisation)
+                        <option value="{{ $typeOrganisation->id }}"
+                            {{ old('type_organisation')}} {{ isset($participant) && $participant->organisation_type_id == $typeOrganisation->id ? 'selected' : '' }}>
+                            {{ $typeOrganisation->libelle }} 
+                        </option>
+                    @empty
+                        <option disabled>{{ __('registration.no_data') ?? 'No data' }}</option>
+                    @endforelse
+                </select>
+                @error('type_organisation')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
 
-                <select class="form-control" id="visite_touristique" name="visite_touristique" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option value="oui" data-amount="{{ $tours->montant ?? 0 }}"
-                        {{ isset($participant) && $participant->visite == 'oui' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
-                    <option value="non"
-                        {{ isset($participant) && $participant->visite == 'non' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.non') ?? 'Non' }}</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-envelope-check"></i>
-                    {{ __('registration.step3.fields.lettre_invitation') }}
-                </label>
-                <select class="form-control" name="lettre_invitation" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option value="oui"
-                        {{ isset($participant) && $participant->invitation_letter == 'oui' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
-                    <option value="non"
-                        {{ isset($participant) && $participant->invitation_letter == 'non' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.non') ?? 'Non' }}</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
+            <div class="col-md-3 {{ isset($participant) && $participant->organisation_type_id == 10 ? '' : 'd-none' }}"
+                id="autre_type_org_div">
+                <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-pencil-square"></i>
-                    {{ __('registration.step3.fields.auteur') }}
+                    {{ __('registration.step2.fields.autre_type_org') }}
                 </label>
-                <select class="form-control" name="auteur" required>
-                    <option value="" selected disabled>{{ __('registration.choose') ?? 'Select' }}</option>
-                    <option value="oui"
-                        {{ isset($participant) && $participant->author == 'oui' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.oui') ?? 'Oui' }}</option>
-                    <option value="non"
-                        {{ isset($participant) && $participant->author == 'non' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.non') ?? 'Non' }}</option>
+                <input type="text" class="form-control @error('autre_type_org') is-invalid @enderror"
+                    id="autre_type_org" name="autre_type_org"
+                    placeholder="{{ __('registration.step2.placeholders.autre_type_org') }}"
+                    value="{{ old('autre_type_org', $participant->organisation_type_other ?? '') }}"
+                    {{ isset($participant) && $participant->organisation_type_id == 10 ? 'required' : '' }}>
+                @error('autre_type_org')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="col-md-3">
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-person-badge"></i>
+                    {{ __('registration.step2.fields.fonction') }}
+                </label>
+                <input type="text" class="form-control @error('fonction') is-invalid @enderror" name="fonction"
+                    placeholder="{{ __('registration.step2.placeholders.fonction') }}"
+                    value="{{ old('fonction', $participant->job ?? '') }}" required>
+                @error('fonction')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="col-md-3">
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-globe-americas"></i>
+                    {{ __('registration.step2.fields.job_country') }}
+                </label>
+                <select class="form-control @error('job_country') is-invalid @enderror" name="job_country" required>
+                    <option selected disabled value="">{{ __('registration.choose') ?? 'Select' }}</option>
+                    @forelse (app()->getLocale() == 'fr' ? App\Models\Country::orderBy('libelle_fr', 'asc')->get() : App\Models\Country::orderBy('libelle_en', 'asc')->get() as $country)
+                        <option value="{{ $country->id }}"
+                            {{ old('job_country', $participant->job_country_id ?? '') == $country->id ? 'selected' : '' }}>
+                            {{ app()->getLocale() == 'fr' ? $country->libelle_fr : $country->libelle_en }}
+                        </option>
+                    @empty
+                        <option disabled>No data</option>
+                    @endforelse
                 </select>
-            </div>
-        </div>
-
-        <div class="row" style="margin-top:15px;">
-            <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-passport"></i>
-                    {{ __('registration.step3.fields.num_passeport') }}
-                </label>
-                <input type="text" class="form-control" name="num_passeport"
-                    placeholder="{{ __('registration.step3.placeholders.num_passeport') }}"
-                    @isset($participant) value="{{ $participant->passeport_number }}" @endisset
-                    required>
-            </div>
-            <div class="col-md-4 text-center">
-                <label class="control-label font-weight-bold text-dark">
-                    <i class="bi bi-image"></i>
-                    {{ __('registration.step3.fields.photo_passeport') }}
-                </label>
-                <input type="file" class="form-control" name="photo_passeport" accept="image/*"
-                    @if (!$participant->passeport_pdf) required @endif>
-
-                @if ($participant->passeport_pdf)
-                    <a class="btn btn-primary" href="{{ Voyager::image($participant->passeport_pdf) }}"
-                        target="_blank"> <i class="bi bi-eye"></i> view doc </a>
-                @endif
+                @error('job_country')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
 
     </div>
-    <!-- Montant total -->
-    <div class="alert text-center" style="border: 2px solid #0121a0">
-        <p> <span style="font-size: 1.5em;font-weight: bold;color:black"> Amount to pay :</span><br>
-            <span id="amount2" class="text-danger" style="font-size: 1.7em;font-weight: bold">0</span>
-        </p>
-    </div>
+
     <div class="box-footer">
         <div class="navigation-buttons">
             <a href="{{ route('form.previous') }}" type="button" class="btn btn-outline">
-                <i class="bi bi-arrow-left"></i> {{ __('registration.step3.buttons.previous') }}
+                <i class="bi bi-arrow-left"></i> {{ __('registration.step2.buttons.previous') }}
             </a>
             <button type="submit" class="btn btn-outline">
-                {{ __('registration.step3.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
+                {{ __('registration.step2.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
             </button>
         </div>
     </div>
 </form>
+
+
 @section('javascript')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Fonction pour obtenir le symbole selon la devise
-            function getCurrencySymbol(currency) {
-                if (!currency) return '';
-                currency = currency.toUpperCase();
-                switch (currency) {
-                    case 'EUR':
-                        return '€';
-                    case 'USD':
-                    case 'US':
-                        return '$';
-                    default:
-                        return ' ' + currency;
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.querySelector("#telephone-input");
+
+            if (phoneInput) {
+                const iti = window.intlTelInput(phoneInput, {
+                    initialCountry: "auto",
+                    separateDialCode: true,
+                    nationalMode: false,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                    //preferredCountries: ['fr', 'be', 'ch', 'de'] // Pays favoris
+                    geoIpLookup: function(callback) {
+                        fetch('https://ipapi.co/json/')
+                            .then(res => res.json())
+                            .then(data => callback(data.country_code)) // exemple : "CI", "FR", "BE"
+                            .catch(() => callback('us')); // valeur par défaut si erreur
+                    },
+
+                    
+                });
+
+                // Validation avant soumission
+                const form = phoneInput.closest('form');
+                form.addEventListener('submit', function(e) {
+
+
+                    // Injecter le numéro complet (avec indicatif) dans un champ caché si nécessaire
+                    //injecter dans id telephone
+
+                    const fullNumber = iti.getNumber();
+                    const hiddenInput = document.getElementById('telephone');
+                    hiddenInput.value = fullNumber;
+                    
+                });
             }
-
-            // Fonction de calcul du total
-            function calculateTotal() {
-                let total = 0;
-                let selectedCurrency = '{{ $congres->currency }}'; // Devise par défaut
-
-                // Membership - CORRECTION : Récupérer le montant correctement
-                let membershipOption = $('#membership option:selected');
-                if (membershipOption.length > 0 && membershipOption.val() !== '') {
-                    let membershipAmount = parseFloat(membershipOption.data('amount')) || 0;
-                    total += membershipAmount;
-                }
-
-                // Dîner gala - CORRECTION : Vérifier si "oui" est sélectionné
-                let dinerOption = $('#diner_gala option:selected');
-                if (dinerOption.length > 0 && dinerOption.val() === 'oui') {
-                    let dinerAmount = parseFloat(dinerOption.data('amount')) || 0;
-                    total += dinerAmount;
-                }
-
-                // Visite touristique - CORRECTION : Vérifier si "oui" est sélectionné
-                let visiteOption = $('#visite_touristique option:selected');
-                if (visiteOption.length > 0 && visiteOption.val() === 'oui') {
-                    let visiteAmount = parseFloat(visiteOption.data('amount')) || 0;
-                    total += visiteAmount;
-                }
-
-                // Affichage du total
-                const symbol = getCurrencySymbol(selectedCurrency);
-                $('#amount2').text(total.toLocaleString('fr-FR') + ' ' + symbol);
-            }
-
-            // Fonction pour gérer l'affichage du code de membership - CORRECTION : Logique améliorée
-            function toggleMembershipCode() {
-                let selectedMembershipId = $('#membership').val();
-
-                // Afficher le champ code de membership uniquement si l'ID du membership est "1"
-                if (selectedMembershipId == "1") {
-                    $('#membershipcode_div').show();
-                    $('#membershipcode_div').removeClass('hidden');
-                    $('input[name="membershipcode"]').prop('required', true);
-                } else {
-                    $('#membershipcode_div').hide();
-                    $('input[name="membershipcode"]').prop('required', false).val('');
-                }
-            }
-
-            // Événements pour le recalcul du total
-            $('#membership, #diner_gala, #visite_touristique').on('change', function() {
-                calculateTotal();
-                toggleMembershipCode(); // Mettre à jour l'affichage du code membership
-            });
-
-            // Initialisation au chargement de la page
-            calculateTotal();
-            toggleMembershipCode();
         });
+
+        function toggleTypeOrg() {
+            const typeOrg = $('#type_organisation').val();
+            const $AutretypeOrg = $('#autre_type_org_div');
+            const $AutretypeOrgInput = $('#autre_type_org');
+
+            if (typeOrg == '15') {
+                $AutretypeOrg.removeClass('hidden').slideDown(200);
+                $AutretypeOrgInput.attr('required', true);
+            } else {
+                $AutretypeOrg.slideUp(200);
+                $AutretypeOrgInput.removeAttr('required').val('');
+            }
+        }
+
+        $('#type_organisation').on('change', toggleTypeOrg);
+        $(document).ready(
+            function() {
+                toggleTypeOrg();
+            }
+        );
     </script>
 @endsection

@@ -438,19 +438,66 @@
                 transform: translate(-50%, -50%) scale(.15);
             }
         }
+
+        .icone {
+            color: white;
+        }
+
+
+        .iconebtn {
+            background-color: #009ee7;
+        }
+
+        .iconebtn:hover {
+            background-color: rgb(4, 135, 11);
+        }
     </style>
 
 </head>
 
 <body>
+    <div class="container-fluid" style="background-color:#009ee7">
+        <div class="container">
+            <div class="row">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" class="btn iconebtn">
+                            <i class="bi bi-twitter-x  icone"></i>
+                        </button>
+                        <button type="button" class="btn iconebtn">
+                            <i class="bi bi-twitter icone"></i>
+                        </button>
+                        <button type="button" class="btn iconebtn">
+                            <i class="bi bi-youtube icone"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-end" style="padding:10px">
+                        <form method="GET" action="{{ url()->current() }}">
+                            <i class="bi bi-globe"></i>
+                            <select name="lang" onchange="this.form.submit()">
+                                <option value="fr" {{ app()->getLocale() == 'fr' ? 'selected' : '' }}>Français
+                                </option>
+                                <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English
+                                </option>
+                            </select>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="loader" class="la-ball-clip-rotate-pulse la-3x"
         style="z-index:9999;display:flex;justify-content:center;align-items:center;position:fixed;top:0px;left:0px;background-color:black;width:100%;height:100%;opacity: 0.75;">
         <div></div>
         <div></div>
     </div>
-
+    @php
+        $image = App\Models\Banniere::latest()->first();
+        $congres = App\Models\Congress::latest()->first();
+    @endphp
     <div class="banner text-center"
-        style="background-image: url('https://iso.500px.com/wp-content/uploads/2016/03/stock-photo-144748015-1.jpg');">
+        style="background-image: url({{ TCG\Voyager\Facades\Voyager::image($image->top) }});">
 
         <h1>@yield('header')</h1>
     </div>
@@ -460,27 +507,21 @@
 
         <div class="donation-form">
             <div class="row">
-                <div class="col">
+                {{-- <div class="col">
                     <img src="{{ TCG\Voyager\Facades\Voyager::image(setting('site.logo')) }}" alt=""
                         width="auto" height="60">
-                </div>
-                <div class="col">
-                    {{-- <img src="{{ TCG\Voyager\Facades\Voyager::image($event->logo_partner) }}" alt=""
-                        style="float: right" width="auto" height="60"> --}}
+                </div> --}}
+                <div class="col-md-12">
+                    <img src="{{ TCG\Voyager\Facades\Voyager::image($congres->banniere) }}" width="100%">
                 </div>
             </div>
-            <form method="GET" action="{{ url()->current() }}">
-                <i class="bi bi-globe"></i>
-                <select name="lang" onchange="this.form.submit()">
-                    <option value="fr" {{ app()->getLocale() == 'fr' ? 'selected' : '' }}>Français</option>
-                    <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
-                </select>
-            </form>
-            
 
-                <div class="container">
-                    @yield('content')
-                </div>
+
+
+            <div class="container">
+
+                @yield('content')
+            </div>
         </div>
     </div>
     <script>
@@ -497,6 +538,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+
 
     {{--     <script src="{{ asset('/public/assets_event/main.js') }}"></script>
     <script src="{{ asset('/public/assets_event/script.js') }}"></script> --}}

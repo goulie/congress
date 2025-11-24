@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\GenerateCodeQrTrait;
+use Doctrine\DBAL\Types\Type;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use TCG\Voyager\Models\Category;
 
 class Participant extends Model
 {
+    use GenerateCodeQrTrait;
+
+    use Notifiable;
     protected $table = 'participants';
     protected $fillable = [
         'civility_id',
@@ -42,18 +48,40 @@ class Participant extends Model
         'currency',
         'status',
         'uuid',
+        'student_card',
+        'student_letter',
+        'deleguate_day',
         'langue',
+        'site_visit_id',
+        'membre_aae',
+        'pass_deleguate',
+        'age_range_id',
+        'job_country_id',
+        'isYwpOrStudent',
+        'badge_full_name',
+        'badge_color_id',
+        'ywp_or_student',
+        'expiration_passeport_date',
+        'code_path',
     ];
 
     protected static function booted()
     {
         static::creating(function ($participant) {
-            // ne pas écraser si déjà défini
+
             if (empty($participant->uuid)) {
-                $participant->uuid = (string) Str::uuid();
+                $code = uniqid(20);
+                $participant->uuid = $code;
                 $participant->langue = app()->getLocale();
+                $participant->code_path = $participant->generateAndStoreQrCode($code);
             }
         });
+    }
+
+
+    public function ageRange()
+    {
+        return $this->belongsTo(AgeRange::class, 'age_range_id');
     }
 
     public function country()
@@ -110,5 +138,185 @@ class Participant extends Model
     public function invoices()
     {
         return $this->hasMany(Invoice::class, 'participant_id');
+    }
+
+    public function siteVisite()
+    {
+        return $this->belongsTo(SiteVisite::class, 'site_visit_id');
+    }
+
+    public function jobCountry()
+    {
+        return $this->belongsTo(Country::class, 'job_country_id');
+    }
+
+    public function badge_color()
+    {
+        return $this->belongsTo(BadgeColor::class, 'badge_color_id');
+    }
+
+    public function organisationType()
+    {
+        return $this->belongsTo(TypeOrganisation::class, 'organisation_type_id');
+    }
+
+    public function validation_ywp_student()
+    {
+        return $this->hasMany(StudentYwpValidation::class);
+    }
+
+    private static function getLastCongress()
+    {
+        return Congress::orderBy('id', 'desc')->first();
+    }
+
+    /**
+     * Liste des participants du dernier congrès
+     */
+    public static function getLastCongressParticipants()
+    {
+        $lastCongress = self::getLastCongress();
+
+        if (!$lastCongress) {
+            return collect();
+        }
+
+        return self::where('congres_id', $lastCongress->id)
+            ->with([
+                'civility',
+                'country',
+                'gender',
+                'studentLevel',
+                'participantCategory',
+                'typeMember',
+                'organisationType',
+                'badge_color'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Liste des étudiants du dernier congrès
+     */
+    public static function getLastCongressStudents()
+    {
+        $lastCongress = self::getLastCongress();
+
+        if (!$lastCongress) {
+            return collect();
+        }
+
+        return self::where('congres_id', $lastCongress->id)
+            ->where(function ($query) {
+                $query->where('ywp_or_student', 'student')
+                    ->orWhere('isYwpOrStudent', 'student')
+                    ->orWhereNotNull('student_level_id');
+            })
+            ->with([
+                'civility',
+                'country',
+                'gender',
+                'studentLevel',
+                'participantCategory',
+                'typeMember',
+                'organisationType',
+                'badge_color'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Liste des YWP (Young Water Professionals) du dernier congrès
+     */
+    public static function getLastCongressYWP()
+    {
+        $lastCongress = self::getLastCongress();
+
+        if (!$lastCongress) {
+            return collect();
+        }
+
+        return self::where('congres_id', $lastCongress->id)
+            ->where(function ($query) {
+                $query->where('ywp_or_student', 'ywp')
+                    ->orWhere('isYwpOrStudent', 'ywp')
+                    ->orWhere('participant_category_id', function ($subquery) {
+                        // Supposons que vous avez une catégorie YWP spécifique
+                        $subquery->select('id')
+                            ->from('category_participants')
+                            ->where('name', 'like', '%YWP%')
+                            ->orWhere('name', 'like', '%Young Water Professional%');
+                    });
+            })
+            ->with([
+                'civility',
+                'country',
+                'gender',
+                'studentLevel',
+                'participantCategory',
+                'typeMember',
+                'organisationType',
+                'badge_color'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Statistiques pour le tableau de bord
+     */
+    public static function getDashboardStats()
+    {
+        $lastCongress = self::getLastCongress();
+
+        if (!$lastCongress) {
+            return [
+                'total' => 0,
+                'students' => 0,
+                'ywp' => 0,
+                'validated' => 0,
+                'pending' => 0
+            ];
+        }
+
+        $total = self::where('congres_id', $lastCongress->id)->count();
+
+        $students = self::where('congres_id', $lastCongress->id)
+            ->where(function ($query) {
+                $query->where('ywp_or_student', 'student')
+                    ->orWhere('isYwpOrStudent', 'student')
+                    ->orWhereNotNull('student_level_id');
+            })->count();
+
+        $ywp = self::where('congres_id', $lastCongress->id)
+            ->where(function ($query) {
+                $query->where('ywp_or_student', 'ywp')
+                    ->orWhere('isYwpOrStudent', 'ywp')
+                    ->orWhere('participant_category_id', function ($subquery) {
+                        $subquery->select('id')
+                            ->from('category_participants')
+                            ->where('name', 'like', '%YWP%')
+                            ->orWhere('name', 'like', '%Young Water Professional%');
+                    });
+            })->count();
+
+        // Supposons que le statut soit géré par un champ 'status'
+        $validated = self::where('congres_id', $lastCongress->id)
+            ->where('status', 'validated')
+            ->count();
+
+        $pending = self::where('congres_id', $lastCongress->id)
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'total' => $total,
+            'students' => $students,
+            'ywp' => $ywp,
+            'validated' => $validated,
+            'pending' => $pending
+        ];
     }
 }

@@ -3,6 +3,10 @@
     $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
     $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
     $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
+    $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
+    $non_member = App\Models\CategorieRegistrant::NonMemberPriceforCongress($congres->id);
+    $student_ywp = App\Models\CategorieRegistrant::studentForCongress($congres->id);
+    $deleguate = App\Models\CategorieRegistrant::deleguateForCongress($congres->id);
 @endphp
 
 <form method="POST" action="{{ route('participants.store.group') }}" enctype="multipart/form-data">

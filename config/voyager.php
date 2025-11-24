@@ -183,17 +183,17 @@ return [
     |
     */
 
-    'primary_color' => '#22A7F0',
+    'primary_color' => '#0488cfff',
 
     'show_dev_tips' => true, // Show development tip "How To Use:" in Menu and Settings
 
     // Here you can specify additional assets you would like to be included in the master.blade
     'additional_css' => [
-        //'css/custom.css',
+        //'public/assets/css/custom.css',
     ],
 
     'additional_js' => [
-        //'js/custom.js',
+        'public/assets/js/custom.js',
     ],
 
     'googlemaps' => [
