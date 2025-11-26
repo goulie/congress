@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Imports\ParticipantsImport;
 use App\Models\Congress;
 use App\Models\Participant;
+use App\Models\StudentYwpValidation;
 use App\Models\User;
 use App\Notifications\StudentOrYwpregistrantNotification;
 use App\Services\EmailService;
 use App\Traits\MemberApiTrait;
+use App\Traits\TypeMemberCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +22,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class GroupeRegistrant extends Controller
 {
     use MemberApiTrait;
+    use TypeMemberCheckerTrait;
+
     protected  $company, $type_member, $emailService;
 
 
@@ -70,18 +74,18 @@ class GroupeRegistrant extends Controller
             ];
 
             $attributes = [
-                'categorie'         => 'catégorie',
-                'membership'        => 'adhésion',
-                'member_code'       => 'code membre',
-                'passport_number'   => 'numéro de passeport',
-                'passport_date'     => 'date d\'expiration du passeport',
-                'pass_deleguate'    => 'pass délégué',
-                'pass_date'         => 'jour de pass',
-                'ywp_or_student'    => 'type étudiant',
-                'student_card'      => 'carte étudiant',
-                'student_letter'    => 'lettre d\'attestation',
-                'visit'             => 'visite technique',
-                'site_visit'        => 'site de visite',
+                'categorie'         => $locale == 'fr' ? 'catégorie' : 'category',
+                'membership'        => $locale == 'fr' ? 'adhésion' : 'membership',
+                'member_code'       => $locale == 'fr' ? 'code membre' : 'membership code',
+                'passport_number'   => $locale == 'fr' ? 'numéro de passeport' : 'Passport number', //'numéro de passeport',
+                'passport_date'     => $locale == 'fr' ? 'date d\'expiration du passeport' : 'passeport expiration date', //'date d\'expiration du passeport',
+                'pass_deleguate'    => $locale == 'fr' ? 'pass délégué' : 'delegat pass', //'pass délégué',
+                'pass_date'         => $locale == 'fr' ? 'jour de pass' : 'pass date', //'jour de pass',
+                'ywp_or_student'    => $locale == 'fr' ? 'type étudiant ou jeune professionnel' : 'student or young water professional', //'type étudiant',
+                'student_card'      => $locale == 'fr' ? 'numéro de passeport' : 'student card', //'carte étudiant',
+                'student_letter'    => $locale == 'fr' ? 'lettre d\'attestation' : 'invitation letter', //'lettre d\'attestation',
+                'visit'             => $locale == 'fr' ? 'visite technique' : 'Technical visit', //'visite technique',
+                'site_visit'        => $locale == 'fr' ? 'site de visite' : 'Visit site', //'site de visite',
             ];
 
             /* ============================================================
@@ -136,17 +140,6 @@ class GroupeRegistrant extends Controller
             // 2. STUDENT
             // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             if ($request->categorie == 4) {
-
-                // type obligatoire
-                $rules['ywp_or_student'] = 'required|in:ywp,student';
-
-                // membership toujours demandé
-                $rules['membership'] = 'required|in:oui,non';
-
-                if ($request->membership == 'oui') {
-                    $rules['member_code'] = 'required|string|max:255';
-                }
-
                 // fichiers obligatoires
                 if ($request->ywp_or_student == 'student') {
                     $rules['student_card'] = 'required|mimes:jpeg,png,jpg|max:2048';
@@ -189,6 +182,7 @@ class GroupeRegistrant extends Controller
                 'civility_id'             => $request->title,
                 'gender_id'               => $request->gender,
                 'fname'                   => $request->first_name,
+                'type_member_id'          => $this->getMembershipTypeIdFromCode($request->member_code),
                 'lname'                   => $request->last_name,
                 'student_level_id'        => $request->education,
                 'nationality_id'          => $request->country,
@@ -240,6 +234,10 @@ class GroupeRegistrant extends Controller
                 foreach (User::where('role_id', 6)->get() as $admin) {
                     $admin->notify(new StudentOrYwpregistrantNotification($participant));
                 }
+
+                $participant->validation_ywp_student()->create([
+                    'status' => StudentYwpValidation::STATUS_PENDING
+                ]);
             }
             return response()->json([
                 'success' => true,
@@ -447,6 +445,7 @@ class GroupeRegistrant extends Controller
             $participant->update([
                 'civility_id'             => $request->title,
                 'gender_id'               => $request->gender,
+                'type_member_id'          => $request->member_code ? $this->getMembershipTypeIdFromCode($request->member_code): null,
                 'fname'                   => $request->first_name,
                 'lname'                   => $request->last_name,
                 'student_level_id'        => $request->education,
@@ -461,7 +460,7 @@ class GroupeRegistrant extends Controller
                 'job_country_id'          => $request->job_country,
                 'participant_category_id' => $request->categorie,
                 'membre_aae'              => $request->membership,
-                'membership_code'         => $request->member_code,
+                'membership_code'         => $request->member_code ?? null,
                 'ywp_or_student'          => $request->ywp_or_student,
                 'diner'                   => $request->dinner,
                 'visite'                  => $request->visit,
@@ -491,6 +490,17 @@ class GroupeRegistrant extends Controller
             $participant->save();
 
             DB::commit();
+
+            if ($participant->ywp_or_student == 'ywp' || $participant->ywp_or_student == 'student') {
+                //Envoyyer un mail de traitement de dossier
+                foreach (User::where('role_id', 6)->get() as $admin) {
+                    $admin->notify(new StudentOrYwpregistrantNotification($participant));
+                }
+
+                $participant->validation_ywp_student()->create([
+                    'status' => StudentYwpValidation::STATUS_PENDING
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

@@ -217,6 +217,16 @@
         $congres = App\Models\Congress::latest()->first();
         $transfert_info = App\Models\CongressBankTransfer::where('congres_id', $congres->id)->first();
 
+        $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
+        $locale = app()->getLocale(); // 'fr' or 'en'
+        \Carbon\Carbon::setLocale($locale);
+        $start = \Carbon\Carbon::parse($periode->start_date);
+        $end = \Carbon\Carbon::parse($periode->end_date);
+        $daysRemaining = $periode->joursRestants();
+
+        $dateFormattedStart = $locale === 'fr' ? $start->translatedFormat('d F Y') : $start->translatedFormat('F d, Y');
+        $dateFormattedEnd = $locale === 'fr' ? $end->translatedFormat('d F Y') : $end->translatedFormat('F d, Y');
+
     @endphp
     <div class="invoice-container">
         <!-- En-tête avec logo pleine largeur -->
@@ -262,10 +272,10 @@
                         {{ app()->getLocale() == 'fr' ? $dateFr : $dateEn }}
                     </div>
 
-                    @if ($invoice->status === 'paid' || strtoupper($invoice->status) === 'PAID')
-                        <div class="paid">{{ __('facture.paye') }}</div>
+                    @if ($invoice->status === App\Models\Invoice::PAYMENT_STATUS_PAID)
+                        <div class="paid">{{ app()->getLocale() == 'fr' ? 'Payé' : 'Paid' }}</div>
                     @else
-                        <div class="unpaid">{{ __('facture.impaye') }}</div>
+                        <div class="unpaid">{{ app()->getLocale() == 'fr' ? 'Non payé' : 'Unpaid' }}</div>
                     @endif
                 </div>
 
@@ -322,10 +332,11 @@
 
         <!-- Informations de paiement -->
         <div class="payment-info">
-            <div class="card">
-               INFORMATIONS DE PAIEMENT 
-            </div>
-            <div class="payment-title">{{ __('facture.vir_bank') }}</div>
+
+            <div class="payment-title">
+                {{ app()->getLocale() == 'fr' ? '- INFORMATIONS DE PAIEMENT' : '- PAYMENT INFORMATION' }}</div>
+            <br>
+            <strong>{{ __('facture.vir_bank') }}</strong>
             <div class="bank-info">
                 {{ __('facture.smsVbank') }}<br>
                 <strong>{{ __('facture.name') }}:</strong> {{ $transfert_info->beneficiary_name }}<br>
@@ -336,7 +347,11 @@
                 <strong>IBAN :</strong> {{ $transfert_info->iban }}<br>
                 <strong>SWIFT Code:</strong> {{ $transfert_info->swift }}<br>
             </div>
-            <p><strong>{{ __('facture.bank_instructions') }}:</strong></p>
+            <p><strong> {{ __('facture.bank_instructions') }}:</strong></p>
+            <p><strong>{{ app()->getLocale() == 'fr' ? '- PAIEMENT EN LIGNE' : '- ONLINE PAYMENT' }}</strong> <br>
+                <a href="https://congress.afwasa.org/get_register/admin/invoices"
+                    target="_blank">https://congress.afwasa.org/get_register/admin/invoices</a>
+            </p>
         </div>
 
         <!-- Pied de page -->
@@ -347,16 +362,17 @@
                 Email : afwasamembershipservices@afwasa.org
             </p> --}}
             <p style="text-align: center">
-                
                 Contact support - Email : event@afwasa.org
             </p>
             <p style="text-align: center;color: #ff0000">
-                {{ app()->getLocale()=='fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
+                {{ app()->getLocale() == 'fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
+                <strong>{{ $dateFormattedEnd }}</strong>
+                {{ app()->getLocale() == 'fr' ? '. Après cette date, les montants de la présente facture seront automatiquement mis à jour et remplacés par les frais du package en vigueur au moment du paiement. ' : 'After this date, the amounts on this invoice will automatically be updated and replaced by the applicable package fees at the time of payment.' }}
             </p>
-            <p style="text-align: center;color: #ff0000">
-                {{ app()->getLocale()=='fr' ? 'Les Montants sur cette facture sont applicables sur la periode du ' : 'The ' }}
+            <p class="text-muted">
+                <span
+                    style="color: #ff0000"><strong><sup>*</sup></strong></span>{{ app()->getLocale() == 'fr' ? 'Ce document est généré automatiquement et ne nécessite pas de signature.' : 'This document is automatically generated and does not require a signature.' }}
             </p>
-            
         </div>
     </div>
 </body>

@@ -229,34 +229,37 @@
                                 <td>{{ $participant->participantCategory->translate(app()->getLocale(), 'fallbackLocale')->libelle ?? 'N/A' }}
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="font-weight: bold;">
-                                    @if (app()->getLocale() == 'fr')
-                                        Adhésion
-                                    @else
-                                        Membership
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($participant->membre_aae == 'oui')
-                                        <span class="label label-success">
-                                            @if (app()->getLocale() == 'fr')
-                                                Oui
-                                            @else
-                                                Yes
-                                            @endif
-                                        </span>
-                                    @else
-                                        <span class="label label-warning">
-                                            @if (app()->getLocale() == 'fr')
-                                                Non
-                                            @else
-                                                No
-                                            @endif
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
+                            @if ($participant->membership_code)
+                                <tr>
+                                    <td style="font-weight: bold;">
+                                        @if (app()->getLocale() == 'fr')
+                                            Adhésion
+                                        @else
+                                            Membership
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($participant->membre_aae == 'oui')
+                                            <span class="label label-success">
+                                                @if (app()->getLocale() == 'fr')
+                                                    Oui
+                                                @else
+                                                    Yes
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="label label-warning">
+                                                @if (app()->getLocale() == 'fr')
+                                                    Non
+                                                @else
+                                                    No
+                                                @endif
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+
                             @if ($participant->membre_aae == 'oui' && $participant->membership_code)
                                 <tr>
                                     <td style="font-weight: bold;">
@@ -440,8 +443,8 @@
                                         @endif
                                     </strong>
                                     <span
-                                        class="label {{ $invoice->status == 'paid' ? 'label-success' : 'label-warning' }}">
-                                        {{ $invoice->status }}
+                                        class="label {{ $invoice->status == 'Paid' ? 'label-success' : 'label-danger' }}">
+                                        {{ app()->getLocale() == 'fr' ? ($invoice->status == 'Paid' ? 'Payé' : 'Non payé') : $invoice->status }}
                                     </span>
                                 </p>
                             </div>
@@ -459,7 +462,7 @@
                                     @foreach ($invoice->items as $item)
                                         <div
                                             style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f5f5f5;">
-                                            <span>{{ app()->getLocale() == 'fr' ? $item->description_fr : $item->description_en }}</span>
+                                            <span>{{ $item->description_fr }}</span>
                                             <span style="font-weight: bold;">{{ number_format($item->price, 2) }}
                                                 {{ $invoice->currency }}</span>
                                         </div>
@@ -551,10 +554,7 @@
     <!-- Options de paiement -->
     <div class="row">
         <div class="col-md-12">
-            @if (
-                $participant->participant_category_id == 4 &&
-                    !auth()->user()->isAdmin() &&
-                    $participant->isYwpOrStudent == false)
+            @if ($participant->participant_category_id == 4 && !auth()->user()->isAdmin() && $participant->isYwpOrStudent == false)
                 <div class="panel panel-default">
                     <div class="panel-heading" style="background: #28a745; color: white; cursor: pointer;"
                         data-toggle="collapse" data-target="#paymentCollapse">
@@ -573,11 +573,11 @@
                             <div class="row">
 
                                 <div class="col-md-12">
-                                    <p class="text-danger">
+                                    <h2 class="text-danger">
                                         {{ app()->getLocale() == 'fr'
-                                            ? 'Votre facture sera accessible une fois votre inscription validée. '
-                                            : 'Your invoice will be accessible once your registration is validated.' }}
-                                    </p>
+                                            ? 'Votre facture sera accessible une fois votre inscription validée. Vous recevrez une notification par e-mail dès que votre inscription sera validée.'
+                                            : 'Your invoice will be accessible once your registration is validated. You will receive an email notification once your registration has been approved.' }}
+                                    </h2>
                                     <a href="/get_register/admin" class="btn btn-warning btn-lg btn-block"
                                         style="padding: 15px; margin-bottom: 10px;">
                                         <i class="bi bi-clock"></i><br>
@@ -623,9 +623,9 @@
                                     style="padding: 15px; margin-bottom: 10px;">
                                     <i class="bi bi-credit-card"></i><br>
                                     @if (app()->getLocale() == 'fr')
-                                        Payer Maintenant
+                                        Valider et Payer Maintenant
                                     @else
-                                        Pay Now
+                                        Confirm and Pay Now
                                     @endif
                                 </button>
                             </form>
@@ -647,9 +647,9 @@
                                 style="padding: 15px; margin-bottom: 10px;">
                                 <i class="bi bi-clock"></i><br>
                                 @if (app()->getLocale() == 'fr')
-                                    Payer Plus Tard
+                                    Valider et payer plus tard
                                 @else
-                                    Pay Later
+                                    Confirm and Pay Later
                                 @endif
                             </a>
 
@@ -732,14 +732,14 @@
                         Return to Home
                     @endif
                 </a> --}}
-            <button onclick="window.print()" class="btn btn-default">
+           {{--  <button onclick="window.print()" class="btn btn-default">
                 <i class="bi bi-printer"></i>
                 @if (app()->getLocale() == 'fr')
                     Imprimer
                 @else
                     Print
                 @endif
-            </button>
+            </button> --}}
         </div>
     </div>
 </div>

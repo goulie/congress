@@ -1,12 +1,10 @@
 @php
     $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
     $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
-    $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
     $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
     $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
     $non_member = App\Models\CategorieRegistrant::NonMemberPriceforCongress($congres->id);
     $student_ywp = App\Models\CategorieRegistrant::studentForCongress($congres->id);
-    $student_ywp_member = App\Models\CategorieRegistrant::student_ywp_memberForCongress($congres->id);
     $deleguate = App\Models\CategorieRegistrant::deleguateForCongress($congres->id);
 @endphp
 
@@ -56,7 +54,7 @@
             <div class="col-md-4 hidden" id="pass-box">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-ticket-detailed"></i> {{ __('registration.step3.fields.day_pass') }}
-                    <span class="text-danger">({{ $passDeleguate->montant . ' ' . $congres->currency }})</span>
+                    {{-- <span class="text-danger">({{ $passDeleguate->montant . ' ' . $congres->currency }})</span> --}}
                 </label>
                 <select class="form-control" name="pass_deleguate" id="pass">
                     <option value="" selected disabled>{{ __('registration.choose') }}</option>
@@ -190,6 +188,7 @@
                 </select>
             </div>
 
+            <!-- Num de passeport -->
             <div class="col-md-4 hidden" id="passport-number-box">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-upc"></i> {{ __('registration.step3.fields.num_passeport') }}
@@ -199,6 +198,7 @@
                     value="{{ $participant->passeport_number ?? '' }}">
             </div>
 
+            <!-- Date de passeport -->
             <div class="col-md-4 hidden" id="passport-date-box">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-calendar"></i> {{ __('registration.step3.fields.date_passeport') }}
@@ -216,7 +216,7 @@
                 <span class="text-danger" id="passport_date_error" style="display:none;"></span>
             </div>
 
-
+            <!-- Lettre d'invitation -->
             <div class="col-md-4">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-envelope-check"></i>
@@ -239,14 +239,15 @@
             <div class="col-md-4 hidden" id="student-card-box">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-card-image"></i> {{ __('registration.step3.fields.student_card') }}
+                    <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
                 </label>
-                <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*"
+                <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*,application/pdf"
                     {{ !isset($participant) || !$participant->student_card ? 'required' : '' }}>
                 @if (isset($participant) && $participant->student_card)
-                    <a class="btn btn-primary btn-sm" href="{{ Voyager::image($participant->student_card) }}"
+                    <a  href="{{ Voyager::image($participant->student_card) }}"
                         target="_blank">
-                        <i class="bi bi-box-arrow-up-right"></i> {{ __('registration.step3.buttons.open') }}
-                        <span class="text-danger">Max: 2Mo</span>
+                        <i class="bi bi-box-arrow-up-right"></i> {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
+                        {{-- <span class="text-danger">jpeg, jpg, png, Max: 2Mo</span> --}}
                     </a>
                     <div class="form-check mt-2">
                         <label class="form-check-label text-danger" for="remove_student_card">
@@ -260,15 +261,15 @@
             <div class="col-md-4 hidden" id="student-letter-box">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-file-earmark-text"></i> {{ __('registration.step3.fields.attestation_letter') }}
-                    <span class="text-danger">Max: 2Mo</span>
+                    <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
                 </label>
                 <input type="file" class="form-control" name="student_letter" id="student_letter"
                     accept="image/*,application/pdf"
                     {{ !isset($participant) || !$participant->student_letter ? 'required' : '' }}>
                 @if (isset($participant) && $participant->student_letter)
-                    <a class="btn btn-primary btn-sm" href="{{ Voyager::image($participant->student_letter) }}"
+                    <a href="{{ Voyager::image($participant->student_letter) }}"
                         target="_blank">
-                        <i class="bi bi-box-arrow-up-right"></i> {{ __('registration.step3.buttons.open') }}
+                        <i class="bi bi-box-arrow-up-right"></i> {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
                     </a>
                     <div class="form-check mt-2">
                         <label class="form-check-label text-danger" for="remove_student_letter">
@@ -303,7 +304,7 @@
 
 </form>
 
-@section('javascript')
+@push('javascript')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- BOOTSTRAP 3 DATEPICKER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
@@ -336,7 +337,7 @@
                 visite: parseFloat("{{ $tours->montant ?? 0 }}"),
                 delegue: parseFloat("{{ $deleguate->montant ?? 0 }}"),
                 student: parseFloat("{{ $student_ywp->montant ?? 0 }}"),
-                student_member: parseFloat("{{ $student_ywp_member->montant ?? 0 }}")
+
             };
 
             /* ============================================================
@@ -442,18 +443,12 @@
                 const type = $('#ywp_student').val(); // "ywp" ou "student"
 
                 // ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                // Membership toujours demandé pour un Student
+                // Membership jamais demandé pour un Student
                 // ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                show('#membership-code-box');
-                $('#membership').prop('required', true);
-
-                if ($('#membership').val() === 'oui') {
-                    show('#member-code-box');
-                    $('#member_code').prop('required', true);
-                } else {
-                    hide('#member-code-box');
-                    $('#member_code').prop('required', false);
-                }
+                hide('#membership-code-box');
+                hide('#member-code-box');
+                $('#membership').prop('required', false).val('');
+                $('#member_code').prop('required', false).val('');
 
                 // ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
                 // Gestion Jeune Professionnel (YWP)
@@ -539,7 +534,7 @@
 
                 // ---- STUDENT ----
                 else if (cat === '4') {
-                    total += (membership === 'oui') ? montant.student_member : montant.student;
+                    total += montant.student; // Toujours le prix étudiant standard
                 }
 
                 // ---- AUTRES CATÉGORIES (si existait) ----
@@ -640,6 +635,7 @@
                             errorMessage = xhr.responseJSON.message;
                         }
 
+
                         // Traitement selon statut membership
                         if (status === 'inexistant') {
                             Swal.fire({
@@ -696,4 +692,4 @@
             renderForm();
         });
     </script>
-@endsection
+@endpush

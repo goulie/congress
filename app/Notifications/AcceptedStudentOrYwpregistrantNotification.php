@@ -49,8 +49,8 @@ class AcceptedStudentOrYwpregistrantNotification extends Notification
             )
             ->line(
                 $isFr
-                    ? "votre dossier soumis pour la participation au congrès a été accepté."
-                    : "your document submitted for participation in the congress has been approved.")
+                    ? "votre dossier soumis pour la participation aux **{$p->congres->translate('fr', 'fallbackLocale')->title}** congrès a été accepté."
+                    : "your document submitted for participation to the **{$p->congres->translate('en', 'fallbackLocale')->title}** congress has been approved.")
             ->line(
                 $isFr
                     ? "Vous pouvez désormais accéder à votre facture dans le menu **Factures**, procéder au paiement et finaliser votre participation au congrès."

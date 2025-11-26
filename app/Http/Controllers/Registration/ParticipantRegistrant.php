@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Registration;
 use App\Http\Controllers\Controller;
 use App\Models\Congress;
 use App\Models\Participant;
+use App\Models\StudentYwpValidation;
 use App\Models\User;
 use App\Notifications\StudentOrYwpregistrantNotification;
 use App\Services\EmailService;
@@ -17,8 +18,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Svg\Tag\Rect;
 use Symfony\Component\Mime\Email;
+use TCG\Voyager\Http\Controllers\VoyagerBaseController;
 
-class ParticipantRegistrant extends Controller
+class ParticipantRegistrant extends VoyagerBaseController
 {
     use MemberApiTrait;
 
@@ -33,10 +35,29 @@ class ParticipantRegistrant extends Controller
         $this->type_member = $type_member;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('registration.participant-registrant');
+
+        $step = Session::get('step') ?? 1;
+        $congres = Congress::latest('id')->first();
+        $participant = Participant::where([
+            'registration_id' => auth()->user()->user_id,
+            'congres_id' => $congres->id,
+            'type_participant' => 'individual',
+        ])->latest()->first();
+
+        if (!$participant) {
+            $participant = Participant::create([
+                'user_id' => auth()->user()->id,
+                'registration_id' => auth()->user()->user_id,
+                'congres_id' => $congres->id,
+                'type_participant' => 'individual',
+            ]);
+        }
+
+        return view('voyager::view-single-registrations.browse', compact('participant', 'step', 'congres'));
     }
+
     public function step(Request $request)
     {
         try {
@@ -143,12 +164,12 @@ class ParticipantRegistrant extends Controller
                 // Dates du pass
                 'pass_date'           => 'required_if:pass_deleguate,oui|array|nullable',
 
-                // Passeport obligatoire pour délégué
-                'passport_number'     => 'required_if:categorie,1|string|max:255',
-                'passport_date'       => 'required_if:categorie,1|date_format:Y-m-d',
+                // Passeport obligatoire pour tous
+                'passport_number'     => 'required:categorie,1|string|max:255',
+                'passport_date'       => 'required:categorie,1|date_format:Y-m-d',
 
                 // Membership si pass = non
-                'membership'          => 'required_if:pass_deleguate,non|required_if:categorie,4|nullable|in:oui,non',
+                'membership'          => 'required_if:pass_deleguate,non|nullable|in:oui,non',
 
                 // Code membre si membership = oui
                 'member_code'         => 'required_if:membership,oui|string|max:255',
@@ -172,6 +193,7 @@ class ParticipantRegistrant extends Controller
             $organisation = $sigle ? $sigle : $company;
 
             $participant->update([
+                //'type_member_id'          => $this->getMembershipTypeIdFromCode($request->member_code),
                 'participant_category_id' => $request->categorie,
                 'ywp_or_student' => $request->ywp_or_student ?? null,
                 'membership_code' => $request->member_code,
@@ -198,6 +220,16 @@ class ParticipantRegistrant extends Controller
 
             $participant->save();
 
+            //Ajouter la validatio si YWP ou Etudiant
+            if ($participant->ywp_or_student == 'ywp' || $participant->ywp_or_student == 'student') {
+                //Envoyyer un mail de traitement de dossier
+                foreach (User::where('role_id', 6)->get() as $admin) {
+                    $admin->notify(new StudentOrYwpregistrantNotification($participant));
+                }
+                $participant->validation_ywp_student()->create([
+                    'status' => StudentYwpValidation::STATUS_PENDING
+                ]);
+            }
             // Redirection vers la page de confirmation
 
             session(['step' => 2]);
@@ -312,6 +344,7 @@ class ParticipantRegistrant extends Controller
                 'organisation_type_other' => $validated['autre_type_org'] ?? null,
                 'job' => $validated['fonction'],
                 'job_country_id' => $validated['job_country'],
+                
             ]);
 
             DB::commit();

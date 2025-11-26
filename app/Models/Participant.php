@@ -116,7 +116,7 @@ class Participant extends Model
 
     public function typeMember()
     {
-        return $this->belongsTo(CategorieRegistrant::class, 'type_member_id');
+        return $this->belongsTo(MembershipTypeMember::class, 'type_member_id');
     }
 
     public function user()
@@ -170,6 +170,10 @@ class Participant extends Model
         return Congress::orderBy('id', 'desc')->first();
     }
 
+    public function participant()
+    {
+        return $this->belongsTo(Participant::class);
+    }
     /**
      * Liste des participants du dernier congrès
      */

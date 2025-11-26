@@ -6,7 +6,6 @@
     $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
     $non_member = App\Models\CategorieRegistrant::NonMemberPriceforCongress($congres->id);
     $student_ywp = App\Models\CategorieRegistrant::studentForCongress($congres->id);
-    $student_ywp_member = App\Models\CategorieRegistrant::student_ywp_memberForCongress($congres->id);
     $deleguate = App\Models\CategorieRegistrant::deleguateForCongress($congres->id);
 @endphp
 @if ($edit)
@@ -249,12 +248,12 @@
         <div class="col-md-4 hidden" id="student-card-box">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-card-image"></i> {{ __('registration.step3.fields.student_card') }}
-                <span class="text-danger">Max: 2Mo</span>
+                <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
             </label>
-            <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*"
+            <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*,application/pdf"
                 {{ isset($participant) && $participant->student_card ? '' : 'required' }}>
             @if (isset($participant) && $participant->student_card)
-                <a class="btn btn-primary btn-sm" href="{{ Voyager::image($participant->student_card) }}"
+                <a href="{{ Voyager::image($participant->student_card) }}"
                     target="_blank">
                     <i class="bi bi-box-arrow-up-right"></i> {{ __('registration.step3.buttons.open') }}
                 </a>
@@ -270,7 +269,7 @@
         <div class="col-md-4 hidden" id="student-letter-box">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-file-earmark-text"></i> {{ __('registration.step3.fields.attestation_letter') }}
-                <span class="text-danger">Max: 2Mo</span>
+                <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
             </label>
             <input type="file" class="form-control" name="student_letter" id="student_letter"
                 accept="image/*,application/pdf"
@@ -514,11 +513,11 @@
 </div>
 
 <div class="box-footer">
-    <div class="navigation-buttons mt-3">
-
-        <button type="button" id="submit" class="btn btn-primary">
-            {{ __('registration.step1.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
+    <div class="navigation-buttons ">
+        <button type="button" id="submit" class="btn btn-outline-success">
+            {{ __('registration.step3.buttons.save_continue') }} <i class="bi bi-check-circle-fill"></i>
         </button>
+        
     </div>
 </div>
 
@@ -594,15 +593,15 @@
                     <td class="text-center">
                         @php
                             switch ($invoice->status) {
-                                case 'paid':
+                                case 'Paid':
                                 case 'Payé':
                                     $badgeClass = 'label label-success';
                                     break;
-                                case 'pending':
+                                case 'Unpaid':
                                 case 'En attente':
                                     $badgeClass = 'label label-warning';
                                     break;
-                                case 'cancelled':
+                                case 'Cancelled':
                                 case 'Annulé':
                                     $badgeClass = 'label label-danger';
                                     break;
@@ -678,7 +677,6 @@
                 visite: parseFloat("{{ $tours->montant ?? 0 }}") || 0,
                 delegue: parseFloat("{{ $deleguate->montant ?? 0 }}") || 0,
                 student: parseFloat("{{ $student_ywp->montant ?? 0 }}") || 0,
-                student_member: parseFloat("{{ $student_ywp_member->montant ?? 0 }}") || 0
             };
 
             // Flags based on existing participant files (server side)
@@ -748,7 +746,7 @@
                         total += (membership === 'oui') ? montant.delegue : montant.nonMembre;
                     }
                 } else if (cat === STUDENT_ID) {
-                    total += (membership === 'oui') ? montant.student_member : montant.student;
+                    total += montant.student;
                 } else {
                     const montantCategorie = parseFloat($('#categorie option:selected').data('amount')) || 0;
                     total += (membership === 'oui') ? montantCategorie : montant.nonMembre;
@@ -847,16 +845,10 @@
                 $('#ywp_student').prop('required', true);
 
                 // membership always asked for students
-                show('#membership-code-box');
-                $('#membership').prop('required', true);
-
-                if ($('#membership').val() === 'oui') {
-                    show('#member-code-box');
-                    $('#member_code').prop('required', true);
-                } else {
-                    hide('#member-code-box');
-                    $('#member_code').prop('required', false);
-                }
+                hide('#membership-code-box');
+                hide('#member-code-box');
+                $('#membership').val('').prop('disabled', true).prop('required', false);
+                $('#member_code').val('').prop('disabled', true).prop('required', false);
 
                 const type = $('#ywp_student').val(); // ywp | student
 
@@ -1009,15 +1001,59 @@
                     },
                     error: function(xhr) {
                         $('#loader').hide();
-                        let msg = "{{ __('registration.error_occurred') }}";
-                        if (xhr.responseJSON?.errors) msg = Object.values(xhr.responseJSON
-                            .errors).flat().join('<br>');
-                        else if (xhr.responseJSON?.message) msg = xhr.responseJSON.message;
-                        Swal.fire({
-                            icon: 'error',
-                            title: "{{ __('registration.error') }}",
-                            html: msg
-                        });
+
+                        // Message d’erreur par défaut
+                        let errorMessage = "{{ __('registration.error_occurred') }}";
+                        let status = xhr.responseJSON?.status ?? null;
+
+                        // Erreurs de validation
+                        if (xhr.responseJSON?.errors) {
+                            errorMessage = Object.values(xhr.responseJSON.errors).flat().join(
+                                '<br>');
+                        }
+                        // Message personnalisé
+                        else if (xhr.responseJSON?.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+
+                        // Traitement selon statut membership
+                        if (status === 'inexistant') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '{{ __('registration.error') }}',
+                                html: errorMessage,
+                                showDenyButton: true,
+                                confirmButtonText: 'Ok',
+                                denyButtonText: '{{ __('registration.contactby_email') }}',
+                            }).then((result) => {
+                                if (result.isDenied) {
+                                    window.location.href =
+                                        "mailto:mlawson@afwasa.org?cc=mseck@afwasa.org";
+                                }
+                            });
+                        } else if (status === 'inactif') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '{{ __('registration.error') }}',
+                                html: errorMessage,
+                                showDenyButton: true,
+                                confirmButtonText: 'Ok',
+                                denyButtonText: '{{ __('registration.contactby_email') }}',
+                            }).then((result) => {
+                                if (result.isDenied) {
+                                    window.location.href =
+                                        "mailto:snguessan@afwasa.org?cc=vtihi@afwasa.org;mlawson@afwasa.org;mseck@afwasa.org";
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '{{ __('registration.error') }}',
+                                html: errorMessage,
+                                confirmButtonText: 'Ok',
+                            });
+                        }
                     }
                 });
             });

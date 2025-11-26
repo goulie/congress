@@ -148,8 +148,8 @@
             <a href="{{ route('form.previous') }}" type="button" class="btn btn-outline">
                 <i class="bi bi-arrow-left"></i> {{ __('registration.step2.buttons.previous') }}
             </a>
-            <button type="submit" class="btn btn-outline">
-                {{ __('registration.step2.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
+            <button type="submit" class="btn btn-outline-success">
+                {{ __('registration.step3.buttons.save_continue') }} <i class="bi bi-check-circle-fill"></i>
             </button>
         </div>
     </div>

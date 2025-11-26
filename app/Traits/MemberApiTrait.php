@@ -59,8 +59,8 @@ trait MemberApiTrait
             return [
                 'success' => false,
                 'message' => $locale == 'fr'
-                    ? "Vous ne pouvez pas vous inscrire à cet événement car le code membre saisi est inexistant. Veuillez contacter le service membre de l'AAEA par e-mail (mlawson@afwasa.org) pour adhérer en tant que membre de l'AAEA ou signaler un problème si vous êtes déjà membre"
-                    : "Your membership code is invalid. Please contact the AfWASA member Services team (mlawson@afwasa.org) to become a member of AfWASA or report an issue if you are already a member",
+                    ? "Le code membre saisi est inexistant.<br/> Veuillez contacter le service des membres de l'AAEA par e-mail (mlawson@afwasa.org) pour:<br/> - Adhérer à l'AAEA. <br/> - Signaler un problème si vous êtes déjà membre. <br/> Ou veuillez-vous inscrire en tant que non-membre."
+                    : "The membership code entered does not exist.<br/> Please contact AfWASA membership department by email (mlawson@afwasa.org) to : <br/> Join AfWASA. <br/> Report a problem if you are already a member. <br/> Or sign up as a non-member.",
                 'error' => config('app.debug') ? $e->getMessage() : null,
                 'member_status' => 'inexistant'
             ];
@@ -94,8 +94,8 @@ trait MemberApiTrait
             if ($member['status'] === 'inactif') {
                 return [
                     'success' => false,
-                    'message' => $locale == 'fr' ? "Ce tarif ne peut vous être accordé, car votre entreprise n’est pas à jour de ses cotisations. Vous pouvez soit contacter le service financier de l’AAEA (snguesssan@afwasa.org) pour régulariser votre situation, soit utiliser le tarif non-membre pour vous inscrire."
-                        : "This rate cannot be granted to you because your company is not up-to-date with their subscriptions. You can either contact the AfWASA Finance department (snguesssan@afwasa.org) to regularize your situation, or use the non-member rate to register.",
+                    'message' => $locale == 'fr' ? "Ce tarif ne peut vous être accordé, car ce matricule membre n’est pas à jour de ses cotisations. Vous pouvez soit contacter le service financier de l’AAEA (snguesssan@afwasa.org) pour régulariser votre situation, soit utiliser le tarif non-membre pour vous inscrire."
+                        : "This rate cannot be granted to you because this membership code is not up-to-date with their subscriptions. You can either contact the AfWASA Finance department (snguesssan@afwasa.org) to regularize your situation, or use the non-member rate to register.",
                     'member_status' => $member['status']
                 ];
             } else {

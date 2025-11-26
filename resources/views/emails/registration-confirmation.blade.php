@@ -14,7 +14,13 @@
 
 Cher/Chère **{{ $participant->fname }} {{ $participant->lname }}**,
 
-Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**. {{ $participant->ywp_or_student ? 'Votre inscription est en attente de validation par l\'administrateur du site.' : 'Votre inscription a été enregistrée avec succès.' }} 
+@if ($participant->ywp_or_student)
+Nous avons le plaisir de vous informer que votre inscription aux **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**  est en attente de validation par l'administrateur du site.
+@else
+Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**. {{ $participant->ywp_or_student ? 'Votre inscription est en attente de validation par l\'administrateur du site.' : 'Votre inscription a été enregistrée avec succès.' }}
+@endif
+
+ 
 
 ## Détails de Votre Inscription
 
@@ -30,7 +36,7 @@ Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->
 - **Statut membre** : {{ $participant->membre_aae == 'oui' ? 'Membre' : 'Non-membre' }}
 - **Dîner de gala** : {{ $participant->diner == 'oui' ? '✅ Oui' : '❌ Non' }}
 <p style="color:red">
-    {{ $participant->diner == 'oui' ? 'Votre place au diner gala sera garantie qu\'après de le paiement de vos frais de participation.' : '' }}
+    {{ $participant->diner == 'oui' ? 'Votre place au diner gala ne sera garantie qu\'après le paiement de vos frais de participation.' : '' }}
 </p>
 
 - **Visite technique** : {{ $participant->visite == 'oui' ? '✅ Oui' : '❌ Non' }}

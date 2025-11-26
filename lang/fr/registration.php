@@ -139,4 +139,5 @@ return [
     'redirecting' => 'Redirection en cours...',
     'please_wait' => 'Veuillez patienter',
     'contactby_email' => 'Contacter par email',
+    'fields_required' => 'Tous les champs marqués par <span class="text-danger font-weight-bold">*</span> sont obligatoires',
 ];

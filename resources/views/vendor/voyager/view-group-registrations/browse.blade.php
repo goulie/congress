@@ -7,10 +7,10 @@
 
     <style>
         /* body {
-                        background: linear-gradient(135deg, #eaf3ff, #ffffff);
-                        font-family: 'Segoe UI', sans-serif;
-                        padding: 40px 0;
-                    } */
+                            background: linear-gradient(135deg, #eaf3ff, #ffffff);
+                            font-family: 'Segoe UI', sans-serif;
+                            padding: 40px 0;
+                        } */
 
         .card {
             border: none;
@@ -277,7 +277,18 @@
             color: #fff;
             font-weight: light;
         }
-        
+        .btn-outline-success {
+            border: 2px solid green;
+            background: none;
+            color: green;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+
+        .btn-outline-success:hover {
+            background: green;
+            color: #fff;
+        }
     </style>
 @endsection
 
@@ -308,7 +319,15 @@
                             </h1>
                         @endif
                     </div>
+                    @if (!Route::currentRouteName()=='participant.recap')
+                        <div class="row">
+                        <div class="col-md-12 text-center">
+                            {!! __('registration.fields_required') !!}
+                        </div>
 
+                    </div>
+                    @endif
+                    
 
 
 

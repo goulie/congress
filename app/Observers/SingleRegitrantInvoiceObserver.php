@@ -3,8 +3,10 @@
 namespace App\Observers;
 
 use App\Models\CategorieRegistrant;
+use App\Models\Invoice;
 use App\Models\JourPassDelegue;
 use App\Models\Participant;
+use App\Models\StudentYwpValidation;
 use App\Models\User;
 use App\Notifications\StudentOrYwpregistrantNotification;
 use App\Services\EmailService;
@@ -103,7 +105,7 @@ class SingleRegitrantInvoiceObserver
 
         $data = [
             'participant_id' => $participant->id,
-            'status' => 'pending',
+            'status' => Invoice::PAYMENT_STATUS_UNPAID,
         ];
 
         $items = [];

@@ -209,169 +209,148 @@
             </div>
 
 
+            @if (!auth()->user()->isValidator())
 
-            <div class="row dashboard">
-                <div class="col-md-6 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.view-single-registrations.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-person-plus-fill"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Inscription Individuelle
-                                @else
-                                    Individual Registration
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Inscription unique
-                                @else
-                                    Register one participant
-                                @endif
-                            </p>
-                        </div>
-                    </a>
+
+                <div class="row dashboard">
+                    <div class="col-md-6 col-sm-6 mb-4">
+                        <a href="{{ route('voyager.view-single-registrations.index') }}" class="text-decoration-none">
+                            <div class="dash-btn">
+                                <i class="bi bi-person-plus-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Inscription Individuelle
+                                    @else
+                                        Individual Registration
+                                    @endif
+                                </h4>
+                                <p>
+                                    @if ($locale === 'fr')
+                                        Inscription unique
+                                    @else
+                                        Register one participant
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-6 col-sm-6 mb-4">
+                        <a href="{{ route('voyager.view-group-registrations.index') }}" class="text-decoration-none">
+                            <div class="dash-btn">
+                                <i class="bi bi-people-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Inscription de Groupe
+                                    @else
+                                        Group Registration
+                                    @endif
+                                </h4>
+                                <p>
+                                    @if ($locale === 'fr')
+                                        Inscrire plusieurs participants
+                                    @else
+                                        Register multiple participants
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+
+                    
                 </div>
 
-                <div class="col-md-6 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.view-group-registrations.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-people-fill"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Inscription de Groupe
-                                @else
-                                    Group Registration
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Inscrire plusieurs participants
-                                @else
-                                    Register multiple participants
-                                @endif
-                            </p>
-                        </div>
-                    </a>
+
+
+                <div class="row dashboard">
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <a href="{{ route('voyager.invoices.index') }}" class="text-decoration-none">
+                            <div class="dash-btn">
+                                <i class="bi bi-file-medical-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Facturation
+                                    @else
+                                        Billing
+                                    @endif
+                                </h4>
+                                <p>
+                                    @if ($locale === 'fr')
+                                        Effectuer et suivre le paiement
+                                    @else
+                                        Make and track payments
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <a href="{{ route('voyager.profile') }}" class="text-decoration-none">
+                            <div class="dash-btn">
+                                <i class="bi bi-person-badge-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Mon Profil
+                                    @else
+                                        My Profile
+                                    @endif
+                                </h4>
+                                <p>
+                                    @if ($locale === 'fr')
+                                        Voir et mettre à jour le profil
+                                    @else
+                                        View and update profile
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <a href="{{ route('voyager.view-badges.index') }}" class="text-decoration-none">
+                            <div class="dash-btn">
+                                <i class="bi bi-qr-code"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Mon Badge
+                                    @else
+                                        My Badge
+                                    @endif
+                                </h4>
+                                <p>
+                                    @if ($locale === 'fr')
+                                        Télécharger le badge QR
+                                    @else
+                                        Download your QR badge
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+
                 </div>
+            @else
+                <div class="row dashboard">
+                    
+                    <div class="col-md-12 col-sm-12 mb-4">
+                        <a href="{{ route('voyager.view-validation-ywp-students.index') }}" class="btn btn-block">
+                            <div class="dash-btn" style="background-color: #9cc9f7">
+                                <i class="bi bi-people-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Traiter les Jeunes professionnels et Etudiants
+                                    @else
+                                        Process Young Professionals and Students
+                                    @endif
+                                </h4>
+                                
+                            </div>
+                        </a>
+                    </div>
 
-                {{-- <div class="col-md-4 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.view-accompagning-registration.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-person-workspace"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Personne accompagnante
-                                @else
-                                    Accompanying Person
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Ajouter des personnes tierces
-                                @else
-                                    Add accompanying persons
-                                @endif
-                            </p>
-                        </div>
-                    </a>
-                </div> --}}
-            </div>
-
-
-
-            <div class="row dashboard">
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.invoices.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-file-medical-fill"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Facturation
-                                @else
-                                    Billing
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Effectuer et suivre le paiement
-                                @else
-                                    Make and track payments
-                                @endif
-                            </p>
-                        </div>
-                    </a>
                 </div>
-
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.profile') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-person-badge-fill"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Mon Profil
-                                @else
-                                    My Profile
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Voir et mettre à jour le profil
-                                @else
-                                    View and update profile
-                                @endif
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.view-badges.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-qr-code"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Mon Badge
-                                @else
-                                    My Badge
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Télécharger le badge QR
-                                @else
-                                    Download your QR badge
-                                @endif
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <a href="{{ route('voyager.view-badges.index') }}" class="text-decoration-none">
-                        <div class="dash-btn">
-                            <i class="bi bi-qr-code"></i>
-                            <h4>
-                                @if ($locale === 'fr')
-                                    Mon Badge
-                                @else
-                                    My Badge
-                                @endif
-                            </h4>
-                            <p>
-                                @if ($locale === 'fr')
-                                    Télécharger le badge QR
-                                @else
-                                    Download your QR badge
-                                @endif
-                            </p>
-                        </div>
-                    </a>
-                </div>
-                
-            </div>
-
-
+            @endif
         </div>
     </div>
 @stop

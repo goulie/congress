@@ -28,6 +28,9 @@ return [
         'buttons' => [
             'previous' => 'Previous',
             'save_continue' => 'Save and Continue',
+            'update_continue' => 'Update and Continue',
+            'update' => 'Update and Save',
+            'save' => 'Save my information',
         ],
     ],
 
@@ -98,11 +101,12 @@ return [
         ],
         'buttons' => [
             'previous' => 'Previous',
-            'save_continue' => 'Save',
+            'save_continue' => 'Save and Continue',
             'update_continue' => 'Update and Continue',
             'update' => 'Update and Save',
-            'open' => 'Open',
+            'save' => 'Save my information',
         ],
+       
     ],
 
     // Buttons and states
@@ -142,5 +146,6 @@ return [
 
     // Contact
     'contactby_email' => 'Contact by email',
+    'fields_required' =>'All fields marked with <span class="text-danger font-weight-bold">*</span> are required ', //'Tous les champs marqués par <span class="text-danger font-weight-bold">*</span> sont obligatoires',
 
 ];

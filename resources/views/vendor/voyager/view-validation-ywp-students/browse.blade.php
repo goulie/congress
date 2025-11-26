@@ -5,7 +5,7 @@
 @section('page_header')
     <div class="container-fluid">
         <h1 class="page-title">
-           TABLEAU DE BORD - DOSSIERS YWP & ÉTUDIANTS
+            TABLEAU DE BORD - DOSSIERS YWP & ÉTUDIANTS
         </h1>
     </div>
 @stop
@@ -60,9 +60,11 @@
         .panel-body-validated {
             border-left: 5px solid green;
         }
+
         .panel-body-pending {
             border-left: 5px solid black;
         }
+
         .panel-body-rejected {
             border-left: 5px solid red;
         }
@@ -251,21 +253,12 @@
                                                     $validation = $participant->validation_ywp_student->last();
                                                 @endphp
 
-                                                @if ($validation)
-                                                    @switch($validation->status)
-                                                        @case(\App\Models\StudentYwpValidation::STATUS_APPROVED)
-                                                            <span class="label label-success">Validé</span>
-                                                        @break
-
-                                                        @case(\App\Models\StudentYwpValidation::STATUS_REJECTED)
-                                                            <span class="label label-danger">Rejeté</span>
-                                                        @break
-
-                                                        @default
-                                                            <span class="label label-warning">En attente</span>
-                                                    @endswitch
+                                                @if ($validation->status == App\Models\StudentYwpValidation::STATUS_APPROVED)
+                                                    <span class="label label-success">Approuvé</span>
+                                                @elseif($validation->status == App\Models\StudentYwpValidation::STATUS_REJECTED)
+                                                    <span class="label label-danger">{{ App\Models\StudentYwpValidation::STATUS_REJECTED }}</span>
                                                 @else
-                                                    <span class="label label-default">Non soumis</span>
+                                                    <span class="label label-warning">{{ $validation->status }}</span> 
                                                 @endif
                                             </td>
 

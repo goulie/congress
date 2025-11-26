@@ -40,12 +40,8 @@ class RejectedStudentOrYwpregistrantNotification extends Notification
         $isFr = $p->langue === 'fr';
 
         return (new MailMessage)
-            ->subject($isFr ? "Votre dossier a été rejeté" : "Your document has been rejected")
-            ->line(
-                $isFr
-                    ? "Bonjour {$p->fname} {$p->lname},"
-                    : "Hello {$p->fname} {$p->lname},"
-            )
+            ->subject($isFr ? "Votre inscription aux {$p->congres->translate('fr', 'fallbackLocale')->title} a été rejeté" : "Your registration to the **{$p->congres->translate('en', 'fallbackLocale')->title}** has been rejected")
+           
             ->greeting(
                 $isFr
                     ? "Bonjour {$p->fname} {$p->lname},"
@@ -53,15 +49,16 @@ class RejectedStudentOrYwpregistrantNotification extends Notification
             )
             ->line(
                 $isFr
-                    ? "malheureusement votre dossier a été refusé."
-                    : "unfortunately your document has been rejected."
+                    ? "Malheureusement votre inscription aux **{$p->congres->translate('fr', 'fallbackLocale')->title}** a été refusé."
+                    : "Unfortunately your registration to the **{$p->congres->translate('en', 'fallbackLocale')->title}** has been rejected."
             )
             ->line(
                 $isFr
                     ? "Veuillez soumettre un document conforme ou contacter notre équipe."
                     : "Please upload a valid document or contact our support team."
             )
-            ->line($isFr ? "Raison de rejet :" .$this->reason : "Reason of rejection : ".$this->reason)
+            ->line($isFr ? "Ci-dessous la raison de rejet :": "Below is the reason for rejection:")
+             ->line("**{$this->reason}**")
             ->action(
                 $isFr ? "Accéder à mon espace" : "Access my dashboard",
                 url('/login')

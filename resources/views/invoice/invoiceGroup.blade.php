@@ -109,11 +109,17 @@
         .status.paid,
         .status.payé {
             color: #2e7d32;
+            background: #c8e6c9;
+            padding: 2px 8px;
+            border-radius: 3px;
         }
 
         .status.unpaid,
         .status.impayé {
             color: #c62828;
+            background: #ffcdd2;
+            padding: 2px 8px;
+            border-radius: 3px;
         }
 
         .total-section {
@@ -165,13 +171,13 @@
             <div class="congres-text">
                 @if (app()->getLocale() == 'fr')
                     <h5>CONGRÈS INTERNATIONAL ET EXPOSITION DE L'AAEA <br>
-                        DU {{ \Carbon\Carbon::parse($congres->begin_date)->format('d') }} AU
+                        DU {{ \Carbon\Carbon::parse($congres->begin_date)->format('d') }} au
                         {{ \Carbon\Carbon::parse($congres->end_date)->isoFormat('D MMMM YYYY') }} -
                         {{ $congres->hostCountry->libelle_fr ?? '' }}
                     </h5>
                 @else
                     <h5>AfWASA INTERNATIONAL CONGRESS AND EXHIBITION <br>
-                        FROM {{ \Carbon\Carbon::parse($congres->begin_date)->format('F d') }} TO
+                        FROM {{ \Carbon\Carbon::parse($congres->begin_date)->format('F d') }} to
                         {{ \Carbon\Carbon::parse($congres->end_date)->format('F d, Y') }} -
                         {{ $congres->hostCountry->libelle_en ?? '' }}
                     </h5>
@@ -218,12 +224,26 @@
     @foreach ($participants as $index => $participant)
         @php
             $invoice = $participant->invoices->first();
-            $status = strtolower($invoice->status ?? 'unpaid');
-            if (app()->getLocale() == 'fr') {
-                $status = $status == 'pending' ? 'impayé' : $status == 'paid' ? 'payé' : $status;
-            } else {
-                $status = $status == 'pending' ? 'unpaid' : $status == 'paid' ? 'paid' : $status;
-            }
+            /* $status = strtolower($invoice->status ?? 'unpaid'); */
+
+            $status =
+                $invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID
+                    ? App\Models\Invoice::PAYMENT_STATUS_PAID
+                    : App\Models\Invoice::PAYMENT_STATUS_UNPAID;
+
+            $congres = App\Models\Congress::latest()->first();
+            $transfert_info = App\Models\CongressBankTransfer::where('congres_id', $congres->id)->first();
+
+            $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
+            $locale = app()->getLocale(); // 'fr' or 'en'
+            \Carbon\Carbon::setLocale($locale);
+            $start = \Carbon\Carbon::parse($periode->start_date);
+            $end = \Carbon\Carbon::parse($periode->end_date);
+            $daysRemaining = $periode->joursRestants();
+
+            $dateFormattedStart =
+                $locale === 'fr' ? $start->translatedFormat('d F Y') : $start->translatedFormat('F d, Y');
+            $dateFormattedEnd = $locale === 'fr' ? $end->translatedFormat('d F Y') : $end->translatedFormat('F d, Y');
 
         @endphp
 
@@ -244,10 +264,14 @@
                 </strong>
                 {{ $invoice ? number_format($invoice->total_amount, 0, ',', ' ') : '—' }}
                 {{ $invoice->currency ?? '' }}
-                @if ($status === 'paid' || $status === 'payé')
-                    <span class="status paid">{{ strtoupper($status) }}</span>
+                @if ($status === App\Models\Invoice::PAYMENT_STATUS_PAID)
+                    <span class="status paid">{{ app()->getLocale() == 'fr' ? 'Payé' : 'Paid'}} </span>
+                    @isset($invoice->payment_method)
+                        {{ app()->getLocale() == 'fr' ? '- Méthode de paiement' : '- Payment method' }} <strong> {{ $invoice->payment_method ?? '' }} </strong>
+                    @endisset
+                    
                 @else
-                    <span class="status unpaid">{{ strtoupper($status) }}</span>
+                    <span class="status unpaid">{{ app()->getLocale() == 'fr' ? 'Non payé' : 'Unpaid'}}</span>
                 @endif
             </p>
 
@@ -365,13 +389,16 @@
 
     <div class="footer">
         <p>contact support | event@afwasa.org</p>
-        <p>
-            @if (app()->getLocale() == 'fr')
-                Ce document est généré automatiquement et ne nécessite pas de signature.
-            @else
-                This document is automatically generated and does not require a signature.
-            @endif
+        <p style="text-align: center;color: #ff0000">
+            {{ app()->getLocale() == 'fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
+            <strong>{{ $dateFormattedEnd }}</strong>
+            {{ app()->getLocale() == 'fr' ? '. Apres cette date les frais du package en cours pendant cette période seront automatiquement appliqués et remplaceront les montants affichés dans cette facture. ' : 'After this date, the current package fees applicable during this period will automatically apply and replace the amounts currently listed on this invoice.' }}
         </p>
+        <p class="text-muted">
+            <span
+                style="color: #ff0000"><strong><sup>*</sup></strong></span>{{ app()->getLocale() == 'fr' ? 'Ce document est généré automatiquement et ne nécessite pas de signature.' : 'This document is automatically generated and does not require a signature.' }}
+        </p>
+
     </div>
 
 </body>

@@ -4,14 +4,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/AdminLTE.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
 
     <style>
         /* body {
-                    background: linear-gradient(135deg, #eaf3ff, #ffffff);
-                    font-family: 'Segoe UI', sans-serif;
-                    padding: 40px 0;
-                } */
+                            background: linear-gradient(135deg, #eaf3ff, #ffffff);
+                            font-family: 'Segoe UI', sans-serif;
+                            padding: 40px 0;
+                        } */
 
         .card {
             border: none;
@@ -129,6 +130,18 @@
             color: #fff;
         }
 
+        .btn-outline-success {
+            border: 2px solid green;
+            background: none;
+            color: green;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+
+        .btn-outline-success:hover {
+            background: green;
+            color: #fff;
+        }
         .box-footer {
             background: #f7f9fc;
             border-top: 1px solid #ddd;
@@ -210,7 +223,8 @@
         .panel-collapse {
             transition: all 0.3s ease;
         }
-        .panel-title{
+
+        .panel-title {
             color: #fff
         }
     </style>
@@ -218,27 +232,10 @@
 
 @section('page_title', __('Registration Form'))
 
+
+
 @section('content')
-    @php
-        $step = Session::get('step') ?? 1;
-        $congres = App\Models\Congress::latest('id')->first();
-        $participant = App\Models\Participant::where([
-            'registration_id' => auth()->user()->user_id,
-            'congres_id' => $congres->id,
-            'type_participant' => 'individual',
-        ])
-            ->latest()
-            ->first();
-        if (!$participant) {
-            $participant = App\Models\Participant::create([
-                'user_id' => auth()->user()->id,
-                'registration_id' => auth()->user()->user_id,
-                'congres_id' => $congres->id,
-                'type_participant' => 'individual',
-            ]);
-        }
-    @endphp
-    
+
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -249,39 +246,47 @@
                     </div>
 
                     <!-- Étapes -->
-                    
-                    <div class="progress-steps">
-                        <div class="step {{ $step == 1 ? 'active' : '' }}">
-                            <div class="step-circle">1</div>
-                            <div class="step-label">
-                                {{ __('registration.step1.label') }}<br>
-                                {{-- {{ __('registration.step1.subtitle') }} --}}
+                    @if ($step <= 3)
+                        <div class="progress-steps">
+                            <div class="step {{ $step == 1 ? 'active' : '' }}">
+                                <div class="step-circle">1</div>
+                                <div class="step-label">
+                                    {{ __('registration.step1.label') }}<br>
+                                    {{-- {{ __('registration.step1.subtitle') }} --}}
+                                </div>
+                            </div>
+                            <div class="step-divider"></div>
+                            <div class="step {{ $step == 2 ? 'active' : '' }}">
+                                <div class="step-circle">2</div>
+                                <div class="step-label">
+                                    {{ __('registration.step2.label') }}<br>
+                                    {{-- {{ __('registration.step2.subtitle') }} --}}
+                                </div>
+                            </div>
+                            <div class="step-divider"></div>
+                            <div class="step {{ $step == 3 ? 'active' : '' }}">
+                                <div class="step-circle">3</div>
+                                <div class="step-label">
+                                    {{ __('registration.step3.label') }}<br>
+                                    {{-- {{ __('registration.step3.subtitle') }} --}}
+                                </div>
                             </div>
                         </div>
-                        <div class="step-divider"></div>
-                        <div class="step {{ $step == 2 ? 'active' : '' }}">
-                            <div class="step-circle">2</div>
-                            <div class="step-label">
-                                {{ __('registration.step2.label') }}<br>
-                                {{-- {{ __('registration.step2.subtitle') }} --}}
-                            </div>
-                        </div>
-                        <div class="step-divider"></div>
-                        <div class="step {{ $step == 3 ? 'active' : '' }}">
-                            <div class="step-circle">3</div>
-                            <div class="step-label">
-                                {{ __('registration.step3.label') }}<br>
-                                {{-- {{ __('registration.step3.subtitle') }} --}}
-                            </div>
-                        </div>
-                    </div>
+                    @endif
 
                     @if (session()->has('success'))
                         <div class="alert alert-success">
                             {{ session()->get('success') }}
                         </div>
                     @endif
-
+                    @if (!Route::currentRouteName()=='participant.recap'|| $step <= 3)
+                        <div class="row">
+                            
+                            <div class="col-md-12 text-center">
+                               {!! __('registration.fields_required') !!}
+                            </div>
+                        </div>
+                    @endif
                     @if ($step == 1)
                         @include('vendor.voyager.view-single-registrations.step1')
                     @endif
@@ -298,7 +303,8 @@
             </div>
         </div>
     </div>
-@stop
+@endsection
+
 
 @section('javascript')
     <script>
@@ -335,4 +341,4 @@
             $('.panel-collapse').addClass('in');
         });
     </script>
-@stop
+@endsection

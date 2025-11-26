@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use TCG\Voyager\Facades\Voyager;
 
-/*
+/*-
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], functi
     Route::get('/previous', [ParticipantRegistrant::class, 'previous'])->name('form.previous');
 
     //get participant recap
-    Route::get('/recap/{uuid}', [HomeController::class, 'recap'])->name('participant.recap');
+    //Route::get('/recap/{uuid}', [HomeController::class, 'recap'])->name('participant.recap');
 
     //Session registration
     Route::get('/send-invitation-letter/{uuid}', [InvitationLetterController::class, 'sendInvitationLetter'])->name('send.invitation.letter');
@@ -127,8 +127,6 @@ Route::prefix('validator')->group(function () {
 Route::prefix('payment')->group(function () {
     Route::get('/{id}/details', [ValidationPaymentController::class, 'details']);
     Route::post('approve/{id}', [ValidationPaymentController::class, 'approve_payment'])->name('validation.approve.payment');
-    
-
 });
 Route::get('/send_inv', function () {
     try {
@@ -139,5 +137,3 @@ Route::get('/send_inv', function () {
         return $th->getMessage();
     }
 });
-
-    Route::get('/code_qr', [HomeController::class, 'generateCode']);
