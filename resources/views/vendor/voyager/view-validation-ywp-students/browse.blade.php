@@ -256,9 +256,13 @@
                                                 @if ($validation->status == App\Models\StudentYwpValidation::STATUS_APPROVED)
                                                     <span class="label label-success">Approuvé</span>
                                                 @elseif($validation->status == App\Models\StudentYwpValidation::STATUS_REJECTED)
-                                                    <span class="label label-danger">{{ App\Models\StudentYwpValidation::STATUS_REJECTED }}</span>
+                                                    <span
+                                                        class="label label-danger">{{ App\Models\StudentYwpValidation::STATUS_REJECTED }}</span>
+                                                @elseif($validation->status == App\Models\StudentYwpValidation::STATUS_PENDING)
+                                                    <span
+                                                        class="label label-dark">{{ App\Models\StudentYwpValidation::STATUS_PENDING }}</span>
                                                 @else
-                                                    <span class="label label-warning">{{ $validation->status }}</span> 
+                                                    <span class="label label-default">{{ $validation->status }}</span>
                                                 @endif
                                             </td>
 
@@ -291,7 +295,7 @@
 
                                         <!-- Modal Rejet -->
                                         @if ($participant->ywp_or_student && $participant->isYwpOrStudent == false)
-                                            <div class="modal fade" id="rejectModal{{ $participant->id }}"
+                                            <div class="modal fade rejectModal" id="rejectModal{{ $participant->id }}"
                                                 tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
@@ -316,7 +320,8 @@
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-default"
                                                                     data-dismiss="modal">Annuler</button>
-                                                                <button type="submit" class="btn btn-danger">Confirmer le
+                                                                <button type="submit" id="rejectButton"
+                                                                    class="btn btn-danger">Confirmer le
                                                                     rejet</button>
                                                             </div>
                                                         </form>
@@ -361,6 +366,7 @@
                             <p><strong>Téléphone :</strong> <span id="modalPhone"></span></p>
                             <p><strong>Type :</strong> <span id="modalType"></span></p>
                             <p><strong>Statut :</strong> <span id="modalStatus"></span></p>
+                            <p><strong>Raison rejet :</strong> <span id="modalReason"></span></p>
                         </div>
 
                         <div class="col-md-6">
@@ -422,22 +428,25 @@
             $('form[action*="approve"]').on('submit', function(e) {
                 if (!confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')) {
                     e.preventDefault();
+                    
                 }
             });
         });
 
         //Affichage des détails du participant
         function showParticipantDetails(id) {
+            $('#loader').removeClass('hidden').show();
             $.ajax({
                 url: "/get_register/validator/" + id + "/details",
                 method: "GET",
                 success: function(res) {
-
+                    $('#loader').hide();
                     $("#modalName").text(res.fname + " " + res.lname);
                     $("#modalFname").text(res.fname);
                     $("#modalLname").text(res.lname);
                     $("#modalEmail").text(res.email);
                     $("#modalPhone").text(res.phone);
+                    $("#modalReason").text(res.raison);
 
                     // Type
                     let type = res.ywp_or_student === "student" ?

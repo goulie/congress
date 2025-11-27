@@ -48,4 +48,9 @@ class Periode extends Model
     {
         return $this->hasMany(Tarif::class);
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

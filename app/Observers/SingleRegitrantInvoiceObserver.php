@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\StudentOrYwpregistrantNotification;
 use App\Services\EmailService;
 use App\Services\SingleRegistrantInvoice;
+use Illuminate\Support\Facades\Log;
 
 class SingleRegitrantInvoiceObserver
 {
@@ -27,10 +28,20 @@ class SingleRegitrantInvoiceObserver
      */
     public function created(Participant $participant)
     {
-        $this->generateOrUpdateInvoice($participant);
-        
-        //Envoi de l'email de confirmation
-        $emailSent = $this->emailService->sendRegistrationConfirmation($participant);
+        try {
+
+            $this->generateOrUpdateInvoice($participant);
+
+            //Envoi de l'email de confirmation
+            $this->emailService->sendRegistrationConfirmation($participant);
+
+            //Envoi de l'email de avec aux délégues facture
+            if ($participant->participant_category_id == 1) {
+                $this->emailService->SendInvoiceEmail($participant->invoices()->first());
+            }
+        } catch (\Exception $ex) {
+            Log::error('SingleRegitrantInvoiceObserver created error: ' . $ex->getMessage());
+        }
     }
 
     /**
@@ -38,13 +49,22 @@ class SingleRegitrantInvoiceObserver
      */
     public function updated(Participant $participant)
     {
-        // Vérifier si les champs liés à la facturation ont changé
-        if ($this->hasBillingChanges($participant)) {
-            $this->generateOrUpdateInvoice($participant);
-        }
+        try {
 
-        //Envoi de l'email de confirmation
-        $emailSent = $this->emailService->sendRegistrationConfirmation($participant);
+            // Vérifier si les champs liés à la facturation ont changé
+            if ($this->hasBillingChanges($participant)) {
+                $this->generateOrUpdateInvoice($participant);
+                //Envoi de l'email de avec facture
+                if ($participant->participant_category_id == 1) {
+                    $this->emailService->SendInvoiceEmail($participant->invoices()->first());
+                }
+            }
+
+            //Envoi de l'email de confirmation
+            $emailSent = $this->emailService->sendRegistrationConfirmation($participant);
+        } catch (\Exception $ex) {
+            Log::error('SingleRegitrantInvoiceObserver updated error: ' . $ex->getMessage());
+        }
     }
 
     /**
@@ -53,6 +73,8 @@ class SingleRegitrantInvoiceObserver
     public function deleted(Participant $participant)
     {
         // Supprimer les factures associées
+
+        $participant->invoices()->items()->delete();
         $participant->invoices()->delete();
     }
 
@@ -95,13 +117,11 @@ class SingleRegitrantInvoiceObserver
     {
         $congres_id = $participant->congres_id;
         $dinner = CategorieRegistrant::DinnerforCongress($congres_id);
-        $accompanying = CategorieRegistrant::accompanyingPersonForCongress($congres_id);
         $tours = CategorieRegistrant::ToursforCongress($congres_id);
         $deleguate = CategorieRegistrant::deleguateForCongress($congres_id);
         $student_ywp = CategorieRegistrant::studentForCongress($congres_id);
         $non_member = CategorieRegistrant::NonMemberPriceforCongress($congres_id);
         $passDeleguate = CategorieRegistrant::PassDeleguateforCongress($congres_id);
-        $student_ywp_member = CategorieRegistrant::student_ywp_memberForCongress($congres_id);
 
         $data = [
             'participant_id' => $participant->id,
@@ -114,17 +134,17 @@ class SingleRegitrantInvoiceObserver
         if ($participant->type_participant == 'accompagning') {
             $items = [
                 [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Frais d\'inscription - Accompagnateur'
                         : 'Registration fee - Accompanying person',
                     'price' => $accompanying->montant ?? 0
                 ],
                 [
-                    'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
+                    'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
                     'price' => $participant->diner == 'oui' ? $dinner->montant : 0
                 ],
                 [
-                    'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
+                    'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
                     'price' => $participant->visite == 'oui' ? $tours->montant : 0
                 ],
             ];
@@ -142,7 +162,7 @@ class SingleRegitrantInvoiceObserver
             }
             // ÉTUDIANT/YWP (category_id = 4)
             elseif ($categoryId == 4) {
-                $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member, $dinner, $tours);
+                $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member = null, $dinner, $tours);
             } else {
                 $items = $this->getOtherCategoryItems($participant, $dinner, $tours);
             }
@@ -160,7 +180,7 @@ class SingleRegitrantInvoiceObserver
 
                     $isMember = true;
                 }
-                $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member, $dinner, $tours, $isMember);
+                $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member = null, $dinner, $tours, $isMember);
             } else {
                 $items = $this->getOtherCategoryItems($participant, $dinner, $tours);
             }
@@ -168,17 +188,17 @@ class SingleRegitrantInvoiceObserver
             $categorie = CategorieRegistrant::find($participant->type_member_id);
             $items = [
                 [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Frais d\'inscription - ' . $participant->participantCategory->libelle
                         : 'Registration fee - ' . $participant->participantCategory->libelle,
                     'price' => $categorie->montant ?? 0
                 ],
                 [
-                    'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
+                    'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
                     'price' => $participant->diner == 'oui' ? $dinner->montant : 0
                 ],
                 [
-                    'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
+                    'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
                     'price' => $participant->visite == 'oui' ? $tours->montant : 0
                 ],
             ];
@@ -209,18 +229,21 @@ class SingleRegitrantInvoiceObserver
         if ($pass->count() > 0) {
             // Facturer chaque pass journalier sélectionné
             foreach ($pass as $passItem) {
+
+
                 $items[] = [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Pass délégué - ' . \Carbon\Carbon::parse($passItem->date)->translatedFormat('d F Y')
                         : 'Delegate pass - ' . $passItem->date,
-                    'price' => $passDeleguate->montant ?? 0
+                    'price' => $passDeleguate->montant ?? 0,
+                    'tarif_id' => $passDeleguate->tarif_id ?? 0
                 ];
             }
 
             /* // Ajouter supplément non-membre si applicable
             if ($participant->membre_aae == 'non' || $participant->isMember == false) {
                 $items[] = [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Frais d\'inscription - Délégué'
                         : 'Registration fee - Delegate',
                     'price' => $non_member->montant ?? 0
@@ -231,26 +254,29 @@ class SingleRegitrantInvoiceObserver
 
             // Facturer si non-membre
             if ($participant->membre_aae == 'non') {
+
                 // Frais de base délégué
                 $items[] = [
-                    'description' => app()->getLocale() == 'fr'
-                        ? 'Frais d\'inscription - Délégué non-membre'
-                        : 'Registration fee - Delegate non-member',
-                    'price' => $non_member->montant ?? 0
+                    'description' => $participant->langue == 'fr'
+                        ? 'Frais d\'inscription - Délégué ' . ($pass->count() > 0 ? '' : 'non-membre')
+                        : 'Registration fee - Delegate ' . ($pass->count() > 0 ? '' : 'non-member'),
+                    'price' => $non_member->montant ?? 0,
+                    'tarif_id' => $non_member->tarif_id ?? 0
                 ];
             } else {
                 $items[] = [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Frais d\'inscription - Délégué'
                         : 'Registration fee - Delegate',
-                    'price' => $deleguate->montant ?? 0
+                    'price' => $deleguate->montant ?? 0,
+                    'tarif_id' => $deleguate->tarif_id ?? 0
                 ];
             }
 
             // Pass délégué global (si oui mais pas de dates spécifiques)
             /* if ($participant->pass_deleguate == 'oui') {
                 $items[] = [
-                    'description' => app()->getLocale() == 'fr'
+                    'description' => $participant->langue == 'fr'
                         ? 'Pass délégué '
                         : 'Delegate pass ',
                     'price' => $passDeleguate->montant ?? 0
@@ -260,13 +286,15 @@ class SingleRegitrantInvoiceObserver
 
         // Ajouter les options
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
-            'price' => $participant->diner == 'oui' ? $dinner->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
+            'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
+            'tarif_id' => $dinner->tarif_id ?? 0
         ];
 
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
-            'price' => $participant->visite == 'oui' ? $tours->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
+            'price' => $participant->visite == 'oui' ? $tours->montant : 0,
+            'tarif_id' => $tours->tarif_id ?? 0
         ];
 
         return $items;
@@ -284,24 +312,25 @@ class SingleRegitrantInvoiceObserver
 
         // Frais d'inscription
         $items[] = [
-            'description' => app()->getLocale() == 'fr'
-                ? 'Frais d\'inscription - Étudiant/YWP' . ($isMember ? ' - Membre' : ' - Non membre')
-                : 'Registration fee - Student/YWP' . ($isMember ? ' - Member' : ' - Non member'),
-            'price' => $isMember
-                ? ($student_ywp_member->montant ?? 0)
-                : ($student_ywp->montant ?? 0)
+            'description' => $participant->langue == 'fr'
+                ? 'Frais d\'inscription - Étudiant/YWP' /* . ($isMember ? ' - Membre' : '') */
+                : 'Registration fee - Student/YWP' /* . ($isMember ? ' - Member' : '') */,
+            'price' => $student_ywp->montant ?? 0,
+            'tarif_id' => $student_ywp->tarif_id ?? 0
         ];
 
         // Dîner
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
-            'price' => $participant->diner == 'oui' ? $dinner->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
+            'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
+            'tarif_id' => $dinner->tarif_id ?? 0
         ];
 
         // Visites techniques
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
-            'price' => $participant->visite == 'oui' ? $tours->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
+            'price' => $participant->visite == 'oui' ? $tours->montant : 0,
+            'tarif_id' => $tours->tarif_id ?? 0
         ];
 
         return $items;
@@ -317,7 +346,7 @@ class SingleRegitrantInvoiceObserver
 
         // Frais de base selon la catégorie
         $items[] = [
-            'description' => app()->getLocale() == 'fr'
+            'description' => $participant->langue == 'fr'
                 ? 'Frais d\'inscription - ' . ($participant->participantCategory->libelle ?? 'Autre')
                 : 'Registration fee - ' . ($participant->participantCategory->libelle ?? 'Other'),
             'price' => 0 // À adapter selon votre logique
@@ -325,13 +354,16 @@ class SingleRegitrantInvoiceObserver
 
         // Ajouter les options
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Diner gala' : 'Gala dinner',
-            'price' => $participant->diner == 'oui' ? $dinner->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
+            'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
+            'tarif_id' => $participant->diner == 'oui' ? $dinner->tarif_id : null,
+
         ];
 
         $items[] = [
-            'description' => app()->getLocale() == 'fr' ? 'Visites techniques' : 'Technical Tours',
-            'price' => $participant->visite == 'oui' ? $tours->montant : 0
+            'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
+            'price' => $participant->visite == 'oui' ? $tours->montant : 0,
+            'tarif_id' => $tours->tarif_id ?? 0
         ];
 
         return $items;

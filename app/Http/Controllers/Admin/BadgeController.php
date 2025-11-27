@@ -28,4 +28,13 @@ class BadgeController extends \TCG\Voyager\Http\Controllers\VoyagerBaseControlle
 
         return view('voyager::view-badges.browse', compact('badges'));
     }
+
+     public function view($id)
+    {
+        $participant = Participant::find($id);
+
+        return view('voyager::view-badges.partials.badge',compact('participant'));
+    }
+
+
 }

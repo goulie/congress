@@ -218,7 +218,7 @@
         $transfert_info = App\Models\CongressBankTransfer::where('congres_id', $congres->id)->first();
 
         $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
-        $locale = app()->getLocale(); // 'fr' or 'en'
+        $locale = $invoice->participant->langue; // app()->getLocale(); // 'fr' or 'en'
         \Carbon\Carbon::setLocale($locale);
         $start = \Carbon\Carbon::parse($periode->start_date);
         $end = \Carbon\Carbon::parse($periode->end_date);
@@ -236,15 +236,15 @@
                 <img src="{{ '/public/storage/' . $invoice->congres->banniere }}" style="width:100%">
 
                 <div class="congres-text">
-                    @if (app()->getLocale() == 'fr')
+                    @if ($locale == 'fr')
                         <h5>CONGRÈS INTERNATIONAL ET EXPOSITION DE L'AAEA <br />
-                            DU {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('d') }} AU
+                            DU {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('d') }} au
                             {{ \Carbon\Carbon::parse($invoice->congres->end_date)->isoFormat('D MMMM YYYY') }} -
                             {{ $invoice->congres->hostCountry->libelle_fr ?? '' }}
                         </h5>
                     @else
                         <h5>AfWASA INTERNATIONAL CONGRESS AND EXHIBITION <br />
-                            FROM {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('F d') }} TO
+                            FROM {{ \Carbon\Carbon::parse($invoice->congres->begin_date)->format('F d') }} to
                             {{ \Carbon\Carbon::parse($invoice->congres->end_date)->format('F d, Y') }} -
                             {{ $invoice->congres->hostCountry->libelle_en ?? '' }}
                         </h5>
@@ -269,13 +269,13 @@
                     <div class="invoice-number">#{{ $invoice->invoice_number }}</div>
                     <div class="invoice-date">
                         {{ __('Date') }} :
-                        {{ app()->getLocale() == 'fr' ? $dateFr : $dateEn }}
+                        {{ $locale == 'fr' ? $dateFr : $dateEn }}
                     </div>
 
                     @if ($invoice->status === App\Models\Invoice::PAYMENT_STATUS_PAID)
-                        <div class="paid">{{ app()->getLocale() == 'fr' ? 'Payé' : 'Paid' }}</div>
+                        <div class="paid">{{ $locale == 'fr' ? 'Payé' : 'Paid' }}</div>
                     @else
-                        <div class="unpaid">{{ app()->getLocale() == 'fr' ? 'Non payé' : 'Unpaid' }}</div>
+                        <div class="unpaid">{{ $locale == 'fr' ? 'Non payé' : 'Unpaid' }}</div>
                     @endif
                 </div>
 
@@ -334,7 +334,7 @@
         <div class="payment-info">
 
             <div class="payment-title">
-                {{ app()->getLocale() == 'fr' ? '- INFORMATIONS DE PAIEMENT' : '- PAYMENT INFORMATION' }}</div>
+                {{ $locale == 'fr' ? '- INFORMATIONS DE PAIEMENT' : '- PAYMENT INFORMATION' }}</div>
             <br>
             <strong>{{ __('facture.vir_bank') }}</strong>
             <div class="bank-info">
@@ -348,7 +348,7 @@
                 <strong>SWIFT Code:</strong> {{ $transfert_info->swift }}<br>
             </div>
             <p><strong> {{ __('facture.bank_instructions') }}:</strong></p>
-            <p><strong>{{ app()->getLocale() == 'fr' ? '- PAIEMENT EN LIGNE' : '- ONLINE PAYMENT' }}</strong> <br>
+            <p><strong>{{ $locale == 'fr' ? '- PAIEMENT EN LIGNE' : '- ONLINE PAYMENT' }}</strong> <br>
                 <a href="https://congress.afwasa.org/get_register/admin/invoices"
                     target="_blank">https://congress.afwasa.org/get_register/admin/invoices</a>
             </p>
@@ -365,13 +365,13 @@
                 Contact support - Email : event@afwasa.org
             </p>
             <p style="text-align: center;color: #ff0000">
-                {{ app()->getLocale() == 'fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
+                {{ $locale == 'fr' ? 'Cette facture est valable jusqu’au ' : 'This invoice is valid until ' }}
                 <strong>{{ $dateFormattedEnd }}</strong>
-                {{ app()->getLocale() == 'fr' ? '. Après cette date, les montants de la présente facture seront automatiquement mis à jour et remplacés par les frais du package en vigueur au moment du paiement. ' : 'After this date, the amounts on this invoice will automatically be updated and replaced by the applicable package fees at the time of payment.' }}
+                {{ $locale == 'fr' ? '. Après cette date, les montants de la présente facture seront automatiquement mis à jour et remplacés par les frais du package en vigueur au moment du paiement. ' : 'After this date, the amounts on this invoice will automatically be updated and replaced by the applicable package fees at the time of payment.' }}
             </p>
             <p class="text-muted">
                 <span
-                    style="color: #ff0000"><strong><sup>*</sup></strong></span>{{ app()->getLocale() == 'fr' ? 'Ce document est généré automatiquement et ne nécessite pas de signature.' : 'This document is automatically generated and does not require a signature.' }}
+                    style="color: #ff0000"><strong><sup>*</sup></strong></span>{{ $locale == 'fr' ? 'Ce document est généré automatiquement et ne nécessite pas de signature.' : 'This document is automatically generated and does not require a signature.' }}
             </p>
         </div>
     </div>

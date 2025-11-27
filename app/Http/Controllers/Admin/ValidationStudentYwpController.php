@@ -17,10 +17,10 @@ class ValidationStudentYwpController extends VoyagerBaseController
     public function index(Request $request)
     {
         // Récupérer les congrès pour le filtre
-        $congresses = Congress::orderBy('id', 'desc')->get();
+        $congress = Congress::latest()->first();
 
         // Construction de la requête avec filtres
-        $query = Participant::with(['validation_ywp_student', 'congres'])->where('participant_category_id',4);
+        $query = Participant::with(['validation_ywp_student', 'congres'])->where(['participant_category_id' => 4, 'congres_id' => $congress->id]);
 
         // Filtre par type
         if ($request->filled('type_filter')) {
@@ -42,14 +42,32 @@ class ValidationStudentYwpController extends VoyagerBaseController
         $participants = $query->orderBy('created_at', 'desc')->get();
 
         // Statistiques
+
+
         $stats = [
-            'totalParticipants' => $query->count(),
-            'validatedParticipants' => StudentYwpValidation::where('status', StudentYwpValidation::STATUS_APPROVED)->count(),
-            'pendingValidations' => StudentYwpValidation::where('status', StudentYwpValidation::STATUS_PENDING)->count(),
-            'rejectedValidations' => StudentYwpValidation::where('status', StudentYwpValidation::STATUS_REJECTED)->count(),
+            'totalParticipants' => (clone $query)->count(),
+
+            'validatedParticipants' => (clone $query)
+                ->whereHas('validation_ywp_student', function ($q) {
+                    $q->where('status', StudentYwpValidation::STATUS_APPROVED);
+                })
+                ->count(),
+
+            'pendingValidations' => (clone $query)
+                ->whereHas('validation_ywp_student', function ($q) {
+                    $q->where('status', StudentYwpValidation::STATUS_PENDING);
+                })
+                ->count(),
+
+            'rejectedValidations' => (clone $query)
+                ->whereHas('validation_ywp_student', function ($q) {
+                    $q->where('status', StudentYwpValidation::STATUS_REJECTED);
+                })
+                ->count(),
         ];
 
-        return view('voyager::view-validation-ywp-students.browse', compact('participants', 'stats', 'congresses'));
+
+        return view('voyager::view-validation-ywp-students.browse', compact('participants', 'stats'));
     }
 
     public function approve($id)

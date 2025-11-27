@@ -30,6 +30,8 @@ class Invoice extends Model
         'updated_at',
         'currency',
         'user_id_validation',
+        'period_id',
+        'deadline'
 
     ];
 
@@ -84,5 +86,10 @@ class Invoice extends Model
     public function items()
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class, 'period_id');
     }
 }

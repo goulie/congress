@@ -9,7 +9,12 @@ class InvoiceItem extends Model
 {
     protected $table = 'invoice_items';
     protected $fillable = [
-        'invoice_id', 'description_fr', 'price', 'description_en', 'currency'
+        'invoice_id',
+        'description_fr',
+        'price',
+        'description_en',
+        'currency',
+        'tarif_id'
     ];
 
     public function invoice()

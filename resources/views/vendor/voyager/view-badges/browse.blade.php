@@ -316,7 +316,7 @@
                                                 </td>
                                                 <td>{{ $badge->nationality->libelle_fr }}</td>
                                                 <td class="actions text-right">
-                                                    <a class="btn btn-sm btn-primary" href="{{ route('voyager.view-badges.edit', $badge->id) }}"
+                                                    <a class="btn btn-sm btn-primary" href="{{ route('badge.view', $badge->id) }}"
                                                         class="action-btn"> Voir
                                                         <i class="voyager-eye"></i>
                                                     </a>
