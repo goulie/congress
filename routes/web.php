@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BadgeController;
 use App\Http\Controllers\Admin\InvitationLetterController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ValidationPaymentController;
@@ -128,6 +129,11 @@ Route::prefix('payment')->group(function () {
     Route::get('/{id}/details', [ValidationPaymentController::class, 'details']);
     Route::post('approve/{id}', [ValidationPaymentController::class, 'approve_payment'])->name('validation.approve.payment');
 });
+
+Route::prefix('badge')->group(function () {
+    Route::get('/{id}/details', [BadgeController::class, 'view'])->name('badge.view');
+});
+
 Route::get('/send_inv', function () {
     try {
         $invoice = App\Models\Invoice::latest('id')->first();

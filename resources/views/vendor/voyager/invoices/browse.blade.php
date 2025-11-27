@@ -149,9 +149,30 @@
                                                     !auth()->user()->isAdmin() &&
                                                     $data->participant->isYwpOrStudent == false)
                                                 <tr>
-                                                    <td colspan="10" class="text-center text-danger">
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" disabled>
+
+                                                    </td>
+                                                    <td>
+                                                        {{ app()->getLocale() == 'fr' ? $data->invoice_number : $data->invoice_number }}
+                                                    </td>
+                                                    <td>
+                                                        {{ app()->getLocale() == 'fr' ? $data->invoice_date : $data->invoice_date }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->participant->lname . ' ' . $data->participant->fname }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $data->participant->email }}
+                                                    </td>
+
+                                                    <td colspan="5" class="text-center text-danger">
                                                         <div class="alert alert-danger">
-                                                            {{ app()->getLocale() == 'fr' ? 'Votre facture sera accessible une fois votre inscription validée. ' : 'Your invoice will be accessible once your registration is validated.' }}
+                                                            <i class="bi bi-lock-fill"></i>
+                                                            {{ app()->getLocale() == 'fr'
+                                                                ? 'Cette facture sera accessible une fois votre inscription validée. Vous recevrez une notification par e-mail dès que votre dossier aura été accepté.'
+                                                                : 'This invoice will be accessible once your registration has been approved. You will receive an email notification as soon as your application is accepted.' }}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -179,31 +200,42 @@
                                                             {{ $data->total_amount . ' ' . ($data->currency === 'USD' ? '$' : ($data->currency === 'EUR' ? '€' : $data->currency)) }}
                                                         </span>
                                                     </td>
-                                                    <td>
-                                                        @php
-                                                            switch ($data->status) {
-                                                                case 'paid':
-                                                                case 'Payé':
-                                                                    $badgeClass = 'badge-success';
-                                                                    break;
-                                                                case 'pending':
-                                                                case 'En attente':
-                                                                    $badgeClass = 'badge-warning';
-                                                                    break;
-                                                                case 'cancelled':
-                                                                case 'Annulé':
-                                                                    $badgeClass = 'badge-danger';
-                                                                    break;
-                                                                default:
-                                                                    $badgeClass = 'badge-secondary';
-                                                                    break;
-                                                            }
-                                                        @endphp
+                                                    @php
+                                                        // Traductions des statuts
+                                                        $translations = [
+                                                            'Paid' => ['fr' => 'Payé', 'en' => 'Paid'],
+                                                            'Unpaid' => ['fr' => 'Non payé', 'en' => 'Unpaid'],
+                                                        ];
 
+                                                        // Sélection du statut original
+                                                        $status = $data->status;
+
+                                                        // Récupération de la traduction selon la locale
+                                                        $translatedStatus =
+                                                            $translations[$status][app()->getLocale()] ?? $status;
+
+                                                        // Détermination du badge
+                                                        switch ($status) {
+                                                            case 'Paid':
+                                                                $badgeClass = 'badge-success';
+                                                                break;
+
+                                                            case 'Unpaid':
+                                                                $badgeClass = 'badge-danger';
+                                                                break;
+
+                                                            default:
+                                                                $badgeClass = 'badge-secondary';
+                                                                break;
+                                                        }
+                                                    @endphp
+
+                                                    <td>
                                                         <span class="badge {{ $badgeClass }}">
-                                                            {{ app()->getLocale() == 'fr' ? $data->status : ucfirst($data->status) }}
+                                                            {{ $translatedStatus }}
                                                         </span>
                                                     </td>
+
                                                     <td>
                                                         {{ $data->payment_method ?? 'N/A' }}
                                                     </td>

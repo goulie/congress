@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tarif extends Model
 {
     protected $table = 'tarifs';
-    protected $fillable = ['periode_id', 'categorie_registrant_id', 'montant', 'congres_id'];
+    protected $fillable = ['periode_id', 'categorie_registrant_id', 'montant', 'congres_id','tarif_id'];
 
     public function periode()
     {
@@ -23,5 +23,10 @@ class Tarif extends Model
     public function congres()
     {
         return $this->belongsTo(Congress::class, 'congres_id');
+    }
+
+    public function tarif()
+    {
+        return $this->belongsTo(Tarif::class, 'tarif_id');
     }
 }

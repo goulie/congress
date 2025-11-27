@@ -17,7 +17,7 @@
             enctype="multipart/form-data">
 @endif
 @csrf
-
+<input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 <div class="box-body">
     <div class="row">
         <!-- Catégorie -->
@@ -250,12 +250,14 @@
                 <i class="bi bi-card-image"></i> {{ __('registration.step3.fields.student_card') }}
                 <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
             </label>
-            <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*,application/pdf"
+            <input type="file" class="form-control" name="student_card" id="student_card"
+                accept="image/*,application/pdf"
                 {{ isset($participant) && $participant->student_card ? '' : 'required' }}>
             @if (isset($participant) && $participant->student_card)
-                <a href="{{ Voyager::image($participant->student_card) }}"
-                    target="_blank">
-                    <i class="bi bi-box-arrow-up-right"></i> {{ __('registration.step3.buttons.open') }}
+                <a href="{{ Voyager::image($participant->student_card) }}" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
+                    {{-- <span class="text-danger">jpeg, jpg, png, Max: 2Mo</span> --}}
                 </a>
                 <div class="form-check mt-2">
                     <label class="form-check-label text-danger" for="remove_student_card">
@@ -277,7 +279,9 @@
             @if (isset($participant) && $participant->student_letter)
                 <a class="btn btn-primary btn-sm" href="{{ Voyager::image($participant->student_letter) }}"
                     target="_blank">
-                    <i class="bi bi-box-arrow-up-right"></i> {{ __('registration.step3.buttons.open') }}
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
+                    {{-- <span class="text-danger">jpeg, jpg, png, Max: 2Mo</span> --}}
                 </a>
                 <div class="form-check mt-2">
                     <label class="form-check-label text-danger" for="remove_student_letter">
@@ -411,7 +415,7 @@
                 {{ __('registration.step2.fields.telephone') }}
             </label>
 
-            <input type="number" class="form-control" id="telephone-input" minlength="8" maxlength="15"
+            <input type="tel" class="form-control" id="telephone" minlength="8" maxlength="15"
                 name="telephone" placeholder="{{ __('registration.step2.placeholders.telephone') }}"
                 @isset($participant) value="{{ $participant->phone }}" @endisset required>
 
@@ -517,7 +521,7 @@
         <button type="button" id="submit" class="btn btn-outline-success">
             {{ __('registration.step3.buttons.save_continue') }} <i class="bi bi-check-circle-fill"></i>
         </button>
-        
+
     </div>
 </div>
 
@@ -658,10 +662,54 @@
     <!-- BOOTSTRAP 3 DATEPICKER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.fr.min.js">
-    </script>
+    //jquery cdn
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
 
+    </script>
+    <script>
+        $(document).ready(function() {
+            const phoneInput = document.querySelector("#telephone");
+
+            if (phoneInput) {
+                const iti = window.intlTelInput(phoneInput, {
+                    initialCountry: "auto",
+                    separateDialCode: true,
+                    nationalMode: false,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                    //preferredCountries: ['fr', 'be', 'ch', 'de'] // Pays favoris
+                    geoIpLookup: function(callback) {
+                        fetch('https://ipapi.co/json/')
+                            .then(res => res.json())
+                            .then(data => callback(data
+                                .country_code)) // exemple : "CI", "FR", "BE"
+                            .catch(() => callback('us')); // valeur par défaut si erreur
+                    },
+
+
+                });
+
+                // Validation avant soumission
+                const form = phoneInput.closest('form');
+                form.addEventListener('submit', function(e) {
+
+
+                    // Injecter le numéro complet (avec indicatif) dans un champ caché si nécessaire
+                    //injecter dans id telephone
+
+                    const fullNumber = iti.getNumber();
+                    const hiddenInput = document.getElementById('telephone');
+                    hiddenInput.value = fullNumber;
+
+                });
+            }
+        });
+    </script>
     <script>
         $(function() {
+
+
             // ============================
             // CONFIG / CONSTANTES (serveur -> JS)
             // ============================

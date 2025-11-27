@@ -93,7 +93,7 @@ class ValidationPaymentController extends VoyagerBaseController
             $invoice->user_id_validation = auth()->id();
             $invoice->save();
 
-            
+
 
             // Envoi de l'email de validation
             $this->emailService->sendInvoiceEmail($invoice);
@@ -105,8 +105,6 @@ class ValidationPaymentController extends VoyagerBaseController
         return response()->json([
             'message' => 'Le paiement a été validé avec succès.'
         ]);
-
-        
     }
 
     public function reject(Request $request, $id)
@@ -155,7 +153,7 @@ class ValidationPaymentController extends VoyagerBaseController
             'payment_date' => $invoice->payment_date,
             'payment_method' => $invoice->payment_method,
             'validator' => $invoice->userValidation->name ?? 'Aucun',
-
+            'raison' => $invoice->participant->validation_ywp_student->first()->reason ?? '',
             // Participant
             'fname' => $invoice->participant->fname,
             'lname' => $invoice->participant->lname,

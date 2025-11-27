@@ -39,7 +39,7 @@ class GroupeRegistrant extends Controller
         try {
             DB::beginTransaction();
 
-            $locale = app()->getLocale();
+            $locale = $request->langue;
 
             /* ============================================================
                  * CHECK MEMBERSHIP
@@ -109,6 +109,8 @@ class GroupeRegistrant extends Controller
                 'autre_type_org'    => 'required_if:type_organisation,10|string|nullable|max:255',
                 'fonction'          => 'required|string|max:255',
                 'job_country'       => 'nullable|exists:countries,id',
+                'passport_number' => 'required|string|max:50',
+                'passport_date'   => 'required|date|after:today',
             ];
 
 
@@ -117,8 +119,7 @@ class GroupeRegistrant extends Controller
             // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             if ($request->categorie == 1) {
 
-                $rules['passport_number'] = 'required|string|max:50';
-                $rules['passport_date']   = 'required|date|after:today';
+                
 
                 // Pass obligatoire ?
                 $rules['pass_deleguate'] = 'required|in:oui,non';
@@ -177,7 +178,7 @@ class GroupeRegistrant extends Controller
 
             /* ============================================================
                  * ENREGISTREMENT EN BDD
-                 * ============================================================ */
+            * ============================================================ */
             $participant = Participant::create([
                 'civility_id'             => $request->title,
                 'gender_id'               => $request->gender,
@@ -283,7 +284,7 @@ class GroupeRegistrant extends Controller
 
     public function update(Request $request)
     {
-        $locale = app()->getLocale();
+        $locale = $request->langue;
 
         try {
             DB::beginTransaction();
@@ -362,18 +363,16 @@ class GroupeRegistrant extends Controller
                 'dinner'            => 'required|in:oui,non',
                 'visit'             => 'required|in:oui,non',
                 'lettre_invitation' => 'required|in:oui,non',
+                'passport_number'   => 'required|string|max:255',
+                'passport_date'     => 'required|date|after:today',
+                
             ];
 
             /* ============================================================
          * CATÉGORIE : DÉLÉGUÉ
          * ============================================================ */
             if ($request->categorie == 1) {
-
-                $rules['passport_number'] = 'required|string|max:50';
-                $rules['passport_date']   = 'required|date|after:today';
-
                 $rules['pass_deleguate']  = 'required|in:oui,non';
-
                 if ($request->pass_deleguate == 'oui') {
                     $rules['pass_date'] = 'required|array|min:1';
                 } else {
@@ -390,12 +389,6 @@ class GroupeRegistrant extends Controller
             if ($request->categorie == 4) {
 
                 $rules['ywp_or_student'] = 'required|in:ywp,student';
-
-                $rules['membership'] = 'required|in:oui,non';
-
-                if ($request->membership == 'oui') {
-                    $rules['member_code'] = 'required|string|max:255';
-                }
 
 
                 if ($request->hasFile('student_card')) {

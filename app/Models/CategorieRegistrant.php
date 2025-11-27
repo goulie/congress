@@ -50,6 +50,8 @@ class CategorieRegistrant extends Model
             'libelle' => $categorie->libelle,
             'montant' => $categorie->tarifs->first()->montant ?? 0,
             'periode' => $periodeActive->libelle,
+            'tarif_id' => $categorie->tarifs->first()->id ?? null,
+            //'deadline' => $periodeActive->end_date,
         ];
     }
 

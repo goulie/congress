@@ -1,6 +1,7 @@
 @php
     use App\Models\JourPassDelegue;
     use Carbon\Carbon;
+    $locale = $participant->langue ?? app()->getLocale();
 @endphp
 
 @if($locale === 'fr')
@@ -12,10 +13,10 @@
 @endif
 
 
-Cher/Chère **{{ $participant->fname }} {{ $participant->lname }}**,
+{{ $participant->civility->translate($locale,'fallbackLocale')->libelle }} **{{ $participant->fname }} {{ $participant->lname }}**,
 
 @if ($participant->ywp_or_student)
-Nous avons le plaisir de vous informer que votre inscription aux **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**  est en attente de validation par l'administrateur du site.
+Nous avons le plaisir de vous informer que votre inscription au **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**  est en attente de validation par l'administrateur du site.
 @else
 Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->congres->translate($locale,'fallbackLocale')->title ?? config('app.name') }}**. {{ $participant->ywp_or_student ? 'Votre inscription est en attente de validation par l\'administrateur du site.' : 'Votre inscription a été enregistrée avec succès.' }}
 @endif
@@ -33,15 +34,17 @@ Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->
 
 ### Catégorie et Options
 - **Catégorie** : {{ $participant->participantCategory->translate($locale,'fallbackLocale')->libelle ?? 'Non spécifiée' }}
+@if ($participant->participant_category_id !==4 || $participant->pass_deleguate == 'non')
 - **Statut membre** : {{ $participant->membre_aae == 'oui' ? 'Membre' : 'Non-membre' }}
+@endif
 - **Dîner de gala** : {{ $participant->diner == 'oui' ? '✅ Oui' : '❌ Non' }}
 <p style="color:red">
     {{ $participant->diner == 'oui' ? 'Votre place au diner gala ne sera garantie qu\'après le paiement de vos frais de participation.' : '' }}
 </p>
-
 - **Visite technique** : {{ $participant->visite == 'oui' ? '✅ Oui' : '❌ Non' }}
+@if ($participant->participant_category_id !==4)
 - **Pass journalier** : {{ $participant->pass_deleguate == 'oui' ? '✅ Oui' : '❌ Non' }}
-
+@endif
 @if($participant->pass_deleguate == 'oui' && !empty($participant->deleguate_day))
 - **Dates de pass sélectionnées** : 
 @php
@@ -125,14 +128,17 @@ We are pleased to confirm your registration for the **{{ $participant->congres->
 
 ### Category and Options
 - **Category**: {{ $participant->participantCategory->name ?? 'Not specified' }}
+@if ($participant->participant_category_id !==4 || $participant->pass_deleguate == 'non')
 - **Member status**: {{ $participant->membre_aae == 'oui' ? 'Member' : 'Non-member' }}
+@endif
 - **Gala Dinner**: {{ $participant->diner == 'oui' ? '✅ Yes' : '❌ No' }}
 <p style="color:red">
     {{ $participant->diner == 'oui' ? 'Your seat for the gala dinner will only be guaranteed after the payment of your participation fees.' : '' }}
 </p>
 - **Technical Visit**: {{ $participant->visite == 'oui' ? '✅ Yes' : '❌ No' }}
+@if ($participant->participant_category_id !==4)
 - **Daily Pass**: {{ $participant->pass_deleguate == 'oui' ? '✅ Yes' : '❌ No' }}
-
+@endif
 @if($participant->pass_deleguate == 'oui' && !empty($participant->deleguate_day))
 - **Selected pass dates**:
 @php
@@ -187,7 +193,7 @@ Best regards,<br>
 
 <small style="color: #666;">
 This email was sent automatically. Please do not reply directly.<br>
-Reference Number: #{{ $participant->id }}-{{ strtoupper(Str::random(6)) }}
+{{-- Reference Number: #{{ $participant->id }}-{{ strtoupper(Str::random(6)) }} --}}
 </small>
 </x-mail::message>
 @endif
