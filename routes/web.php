@@ -128,6 +128,7 @@ Route::prefix('validator')->group(function () {
 Route::prefix('payment')->group(function () {
     Route::get('/{id}/details', [ValidationPaymentController::class, 'details']);
     Route::post('approve/{id}', [ValidationPaymentController::class, 'approve_payment'])->name('validation.approve.payment');
+    Route::post('/group', [ValidationPaymentController::class, 'approve_group'])->name('validation.approve_group.payment');
 });
 
 Route::prefix('badge')->group(function () {

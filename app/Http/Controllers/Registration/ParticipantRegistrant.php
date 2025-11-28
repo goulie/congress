@@ -66,7 +66,7 @@ class ParticipantRegistrant extends VoyagerBaseController
             $participant = Participant::where('uuid', $request->uuid)->first();
 
             //
-            if ($participant->invoices->first()->status == 'paid') {
+            if ($participant->invoices->first() && $participant->invoices->first()->status == 'paid') {
                 return response()->json([
                     'success' => false,
                     'message' => $locale == 'fr'

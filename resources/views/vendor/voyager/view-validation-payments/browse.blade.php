@@ -107,7 +107,8 @@
                         <div class="card-content">
                             <p class="card-title">TOTAL</p>
                             <p class="card-value">{{ $stats['totalInvoices'] }}</p>
-                            <p class="card-value">{{ $stats['amountTotal'] }}</p>
+                            <p class="card-value">
+                                {{ number_format($stats['amountTotal'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
                         </div>
                     </div>
                 </div>
@@ -122,7 +123,8 @@
                         <div class="card-content">
                             <p class="card-title">PAYES</p>
                             <p class="card-value">{{ $stats['totalPaid'] }}</p>
-                            <p class="card-value">{{ $stats['amountPaid'] }}</p>
+                            <p class="card-value">
+                                {{ number_format($stats['amountPaid'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
                         </div>
                     </div>
                 </div>
@@ -137,7 +139,8 @@
                         <div class="card-content">
                             <p class="card-title">IMPAYES</p>
                             <p class="card-value">{{ $stats['totalUnpaid'] }}</p>
-                            <p class="card-value">{{ $stats['amountUnpaid'] }}</p>
+                            <p class="card-value">
+                                {{ number_format($stats['amountUnpaid'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
                         </div>
                     </div>
                 </div>
@@ -150,32 +153,34 @@
             <div class="col-md-12">
                 <div class="panel panel-bordered">
                     <div class="panel-body">
-                        <form method="GET" action="{{ route('voyager.view-validation-ywp-students.index') }}"
-                            id="filterForm">
+                        <form method="GET" action="#" id="filterForm">
+
                             <div class="row">
+
+                                <!-- Filtre statut paiement -->
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="type_filter">Type d'inscrit:</label>
-                                        <select name="type_filter" id="type_filter" class="form-control select2">
-                                            <option value="">Tous les types</option>
-                                            <option value="student"
-                                                {{ request('type_filter') == 'student' ? 'selected' : '' }}>Étudiant
+                                        <label for="status">Statut paiement :</label>
+                                        <select name="status" id="status" class="form-control select2">
+                                            <option value="">Tous</option>
+                                            <option value="Paid" {{ request('status') == 'Paid' ? 'selected' : '' }}>Payé
                                             </option>
-                                            <option value="ywp" {{ request('type_filter') == 'ywp' ? 'selected' : '' }}>
-                                                YWP</option>
-
+                                            <option value="Unpaid" {{ request('status') == 'Unpaid' ? 'selected' : '' }}>
+                                                Impayé
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
 
+                                <!-- Filtre méthode de paiement -->
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="status_filter">Statut validation:</label>
-                                        <select name="status_filter" id="status_filter" class="form-control select2">
-                                            <option value="">Tous les statuts</option>
-                                            @foreach (\App\Models\StudentYwpValidation::getStatuses() as $value => $label)
+                                        <label for="method">Méthode paiement :</label>
+                                        <select name="method" id="method" class="form-control select2">
+                                            <option value="">Toutes</option>
+                                            @foreach (\App\Models\Invoice::getPaymentMethod() as $value => $label)
                                                 <option value="{{ $value }}"
-                                                    {{ request('status_filter') == $value ? 'selected' : '' }}>
+                                                    {{ request('method') == $value ? 'selected' : '' }}>
                                                     {{ $label }}
                                                 </option>
                                             @endforeach
@@ -183,37 +188,69 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <div class="form-group" style="margin-top: 25px;">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="voyager-search"></i> Filtrer
-                                        </button>
-                                        <a href="{{ route('voyager.view-validation-ywp-students.index') }}"
-                                            class="btn btn-default">
-                                            <i class="voyager-refresh"></i> Réinitialiser
-                                        </a>
+                                <!-- Filtre date facture -->
+                                {{-- <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="date">Date facture :</label>
+                                        <input type="date" name="date" id="date" class="form-control"
+                                            value="{{ request('date') }}">
                                     </div>
+                                </div> --}}
+
+                                <!-- Filtre ID facture -->
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="voyager-search"></i> Filtrer
+                                    </button>
+
+                                    <a href="{{ route('voyager.view-validation-payments.index') }}"
+                                        class="btn btn-default">
+                                        <i class="voyager-refresh"></i> Réinitialiser
+                                    </a>
                                 </div>
+
                             </div>
+
+                            <!-- Boutons -->
+                            {{--  <div class="row">
+                                <div class="col-md-12" style="margin-top: 10px;">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="voyager-search"></i> Filtrer
+                                    </button>
+
+                                    <a href="{{ route('voyager.view-validation-payments.index') }}" class="btn btn-default">
+                                        <i class="voyager-refresh"></i> Réinitialiser
+                                    </a>
+                                </div>
+                            </div> --}}
+
                         </form>
                     </div>
                 </div>
             </div>
         </div>
 
+
         <!-- Tableau avec DataTables -->
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-bordered">
                     <div class="panel-body">
+                        <button class="btn btn-success mb-3" id="btnPaySelected">
+                            <i class="voyager-check"></i> Payer les factures sélectionnées
+                        </button>
                         <div class="table-responsive">
                             <table id="inscritsTable" class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>
+                                            <input type="checkbox" id="checkAll">
+                                        </th>
                                         <th>ID FACTURE</th>
                                         <th>Nom complet</th>
                                         <th>Catégorie</th>
                                         <th>Email</th>
+                                        <th>Organisation</th>
                                         <th>Methode Paiement</th>
                                         <th>Montant</th>
                                         <th>Statut</th>
@@ -224,6 +261,10 @@
                                 <tbody>
                                     @foreach ($participants as $participant)
                                         <tr>
+                                            <td>
+                                                <input type="checkbox" class="invoice-check" value="{{ $participant->id }}"
+                                                    @if ($participant->status == App\Models\Invoice::PAYMENT_STATUS_PAID) disabled @endif>
+                                            </td>
                                             <td>
                                                 <a href="#" style="text-decoration: none">
                                                     <span class="label label-info">
@@ -236,6 +277,7 @@
                                             </td>
                                             <td>{{ $participant->participant->participantCategory->libelle }}</td>
                                             <td>{{ $participant->participant->email }}</td>
+                                            <td>{{ $participant->participant->organisation }}</td>
                                             <td>{{ $participant->payment_method ?? 'N/A' }}</td>
                                             <td>
                                                 <span class="label label-info" style="font-weight: bold">
@@ -244,7 +286,8 @@
                                             </td>
                                             <td>
                                                 @if ($participant->status == App\Models\Invoice::PAYMENT_STATUS_PAID)
-                                                    <span class="label label-success">{{ App\Models\Invoice::PAYMENT_STATUS_PAID }}</span>
+                                                    <span
+                                                        class="label label-success">{{ App\Models\Invoice::PAYMENT_STATUS_PAID }}</span>
                                                 @else
                                                     <span class="label label-danger">Impayé</span>
                                                 @endif
@@ -259,11 +302,13 @@
                                                     class="btn btn-sm btn-warning pull-right" title="Voir">
                                                     <i class="voyager-eye"></i>
                                                 </a>
-                                                <button class="btn btn-sm btn-success pull-right" title="Approuver"
-                                                    style="margin-right: 5px;"
-                                                    onclick="validatePayment({{ $participant->id }})">
-                                                    <i class="voyager-check"></i>
-                                                </button>
+                                                @if ($participant->status !== App\Models\Invoice::PAYMENT_STATUS_PAID)
+                                                    <button class="btn btn-sm btn-success pull-right" title="Approuver"
+                                                        style="margin-right: 5px;"
+                                                        onclick="validatePayment({{ $participant->id }})">
+                                                        <i class="voyager-check"></i>
+                                                    </button>
+                                                @endif
 
                                             </td>
                                         </tr>
@@ -377,6 +422,34 @@
         </div>
     </div>
 
+    {{-- Modal paiement groupé --}}
+    <div class="modal fade" id="groupPayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h4 class="modal-title">Paiement groupé</h4>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <label>Méthode de paiement :</label>
+                    <select id="groupPaymentMethod" class="form-control">
+                        @foreach (App\Models\Invoice::getPaymentMethod() as $k => $v)
+                            <option value="{{ $k }}">{{ $v }}</option>
+                        @endforeach
+                    </select>
+
+                    <input type="hidden" id="groupInvoices">
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="btnConfirmGroupPay">Confirmer le paiement</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 @stop
 
 
@@ -471,7 +544,7 @@
                 html: `
             <div class="text-left">
                 <label><strong>Mode de paiement :</strong></label>
-                <select id="paymentMethod" class="swal2-select" style="width:100%; padding:8px;">
+                <select id="paymentMethod" class="swal2-select" style="width:320px; padding:8px;">
                     ${options}
                 </select>
             </div>
@@ -496,15 +569,16 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-
+                    $('#loader').removeClass('hidden').show();
                     $.ajax({
-                        url: "/get_register/payment/approve/" + id ,
+                        url: "/get_register/payment/approve/" + id,
                         method: "POST",
                         data: {
                             _token: $("meta[name='csrf-token']").attr("content"),
                             payment_method: result.value.method
                         },
                         success: function(res) {
+                            $('#loader').hide();
 
                             Swal.fire({
                                 icon: "success",
@@ -518,6 +592,7 @@
                             setTimeout(() => location.reload(), 1200);
                         },
                         error: function() {
+                            $('#loader').hide();
                             Swal.fire({
                                 icon: "error",
                                 title: "Erreur",
@@ -529,5 +604,52 @@
                 }
             });
         }
+
+        // Cocher / décocher tout
+        $('#checkAll').on('click', function() {
+            $('.invoice-check').prop('checked', this.checked);
+        });
+
+        $('#btnPaySelected').on('click', function() {
+
+            let ids = [];
+            $(".invoice-check:checked").each(function() {
+                ids.push($(this).val());
+            });
+
+            if (ids.length === 0) {
+                return Swal.fire("Aucune facture", "Veuillez sélectionner au moins une facture.", "warning");
+            }
+
+            $("#groupInvoices").val(JSON.stringify(ids));
+            $("#groupPayModal").modal("show");
+        });
+
+        // Confirmation du paiement groupé
+        $('#btnConfirmGroupPay').on('click', function() {
+            $('#loader').removeClass('hidden').show();
+            $("#groupPayModal").modal("hide");
+            let ids = JSON.parse($("#groupInvoices").val());
+            let method = $("#groupPaymentMethod").val();
+
+            $.ajax({
+                url: "/get_register/payment/group",
+                method: "POST",
+                data: {
+                    _token: $("meta[name='csrf-token']").attr("content"),
+                    invoices: ids,
+                    method: method
+                },
+                success: function(res) {
+                    $('#loader').hide();
+                    Swal.fire("Succès", res.message, "success");
+                    setTimeout(() => location.reload(), 1000);
+                },
+                error: function() {
+                    $('#loader').hide();
+                    Swal.fire("Erreur", "Impossible de valider le paiement groupé.", "error");
+                }
+            });
+        });
     </script>
 @stop

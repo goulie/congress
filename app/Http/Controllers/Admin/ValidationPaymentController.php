@@ -25,54 +25,47 @@ class ValidationPaymentController extends VoyagerBaseController
     }
     public function index(Request $request)
     {
-        // Récupérer les congrès pour le filtre
-        $congress = Congress::orderBy('id', 'desc')->latest()->first();
+        // Congrès actif (le plus récent)
+        $congress = Congress::latest()->first();
 
-        // Construction de la requête avec filtres
-        $query = Invoice::where('congres_id', $congress->id);
-        /* 
-        'invoice_number',
-        'invoice_date',
-        'status',
-        'user_id',
-        'total_amount',
-        'amount_paid',
-        'participant_id',
-        'payment_method',
-        'congres_id',
-        'payment_date',
-        'created_at',
-        'updated_at',
-        'currency',
-         */
-        // Filtre par type
-        /*         if ($request->filled('type_filter')) {
-            $query->where('ywp_or_student', $request->type_filter);
+        if (!$congress) {
+            return abort(404, 'Aucun congrès trouvé.');
         }
 
-        // Filtre par statut de validation
-        if ($request->filled('status_filter')) {
-            $query->whereHas('validation_ywp_student', function ($q) use ($request) {
-                $q->where('status', $request->status_filter);
-            });
-        }       
- */
+        // Query principale
+        $query = Invoice::where('congres_id', $congress->id);
 
+        /* ---- Filtres (ajoute si nécessaire) ---- */
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('method')) {
+            $query->where('payment_method', $request->method);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('invoice_date', $request->date);
+        }
+
+        // Liste pour le tableau
         $participants = $query->orderBy('created_at', 'desc')->get();
-        // Statistiques
+
+        /* ---- Statistiques correctes ---- */
+
         $stats = [
             'totalInvoices' => $query->count(),
-            'amountTotal' => $query->sum('total_amount'),
+            'amountTotal'   => $query->sum('total_amount'),
 
-            'totalPaid' => $query->count(),
-            'amountPaid' => $query->sum('amount_paid'),
+            'totalPaid'     => $query->clone()->where('status', Invoice::PAYMENT_STATUS_PAID)->count(),
+            'amountPaid'    => $query->clone()->where('status', Invoice::PAYMENT_STATUS_PAID)->sum('amount_paid'),
 
-            'totalUnpaid' => $query->count(),
-            'amountUnpaid' => $query->sum('amount_paid'),
+            'totalUnpaid'   => $query->clone()->where('status', Invoice::PAYMENT_STATUS_UNPAID)->count(),
+            'amountUnpaid'  => $query->clone()->where('status', Invoice::PAYMENT_STATUS_UNPAID)->sum('total_amount'),
         ];
 
 
-        return view('voyager::view-validation-payments.browse', compact('stats', 'participants'));
+        return view('voyager::view-validation-payments.browse', compact( 'congress', 'stats', 'participants'));
     }
 
     public function approve_payment(Request $request, $id)
@@ -84,7 +77,6 @@ class ValidationPaymentController extends VoyagerBaseController
             if (!$invoice) {
                 return response()->json(['message' => 'Facture introuvable'], 404);
             }
-
 
             $invoice->status = Invoice::PAYMENT_STATUS_PAID;
             $invoice->amount_paid = $invoice->total_amount;
@@ -163,5 +155,39 @@ class ValidationPaymentController extends VoyagerBaseController
             'category' => $invoice->participant->participantCategory->libelle ?? '',
             'organisation' => $invoice->participant->organisation,
         ]);
+    }
+
+    public function approve_group(Request $request)
+    {
+        try {
+            $request->validate([
+                "invoices" => "required|array",
+                "method" => "required|string"
+            ]);
+
+            foreach ($request->invoices as $id) {
+                $invoice = Invoice::find($id);
+
+                if ($invoice && $invoice->status == Invoice::PAYMENT_STATUS_UNPAID) {
+
+                    $invoice->update([
+                        'status' => Invoice::PAYMENT_STATUS_PAID,
+                        'amount_paid' => $invoice->total_amount,
+                        'payment_method' => $request->method,
+                        'payment_date' => now(),
+                        'user_id_validation' => auth()->id()
+                    ]);
+
+                    // Envoi de l'email de validation
+                    $this->emailService->sendInvoiceEmail($invoice);
+                }
+            }
+
+            return response()->json(["message" => "Paiement groupé validé avec succès"]);
+        } catch (\Exception $e) {
+
+            Log::error('erreur lors de la validation du paiement groupé :' . $e->getMessage());
+            return response()->json(['message' => 'Une erreur s\'est produite lors de la validation du paiement.'], 500);
+        }
     }
 }
