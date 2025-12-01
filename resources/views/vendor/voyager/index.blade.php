@@ -133,7 +133,7 @@
     @endphp
 
     <div class="page-content">
-        <div class="container">
+        <div class="container-fluid">
             <!-- Carte / Period Card -->
             <div class="period-card">
                 <h3>
@@ -208,8 +208,28 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-md-4 mt-4 card" style="font-weight: bold;font-size: 1.5em">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Tarif</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>John</td>
+                                <td>200 Eur</td>
+                            </tr>
 
-            @if (!auth()->user()->isValidator())
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            @if (auth()->user()->isParticipant() || auth()->user()->isAdmin())
 
 
                 <div class="row dashboard">
@@ -257,7 +277,7 @@
                         </a>
                     </div>
 
-                    
+
                 </div>
 
 
@@ -330,9 +350,9 @@
                     </div>
 
                 </div>
-            @else
+            @elseif(auth()->user()->isValidator() || auth()->user()->isAdmin())
                 <div class="row dashboard">
-                    
+
                     <div class="col-md-12 col-sm-12 mb-4">
                         <a href="{{ route('voyager.view-validation-ywp-students.index') }}" class="btn btn-block">
                             <div class="dash-btn" style="background-color: #9cc9f7">
@@ -344,12 +364,33 @@
                                         Process Young Professionals and Students
                                     @endif
                                 </h4>
-                                
+
                             </div>
                         </a>
                     </div>
 
                 </div>
+            @elseif(auth()->user()->isFinance() || auth()->user()->isAdmin())
+                <div class="row dashboard">
+
+                    <div class="col-md-12 col-sm-12 mb-4">
+                        <a href="{{ route('voyager.view-validation-payments.index') }}" class="btn btn-block">
+                            <div class="dash-btn" style="background-color: #9cc9f7">
+                                <i class="bi bi-file-medical-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Traiter les factures
+                                    @else
+                                        Traiter les factures
+                                    @endif
+                                </h4>
+
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            @else
             @endif
         </div>
     </div>

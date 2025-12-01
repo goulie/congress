@@ -105,10 +105,16 @@
                             <i class="bi bi-people-fill" style="color:blue;font-weight:bold"></i>
                         </div>
                         <div class="card-content">
-                            <p class="card-title">TOTAL</p>
-                            <p class="card-value">{{ $stats['totalInvoices'] }}</p>
-                            <p class="card-value">
-                                {{ number_format($stats['amountTotal'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
+                            <p class="card-title">TOTAL </p>
+                            <ul>
+                                <li>
+                                    <p> <strong class="card-value">Inscrits : {{ $stats['totalInvoices'] }}</strong></p>
+                                </li>
+                                <li>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountTotal'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
+                                </li>
+                            </ul>
+                            
                         </div>
                     </div>
                 </div>
@@ -121,10 +127,15 @@
                             <i class="bi bi-patch-check-fill" style="color:green;font-weight:bold"></i>
                         </div>
                         <div class="card-content">
-                            <p class="card-title">PAYES</p>
-                            <p class="card-value">{{ $stats['totalPaid'] }}</p>
-                            <p class="card-value">
-                                {{ number_format($stats['amountPaid'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
+                            <p class="card-title">TOTAL PAYES </p>
+                            <ul>
+                                <li>
+                                    <p> <strong class="card-value">Inscrits : {{ $stats['totalPaid'] }}</strong></p>
+                                </li>
+                                <li>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountPaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -136,11 +147,17 @@
                         <div class="card-icon">
                             <i class="bi bi-clock-fill" style="color:rgb(0, 0, 0);font-weight:bold"></i>
                         </div>
+                        
                         <div class="card-content">
-                            <p class="card-title">IMPAYES</p>
-                            <p class="card-value">{{ $stats['totalUnpaid'] }}</p>
-                            <p class="card-value">
-                                {{ number_format($stats['amountUnpaid'], 2, ',', ' ') . ' ' . $congress->currency }}</p>
+                            <p class="card-title">TOTAL IMPAYES </p>
+                            <ul>
+                                <li>
+                                    <p> <strong class="card-value">Inscrits : {{ $stats['totalUnpaid'] }}</strong></p>
+                                </li>
+                                <li>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountUnpaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
