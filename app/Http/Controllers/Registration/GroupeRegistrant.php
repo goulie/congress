@@ -82,7 +82,7 @@ class GroupeRegistrant extends Controller
                 'pass_deleguate'    => $locale == 'fr' ? 'pass délégué' : 'delegat pass', //'pass délégué',
                 'pass_date'         => $locale == 'fr' ? 'jour de pass' : 'pass date', //'jour de pass',
                 'ywp_or_student'    => $locale == 'fr' ? 'type étudiant ou jeune professionnel' : 'student or young water professional', //'type étudiant',
-                'student_card'      => $locale == 'fr' ? 'numéro de passeport' : 'student card', //'carte étudiant',
+                'student_card'      => $locale == 'fr' ? 'carte étudiant' : 'student card', //'carte étudiant',
                 'student_letter'    => $locale == 'fr' ? 'lettre d\'attestation' : 'invitation letter', //'lettre d\'attestation',
                 'visit'             => $locale == 'fr' ? 'visite technique' : 'Technical visit', //'visite technique',
                 'site_visit'        => $locale == 'fr' ? 'site de visite' : 'Visit site', //'site de visite',
@@ -143,7 +143,7 @@ class GroupeRegistrant extends Controller
             if ($request->categorie == 4) {
                 // fichiers obligatoires
                 if ($request->ywp_or_student == 'student') {
-                    $rules['student_card'] = 'required|mimes:jpeg,png,jpg|max:2048';
+                    $rules['student_card'] = 'required|mimes:jpeg,png,jpg,pdf|max:2048';
                 }
                 if ($request->ywp_or_student == 'ywp') {
                     $rules['student_letter'] = 'required|mimes:jpeg,png,jpg,pdf|max:2048';

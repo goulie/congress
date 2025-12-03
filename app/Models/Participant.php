@@ -185,6 +185,7 @@ class Participant extends Model
             return collect();
         }
 
+
         return self::where('congres_id', $lastCongress->id)
             ->with([
                 'civility',
@@ -213,9 +214,7 @@ class Participant extends Model
 
         return self::where('congres_id', $lastCongress->id)
             ->where(function ($query) {
-                $query->where('ywp_or_student', 'student')
-                    ->orWhere('isYwpOrStudent', 'student')
-                    ->orWhereNotNull('student_level_id');
+                $query->where('ywp_or_student', 'student');
             })
             ->with([
                 'civility',
@@ -244,15 +243,7 @@ class Participant extends Model
 
         return self::where('congres_id', $lastCongress->id)
             ->where(function ($query) {
-                $query->where('ywp_or_student', 'ywp')
-                    ->orWhere('isYwpOrStudent', 'ywp')
-                    ->orWhere('participant_category_id', function ($subquery) {
-                        // Supposons que vous avez une catégorie YWP spécifique
-                        $subquery->select('id')
-                            ->from('category_participants')
-                            ->where('name', 'like', '%YWP%')
-                            ->orWhere('name', 'like', '%Young Water Professional%');
-                    });
+                $query->where('ywp_or_student', 'ywp');                    
             })
             ->with([
                 'civility',

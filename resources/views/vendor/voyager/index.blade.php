@@ -121,7 +121,8 @@
 
 @section('content')
     @php
-        $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
+        $congres = App\Models\Congress::latest()->first();
+        $periode = App\Models\Periode::PeriodeActive($congres->id);
         $locale = app()->getLocale(); // 'fr' or 'en'
         \Carbon\Carbon::setLocale($locale);
         $start = \Carbon\Carbon::parse($periode->start_date);
@@ -207,26 +208,33 @@
                     @endforeach
                 </div>
             </div>
-
-            <div class="row">
-                <div class="col-md-4 mt-4 card" style="font-weight: bold;font-size: 1.5em">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Tarif</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>John</td>
-                                <td>200 Eur</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
+            <div class="col-md-12">
+                <div class="row">
+                    @foreach (App\Models\Periode::all() as $periode)
+                        <div class="col-md-4 mt-4 card"
+                            style="font-weight: bold;font-size: 1.5em;border:1px solid #6c6d6e;border-radius: 10px;padding:10px">
+                            <div class="card-title text-center">{{ $periode->translate($locale, 'fallbackLocale')->libelle }} ({{ \Carbon\Carbon::parse($periode->start_date)->format('d/M/Y') .' - '. \Carbon\Carbon::parse($periode->end_date)->format('d/M/Y')  }})</div>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Tarif</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($periode->tarifs as $tarif)
+                                        <tr>
+                                            <td>{{ $tarif->categorie_registrant->translate($locale, 'fallbackLocale')->libelle }}</td>
+                                            <td>{{ $tarif->montant .' ' .$tarif->congres->currency }} </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endforeach
                 </div>
             </div>
+
 
 
             @if (auth()->user()->isParticipant() || auth()->user()->isAdmin())

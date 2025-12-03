@@ -74,7 +74,7 @@ class SingleRegitrantInvoiceObserver
     {
         // Supprimer les factures associées
 
-        $participant->invoices()->items()->delete();
+        //$participant->invoices()->items()->delete();
         $participant->invoices()->delete();
     }
 
