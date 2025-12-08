@@ -106,7 +106,7 @@ return [
             'update' => 'Update and Save',
             'save' => 'Save my information',
         ],
-       
+
     ],
 
     // Buttons and states
@@ -146,6 +146,8 @@ return [
 
     // Contact
     'contactby_email' => 'Contact by email',
-    'fields_required' =>'All fields marked with <span class="text-danger font-weight-bold">*</span> are required ', //'Tous les champs marqués par <span class="text-danger font-weight-bold">*</span> sont obligatoires',
-
+    'fields_required' => 'All fields marked with <span class="text-danger font-weight-bold">*</span> are required ', //'Tous les champs marqués par <span class="text-danger font-weight-bold">*</span> sont obligatoires',
+    'sigle' => 'Acronym of the organization',
+    'maj_only' => 'Only in capital letters',
+    'caracteres' => 'characters',
 ];

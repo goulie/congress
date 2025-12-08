@@ -421,16 +421,42 @@
 
             <input type="hidden" id="telephone" name="telephone_complet">
         </div>
+
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-building"></i>
                 {{ __('registration.step2.fields.organisation') }}
             </label>
-            <input type="text" class="form-control" name="organisation"
+            <input type="text" class="form-control" name="organisation" id="organisation"
                 placeholder="{{ __('registration.step2.placeholders.organisation') }}"
                 @isset($participant) value="{{ $participant->organisation }}" @endisset required>
-        </div>
 
+           
+        </div>
+        <!-- Champ sigle (caché par défaut) -->
+        <div class="col-md-4 hidden" id="sigle-container">
+            <label class="control-label font-weight-bold text-dark required">
+                <i class="bi bi-abbr"></i>
+                {{ __('registration.sigle') }}
+            </label>
+            <input type="text" class="form-control text-uppercase" id="sigle" name="sigle_organisation"
+                placeholder="Ex: UNESCO, UNICEF, OMS..." maxlength="10"
+                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset>
+
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <small class="text-muted">
+                    <span id="sigle-counter">0</span>/10 {{ __('registration.caracteres') }}
+                </small>
+                <small class="text-info">
+                    <i class="bi bi-info-circle"></i> {{ __('registration.maj_only') }}
+                </small>
+            </div>
+             <!-- Message d'avertissement (caché par défaut) -->
+            {{-- <div id="organisation-warning" class="text-danger mt-2 p-2 hidden">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Caractères > 10, veuillez entrer un sigle
+            </div> --}}
+        </div>
         @php
             $levels = App\Models\TypeOrganisation::get()
                 ->translate(app()->getLocale(), 'fallbackLocale')
@@ -662,12 +688,14 @@
     <!-- BOOTSTRAP 3 DATEPICKER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.fr.min.js">
-    //jquery cdn
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        //jquery cdn
+        <
+        script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" >
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
 
-    </script>
+
     <script>
         $(document).ready(function() {
             const phoneInput = document.querySelector("#telephone");
@@ -704,6 +732,14 @@
 
                 });
             }
+
+            //Fonction pour désactiver l'autocomplétion sur tous les inputs text
+            $('input').attr({
+                'autocomplete': 'off',
+                'spellcheck': 'false',
+                'data-form-type': 'other', // Pour 1Password
+                'data-persist': 'false' // Attribut personnalisé
+            });
         });
     </script>
     <script>
@@ -1113,5 +1149,153 @@
             renderForm();
 
         }); // end jQuery ready
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            const MAX_LENGTH = 10;
+            const $orgInput = $('#organisation');
+            const $orgWarning = $('#organisation-warning');
+            const $sigleContainer = $('#sigle-container');
+            const $sigleInput = $('#sigle');
+            const $sigleCounter = $('#sigle-counter');
+
+            // Vérifier la longueur au chargement
+            checkOrganisationLength();
+
+            // Vérifier la longueur de l'organisation
+            function checkOrganisationLength() {
+                const orgValue = $orgInput.val().trim();
+                const orgLength = orgValue.length;
+
+                if (orgLength > MAX_LENGTH) {
+                    // Afficher l'avertissement
+                    $orgWarning.removeClass('hidden');
+
+                    // Afficher le champ sigle
+                    $sigleContainer.removeClass('hidden');
+                    $sigleInput.prop('required', true);
+
+                    // Générer un sigle suggéré si vide
+                    if ($sigleInput.val() === '' && orgLength <= 30) {
+                        const suggestedSigle = generateSigle(orgValue);
+                        $sigleInput.val(suggestedSigle);
+                        updateSigleCounter();
+                    }
+                } else {
+                    // Cacher l'avertissement et le champ sigle
+                    $orgWarning.addClass('hidden');
+                    $sigleContainer.addClass('hidden');
+                    $sigleInput.prop('required', false);
+                }
+            }
+
+            // Générer un sigle suggéré
+            function generateSigle(organisation) {
+                // Nettoyer et convertir en majuscules
+                const words = organisation.toUpperCase()
+                    .replace(/[^A-Z\s]/g, '') // Garder uniquement lettres et espaces
+                    .split(/\s+/)
+                    .filter(word => word.length > 2); // Ignorer mots courts
+
+                if (words.length === 0) return '';
+
+                let sigle = '';
+                for (let word of words) {
+                    if (sigle.length >= MAX_LENGTH) break;
+
+                    // Pour les mots courts, prendre tout le mot
+                    if (word.length <= 3 && sigle.length + word.length <= MAX_LENGTH) {
+                        sigle += word;
+                    } else {
+                        // Sinon prendre la première lettre
+                        sigle += word.charAt(0);
+                    }
+                }
+
+                return sigle.substring(0, MAX_LENGTH);
+            }
+
+            // Forcer les majuscules dans le champ sigle
+            function forceUppercase() {
+                const cursorPos = this.selectionStart;
+                const originalValue = $(this).val();
+
+                // Convertir en majuscules et supprimer caractères non alphabétiques
+                const uppercaseValue = originalValue.toUpperCase()
+                    .replace(/[^A-Z]/g, '');
+
+                $(this).val(uppercaseValue);
+
+                // Restaurer la position du curseur
+                this.setSelectionRange(cursorPos, cursorPos);
+
+                updateSigleCounter();
+            }
+
+            // Mettre à jour le compteur de caractères
+            function updateSigleCounter() {
+                const length = $sigleInput.val().length;
+                $sigleCounter.text(length);
+
+                // Changer la couleur du compteur
+                $sigleCounter.removeClass('text-success text-warning text-danger');
+
+                if (length === MAX_LENGTH) {
+                    $sigleCounter.addClass('text-danger');
+                } else if (length >= MAX_LENGTH - 2) {
+                    $sigleCounter.addClass('text-warning');
+                } else if (length > 0) {
+                    $sigleCounter.addClass('text-success');
+                } else {
+                    $sigleCounter.addClass('text-muted');
+                }
+            }
+
+            // Événements
+            $orgInput.on('input keyup blur', checkOrganisationLength);
+            $sigleInput.on('input keyup', forceUppercase);
+
+            // Initialiser le compteur
+            updateSigleCounter();
+
+            // Validation du formulaire
+            $('form').on('submit', function(e) {
+                const orgValue = $orgInput.val().trim();
+                const sigleValue = $sigleInput.val().trim();
+
+                // Vérifier si organisation > 10 caractères et sigle vide
+                if (orgValue.length > MAX_LENGTH && sigleValue.length === 0) {
+                    e.preventDefault();
+
+                    // Afficher une alerte
+                    alert(
+                        'Veuillez entrer un sigle pour votre organisation (max 10 caractères en majuscules)');
+
+                    // Focus sur le champ sigle
+                    $sigleInput.focus();
+
+                    // Ajouter une classe d'erreur
+                    $sigleInput.addClass('is-invalid');
+
+                    return false;
+                }
+
+                // Vérifier si le sigle dépasse la limite
+                if (sigleValue.length > MAX_LENGTH) {
+                    e.preventDefault();
+                    alert(`Le sigle ne peut pas dépasser ${MAX_LENGTH} caractères`);
+                    $sigleInput.focus();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Supprimer la classe d'erreur quand l'utilisateur commence à taper
+            $sigleInput.on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
     </script>
 @endsection

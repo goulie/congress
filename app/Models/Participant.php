@@ -62,7 +62,7 @@ class Participant extends Model
         'badge_color_id',
         'ywp_or_student',
         'expiration_passeport_date',
-        'code_path',
+        'code_path','sigle_organisation'
     ];
 
     protected static function booted()

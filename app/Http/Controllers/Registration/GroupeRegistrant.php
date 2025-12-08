@@ -109,8 +109,9 @@ class GroupeRegistrant extends Controller
                 'autre_type_org'    => 'required_if:type_organisation,10|string|nullable|max:255',
                 'fonction'          => 'required|string|max:255',
                 'job_country'       => 'nullable|exists:countries,id',
-                'passport_number' => 'required|string|max:50',
-                'passport_date'   => 'required|date|after:today',
+                'passport_number'   => 'required|string|max:50',
+                'passport_date'     => 'required|date|after:today',
+                'sigle_organisation' => 'nullable|string|max:10',
             ];
 
 
@@ -119,7 +120,7 @@ class GroupeRegistrant extends Controller
             // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             if ($request->categorie == 1) {
 
-                
+
 
                 // Pass obligatoire ?
                 $rules['pass_deleguate'] = 'required|in:oui,non';
@@ -211,6 +212,7 @@ class GroupeRegistrant extends Controller
                 'langue'                  => $locale,
                 'congres_id'              => $congresId,
                 'user_id'                 => auth()->id(),
+                'sigle_organisation'      => $request->sigle_organisation,
             ]);
 
             /* ============================================================
@@ -365,7 +367,7 @@ class GroupeRegistrant extends Controller
                 'lettre_invitation' => 'required|in:oui,non',
                 'passport_number'   => 'required|string|max:255',
                 'passport_date'     => 'required|date|after:today',
-                
+
             ];
 
             /* ============================================================
@@ -438,7 +440,7 @@ class GroupeRegistrant extends Controller
             $participant->update([
                 'civility_id'             => $request->title,
                 'gender_id'               => $request->gender,
-                'type_member_id'          => $request->member_code ? $this->getMembershipTypeIdFromCode($request->member_code): null,
+                'type_member_id'          => $request->member_code ? $this->getMembershipTypeIdFromCode($request->member_code) : null,
                 'fname'                   => $request->first_name,
                 'lname'                   => $request->last_name,
                 'student_level_id'        => $request->education,

@@ -46,6 +46,19 @@ class ViewAdminRegistrationController extends VoyagerBaseController
             'TotalNationalites' => (clone $query)->whereNotNull('nationality_id')->pluck('nationality_id')->unique()->count(),
 
             'TotalOrganisations' => (clone $query)->whereNotNull('organisation')->pluck('organisation')->unique()->count(),
+
+            //totaDiner,TotalVisite,TotalPass,TotalPaid,TotalUnpaid,TotalExpired
+            'TotalDiner' => (clone $query)->where('diner', 'oui')->count(),
+
+            'TotalVisite' => (clone $query)->where('visite', 'oui')->count(),
+
+            'TotalPass' => (clone $query)->where('deleguate_day', '!=', null)->count(),
+
+            'TotalPaid' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_PAID )->count(),
+
+            'TotalUnpaid' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_UNPAID )->count(),
+
+            'TotalExpired' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_EXPIRED )->count(),
         ];
 
         //
@@ -62,7 +75,7 @@ class ViewAdminRegistrationController extends VoyagerBaseController
             'RejectedYwp' => StudentYwpValidation::getRejectedYwp()->count(),
         ];
 
-        return view('voyager::view-dashboard-registrations.index', compact('statGeneral', 'statEtudiants', 'statYwp','query'));
+        return view('voyager::view-dashboard-registrations.index', compact('statGeneral', 'statEtudiants', 'statYwp', 'query'));
     }
 
     public function getDashboardData(Request $request)

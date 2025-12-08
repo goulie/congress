@@ -98,6 +98,83 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="bi bi-cup-straw"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Inscrits au Dîner</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalDiner'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+
+                             <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="bi bi-signpost-fill"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Visite technique</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalVisite'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="bi bi-tag-fill"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Pass jour</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalPass'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="bi bi-bag-check-fill"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Factures payées</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalPaid'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Factures impayées</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalUnpaid'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 col-sm-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger">
+                                        <i class="bi bi-hourglass-bottom"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Factures expirées</span>
+                                        <span class="info-box-number">{{ $statGeneral['TotalExpired'] }}</span>
+                                        {{-- <small id="ywp-percentage" class="text-success">0%</small> --}}
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -211,6 +288,7 @@
                     </div>
                 </div>
             </div>
+            
         </div>
         <div class="row">
             <div class="col-md-6">
@@ -544,15 +622,9 @@
         <!-- Chart.js -->
         <script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
         {{-- add scripts --}}
-<script>
+        <script>
             $(document).ready(function() {
-                let table = new DataTable('#dataTable' {
-                    layout: {
-                        topStart: {
-                            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
-                        }
-                    }
-                });
+                let table = new DataTable('#dataTable');
             });
         </script>
         <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
@@ -563,5 +635,5 @@
         <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.print.min.js"></script>
 
-        
+
     @stop

@@ -333,6 +333,7 @@ class ParticipantRegistrant extends VoyagerBaseController
                 'autre_type_org' => 'nullable|string|max:255',
                 'fonction' => 'required|string|max:255',
                 'job_country' => 'required|exists:countries,id',
+                'sigle_organisation' => 'nullable|string|min:1|max:10',
             ]);
 
             // Mise à jour
@@ -344,7 +345,8 @@ class ParticipantRegistrant extends VoyagerBaseController
                 'organisation_type_other' => $validated['autre_type_org'] ?? null,
                 'job' => $validated['fonction'],
                 'job_country_id' => $validated['job_country'],
-                
+                'sigle_organisation'=> $validated['sigle_organisation'],
+
             ]);
 
             DB::commit();
