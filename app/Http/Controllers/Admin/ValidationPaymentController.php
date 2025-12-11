@@ -49,7 +49,7 @@ class ValidationPaymentController extends VoyagerBaseController
         }
 
         // Liste pour le tableau
-        $participants = $query->orderBy('created_at', 'desc')->get();
+        $Invoices = $query->orderBy('created_at', 'desc')->get();
 
         /* ---- Statistiques correctes ---- */
 
@@ -65,7 +65,7 @@ class ValidationPaymentController extends VoyagerBaseController
         ];
 
 
-        return view('voyager::view-validation-payments.browse', compact( 'congress', 'stats', 'participants'));
+        return view('voyager::view-validation-payments.browse', compact('congress', 'stats', 'Invoices'));
     }
 
     public function approve_payment(Request $request, $id)
@@ -87,8 +87,11 @@ class ValidationPaymentController extends VoyagerBaseController
 
 
 
-            // Envoi de l'email de validation
+            // Envoi de l'email de facturation
             $this->emailService->sendInvoiceEmail($invoice);
+
+            //envoie de la lettre d'invitation
+            $this->emailService->sendInvitationEmail($invoice->participant);
         } catch (\Exception $e) {
             Log::error('erreur lors de la validation du paiement :' . $e->getMessage());
             return response()->json(['message' => 'Une erreur s\'est produite lors de la validation du paiement.'], 500);
@@ -145,7 +148,7 @@ class ValidationPaymentController extends VoyagerBaseController
             'payment_date' => $invoice->payment_date,
             'payment_method' => $invoice->payment_method,
             'validator' => $invoice->userValidation->name ?? 'Aucun',
-            'raison' => $invoice->participant->validation_ywp_student->first()->reason ?? '',
+            'raison' => $invoice->participant->validation_ywp_students->first()->reason ?? '',
             // Participant
             'fname' => $invoice->participant->fname,
             'lname' => $invoice->participant->lname,

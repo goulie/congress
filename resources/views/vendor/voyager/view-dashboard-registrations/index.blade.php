@@ -136,6 +136,7 @@
                                     </div>
                                 </div>
                             </div>
+                            
                             <div class="col-md-2 col-sm-6">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-primary">

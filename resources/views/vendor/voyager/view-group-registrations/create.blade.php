@@ -17,8 +17,18 @@
             enctype="multipart/form-data">
 @endif
 @csrf
+
+
+
 <input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 <div class="box-body">
+    
+    <div class="row">
+        <div class="col-md-12 text-center">
+            {!! __('registration.fields_required') !!}
+        </div>
+    </div>
+
     <div class="row">
         <!-- Catégorie -->
         <div class="col-md-4">
@@ -330,22 +340,26 @@
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-person"></i>
-                {{ __('registration.step1.fields.first_name') }}
+                {{ __('registration.step1.fields.last_name') }}
             </label>
-            <input type="text" class="form-control" name="first_name"
-                placeholder="{{ __('registration.step1.placeholders.first_name') }}"
-                @isset($participant) value="{{ $participant->fname }}" @endisset required>
+            <input type="text" class="form-control" name="last_name"
+                placeholder="{{ __('registration.step1.placeholders.last_name') }}"
+                onkeyup="this.value = this.value.toUpperCase();"
+                @isset($participant) value="{{ $participant->lname }}" @endisset required>
         </div>
 
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-person"></i>
-                {{ __('registration.step1.fields.last_name') }}
+                {{ __('registration.step1.fields.first_name') }}
             </label>
-            <input type="text" class="form-control" name="last_name"
-                placeholder="{{ __('registration.step1.placeholders.last_name') }}"
-                @isset($participant) value="{{ $participant->lname }}" @endisset required>
+            <input type="text" class="form-control" name="first_name"
+                placeholder="{{ __('registration.step1.placeholders.first_name') }}"
+                onkeyup="this.value = this.value.toUpperCase();"
+                @isset($participant) value="{{ $participant->fname }}" @endisset required>
         </div>
+
+
 
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
@@ -431,7 +445,7 @@
                 placeholder="{{ __('registration.step2.placeholders.organisation') }}"
                 @isset($participant) value="{{ $participant->organisation }}" @endisset required>
 
-           
+
         </div>
         <!-- Champ sigle (caché par défaut) -->
         <div class="col-md-4 hidden" id="sigle-container">
@@ -451,7 +465,7 @@
                     <i class="bi bi-info-circle"></i> {{ __('registration.maj_only') }}
                 </small>
             </div>
-             <!-- Message d'avertissement (caché par défaut) -->
+            <!-- Message d'avertissement (caché par défaut) -->
             {{-- <div id="organisation-warning" class="text-danger mt-2 p-2 hidden">
                 <i class="bi bi-exclamation-triangle me-1"></i>
                 Caractères > 10, veuillez entrer un sigle
@@ -1270,7 +1284,8 @@
 
                     // Afficher une alerte
                     alert(
-                        'Veuillez entrer un sigle pour votre organisation (max 10 caractères en majuscules)');
+                        'Veuillez entrer un sigle pour votre organisation (max 10 caractères en majuscules)'
+                    );
 
                     // Focus sur le champ sigle
                     $sigleInput.focus();

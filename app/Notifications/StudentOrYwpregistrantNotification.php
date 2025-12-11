@@ -35,12 +35,12 @@ class StudentOrYwpregistrantNotification extends Notification
 
         return (new MailMessage)
             ->subject("Nouveau dossier à valider - Étudiant / Jeune Professionnel")
-            ->line("Un nouveau participant a soumis un dossier qui nécessite une validation.")
+            ->line("Un nouveau participant a soumis un dossier qui nécessite un traitement.")
             ->line("Nom : {$p->fname} {$p->lname}")
             ->line("Email : {$p->email}")
             ->line("Type : " . ($p->ywp_or_student === 'ywp' ? 'Jeune Professionnel (YWP)' : 'Étudiant'))
             ->line("Catégorie : " . $p->participantCategory->translate('fr', 'fallbackLocale')->libelle)
             ->action('Traiter ce dossier', url('/admin/view-validation-ywp-students'))
-            ->line("Merci d'effectuer la validation dès que possible.");
+            ->line("Merci d'effectuer la traitement dès que possible.");
     }
 }

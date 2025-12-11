@@ -238,7 +238,7 @@ class GroupeRegistrant extends Controller
                     $admin->notify(new StudentOrYwpregistrantNotification($participant));
                 }
 
-                $participant->validation_ywp_student()->create([
+                $participant->validation_ywp_students()->create([
                     'status' => StudentYwpValidation::STATUS_PENDING
                 ]);
             }
@@ -492,7 +492,7 @@ class GroupeRegistrant extends Controller
                     $admin->notify(new StudentOrYwpregistrantNotification($participant));
                 }
 
-                $participant->validation_ywp_student()->create([
+                $participant->validation_ywp_students()->create([
                     'status' => StudentYwpValidation::STATUS_PENDING
                 ]);
             }

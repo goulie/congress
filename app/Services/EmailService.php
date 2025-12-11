@@ -144,7 +144,7 @@ class EmailService
     {
         try {
 
-            Mail::to('gouli1212@gmail.com')->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
+            Mail::to($participant->email)->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
 
             Log::info('Lettre d\'invitation envoyée à : ' . $participant->email);
 
@@ -161,8 +161,8 @@ class EmailService
     {
         try {
            
-            //Mail::to($invoice->participant->email)->send(new InvoiceMail($invoice));
-            Mail::to('gouli1212@gmail.com')->send(new InvoiceMail($invoice));
+            Mail::to($invoice->participant->email)->send(new InvoiceMail($invoice));
+            //Mail::to('gouli1212@gmail.com')->send(new InvoiceMail($invoice));
 
             Log::info('Email facture envoyé à: ' . $invoice->participant->email);
 
