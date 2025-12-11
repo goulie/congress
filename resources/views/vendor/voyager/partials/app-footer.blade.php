@@ -4,9 +4,9 @@
             <i class="voyager-rum-1"></i> {{ __('voyager::theme.footer_copyright2') }}
         @else
             <div class="support-float">
-                <button class="support-btn" data-toggle="modal" data-target="#flipFlop">
+                <a class="support-btn" href="mailto:event@afwasa.org">
                     <div class="pulse-ring"></div>
-                    <i class="bi bi-headset"></i>
+                    <i class="bi bi-envelope"></i>
                     <div class="support-tooltip" style="color: #fff;">
                         Contact Support
                     </div>
