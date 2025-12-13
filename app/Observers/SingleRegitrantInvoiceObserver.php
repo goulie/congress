@@ -117,6 +117,7 @@ class SingleRegitrantInvoiceObserver
     {
         $congres_id = $participant->congres_id;
         $dinner = CategorieRegistrant::DinnerforCongress($congres_id);
+        $DinnerNonMember = CategorieRegistrant::DinnerNonMemberforCongress($congres_id);
         $tours = CategorieRegistrant::ToursforCongress($congres_id);
         $deleguate = CategorieRegistrant::deleguateForCongress($congres_id);
         $student_ywp = CategorieRegistrant::studentForCongress($congres_id);
@@ -158,7 +159,7 @@ class SingleRegitrantInvoiceObserver
 
             // DÉLÉGUÉ (category_id = 1)
             if ($categoryId == 1) {
-                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner, $tours, $passDeleguate);
+                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner,$DinnerNonMember, $tours, $passDeleguate);
             }
             // ÉTUDIANT/YWP (category_id = 4)
             elseif ($categoryId == 4) {
@@ -173,36 +174,23 @@ class SingleRegitrantInvoiceObserver
 
             // DÉLÉGUÉ (category_id = 1)
             if ($categoryId == 1) {
-                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner, $tours, $passDeleguate);
+
+                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner,$DinnerNonMember, $tours, $passDeleguate);
+            
             } elseif ($categoryId == 4) {
                 $isMember = false;
                 if ($participant->membership == 'oui' && isset($participant->membership_code)) {
 
                     $isMember = true;
                 }
+
                 $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member = null, $dinner, $tours, $isMember);
+            
             } else {
                 $items = $this->getOtherCategoryItems($participant, $dinner, $tours);
             }
-        } else {
-            $categorie = CategorieRegistrant::find($participant->type_member_id);
-            $items = [
-                [
-                    'description' => $participant->langue == 'fr'
-                        ? 'Frais d\'inscription - ' . $participant->participantCategory->libelle
-                        : 'Registration fee - ' . $participant->participantCategory->libelle,
-                    'price' => $categorie->montant ?? 0
-                ],
-                [
-                    'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
-                    'price' => $participant->diner == 'oui' ? $dinner->montant : 0
-                ],
-                [
-                    'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
-                    'price' => $participant->visite == 'oui' ? $tours->montant : 0
-                ],
-            ];
-        }
+        } 
+
 
         $this->SingleRegistrantInvoice->createOrUpdateInvoice($data, $items);
     }
@@ -210,7 +198,7 @@ class SingleRegitrantInvoiceObserver
     /**
      * Items de facturation pour les DÉLÉGUÉS
      */
-    protected function getDelegateItems($participant, $deleguate, $non_member, $dinner, $tours, $passDeleguate)
+    protected function getDelegateItems($participant, $deleguate, $non_member, $dinner, $DinnerNonMember, $tours, $passDeleguate)
     {
         $items = [];
         // Gestion sécurisée de deleguate_day
@@ -225,8 +213,9 @@ class SingleRegitrantInvoiceObserver
         }
 
         $pass = JourPassDelegue::whereIn('id', $passIds)->get();
+        $hasDayPass = $pass->count() > 0;
 
-        if ($pass->count() > 0) {
+        if ($hasDayPass) {
             // Facturer chaque pass journalier sélectionné
             foreach ($pass as $passItem) {
 
@@ -284,12 +273,23 @@ class SingleRegitrantInvoiceObserver
             } */
         }
 
-        // Ajouter les options
-        $items[] = [
+        // Ajouter le dinner
+        if ($participant->diner === 'oui') {
+            $dinnerTarif = $hasDayPass ? $DinnerNonMember : $dinner;
+    
+            $items[] = [
+                'description' => $participant->langue == 'fr'
+                    ? 'Dîner gala'
+                    : 'Gala dinner',
+                'price' => $dinnerTarif->montant ?? 0,
+                'tarif_id' => $dinnerTarif->tarif_id ?? null
+            ];
+        }
+        /* $items[] = [
             'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
             'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
             'tarif_id' => $dinner->tarif_id ?? 0
-        ];
+        ]; */
 
         $items[] = [
             'description' => $participant->langue == 'fr' ? 'Visites techniques' : 'Technical Tours',
@@ -324,6 +324,8 @@ class SingleRegitrantInvoiceObserver
             'description' => $participant->langue == 'fr' ? 'Diner gala' : 'Gala dinner',
             'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
             'tarif_id' => $dinner->tarif_id ?? 0
+            /* 'price' => $participant->diner == 'oui' ? $dinner->montant : 0,
+            'tarif_id' => $dinner->tarif_id ?? 0 */
         ];
 
         // Visites techniques

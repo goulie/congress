@@ -1,6 +1,7 @@
 @php
     $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
     $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
+    $DinnerNonMember = App\Models\CategorieRegistrant::DinnerNonMemberforCongress($congres->id);
     $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
     $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
     $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
@@ -22,7 +23,11 @@
 
 <input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 <div class="box-body">
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 7c72303 ('home13122025')
     <div class="row">
         <div class="col-md-12 text-center">
             {!! __('registration.fields_required') !!}
@@ -158,7 +163,7 @@
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
-                    class="text-danger">({{ $dinner->montant . ' ' . $congres->currency . ' - ' . $congres->nbre_place_dinner }}
+                    class="text-danger">({{ $congres->nbre_place_dinner }}
                     {{ app()->getLocale() == 'fr' ? 'Places' : 'seats' }} ) </span>
             </label>
             <select class="form-control" name="dinner" id="dinner" required>
@@ -775,6 +780,7 @@
                 visite: parseFloat("{{ $tours->montant ?? 0 }}") || 0,
                 delegue: parseFloat("{{ $deleguate->montant ?? 0 }}") || 0,
                 student: parseFloat("{{ $student_ywp->montant ?? 0 }}") || 0,
+                DinnerNonMember: parseFloat("{{ $DinnerNonMember->montant ?? 0 }}"),
             };
 
             // Flags based on existing participant files (server side)
@@ -825,6 +831,7 @@
             // ============================
             function calculerTotal() {
                 let total = 0;
+
                 const cat = $('#categorie').val();
                 const membership = $('#membership').val();
                 const dinner = $('#dinner').val();
@@ -837,24 +844,74 @@
                     return;
                 }
 
-                if (cat === DELEGUE_ID) {
+                /* ============================
+                 * DÉLÉGUÉ
+                 * ============================ */
+                if (cat === '1') {
+
+                    // 🔴 PRIORITÉ AU PASS JOUR
                     if (pass === 'oui' && nbPass > 0) {
+
+                        // Prix uniquement par jour
                         total += nbPass * montant.passDelegue;
+
+                        // 🍽️ Dîner = NON MEMBRE
+                        if (dinner === 'oui') {
+                            total += montant.DinnerNonMember;
+                        }
+
                     } else {
-                        total += (membership === 'oui') ? montant.delegue : montant.nonMembre;
+
+                        // Délégué classique
+                        total += (membership === 'oui') ?
+                            montant.delegue :
+                            montant.nonMembre;
+
+                        // 🍽️ Dîner délégué
+                        if (dinner === 'oui') {
+                            total += montant.dinner;
+                        }
                     }
-                } else if (cat === STUDENT_ID) {
-                    total += montant.student;
-                } else {
-                    const montantCategorie = parseFloat($('#categorie option:selected').data('amount')) || 0;
-                    total += (membership === 'oui') ? montantCategorie : montant.nonMembre;
                 }
 
-                if (dinner === 'oui') total += montant.dinner;
-                if (visit === 'oui') total += montant.visite;
+                /* ============================
+                 * STUDENT / YWP
+                 * ============================ */
+                else if (cat === '4') {
+
+                    total += montant.student;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
+                }
+
+                /* ============================
+                 * AUTRES CATÉGORIES
+                 * ============================ */
+                else {
+                    const montantCategorie =
+                        parseFloat($('#categorie option:selected').data('amount')) || 0;
+
+                    total += (membership === 'oui') ?
+                        montantCategorie :
+                        montant.nonMembre;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
+                }
+
+                /* ============================
+                 * VISITE TECHNIQUE
+                 * ============================ */
+                if (visit === 'oui') {
+                    total += montant.visite;
+                }
 
                 $('#total-amount').text(total.toFixed(2));
             }
+
 
             // ============================
             // VALIDATION PASSEPORT (client)

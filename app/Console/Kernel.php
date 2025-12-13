@@ -15,7 +15,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('invoices:process-pending')
+            ->dailyAt('00:20')
+            ->timezone('GMT') // Adaptez à votre fuseau horaire
+            ->sendOutputTo(storage_path('logs/invoice-process.log')); // Optionnel : log dans un fichier
+            //->emailOutputTo(['gouli1212@gmail.com','jgouli@afwasa.org']); // Optionnel : envoi des résultats par email
     }
 
     /**
@@ -25,7 +29,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

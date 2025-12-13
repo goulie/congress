@@ -49,7 +49,7 @@ class RejectedStudentOrYwpregistrantNotification extends Notification
             )
             ->line(
                 $isFr
-                    ? "Malheureusement votre inscription aux **{$p->congres->translate('fr', 'fallbackLocale')->title}** a été refusé."
+                    ? "Malheureusement votre inscription au **{$p->congres->translate('fr', 'fallbackLocale')->title}** a été refusée."
                     : "Unfortunately your registration to the **{$p->congres->translate('en', 'fallbackLocale')->title}** has been rejected."
             )
             ->line(
