@@ -111,12 +111,10 @@
                                     <p> <strong class="card-value">Inscrits : {{ $stats['totalInvoices'] }}</strong></p>
                                 </li>
                                 <li>
-                                    <p> <strong class="card-value">Montant :
-                                            {{ number_format($stats['amountTotal'], 2, ',', ' ') . ' ' . $congress->currency }}</strong>
-                                    </p>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountTotal'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
                                 </li>
                             </ul>
-
+                            
                         </div>
                     </div>
                 </div>
@@ -135,9 +133,7 @@
                                     <p> <strong class="card-value">Inscrits : {{ $stats['totalPaid'] }}</strong></p>
                                 </li>
                                 <li>
-                                    <p> <strong class="card-value">Montant :
-                                            {{ number_format($stats['amountPaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong>
-                                    </p>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountPaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
                                 </li>
                             </ul>
                         </div>
@@ -151,7 +147,7 @@
                         <div class="card-icon">
                             <i class="bi bi-clock-fill" style="color:rgb(0, 0, 0);font-weight:bold"></i>
                         </div>
-
+                        
                         <div class="card-content">
                             <p class="card-title">TOTAL IMPAYES </p>
                             <ul>
@@ -159,9 +155,7 @@
                                     <p> <strong class="card-value">Inscrits : {{ $stats['totalUnpaid'] }}</strong></p>
                                 </li>
                                 <li>
-                                    <p> <strong class="card-value">Montant :
-                                            {{ number_format($stats['amountUnpaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong>
-                                    </p>
+                                    <p> <strong class="card-value">Montant : {{ number_format($stats['amountUnpaid'], 2, ',', ' ') . ' ' . $congress->currency }}</strong></p>
                                 </li>
                             </ul>
                         </div>
@@ -282,63 +276,59 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($Invoices as $Invoice)
+                                    @foreach ($participants as $participant)
                                         <tr>
                                             <td>
-                                                <input type="checkbox" class="invoice-check" value="{{ $Invoice->id }}"
-                                                    @if ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID) disabled @endif>
+                                                <input type="checkbox" class="invoice-check" value="{{ $participant->id }}"
+                                                    @if ($participant->status == App\Models\Invoice::PAYMENT_STATUS_PAID) disabled @endif>
                                             </td>
                                             <td>
                                                 <a href="#" style="text-decoration: none">
                                                     <span class="label label-info">
-                                                        {{ $Invoice->invoice_number }}
+                                                        {{ $participant->invoice_number }}
                                                     </span>
                                                 </a>
 
                                             </td>
-                                            <td>{{ $Invoice->participant->lname . ' ' . $Invoice->participant->fname }}
+                                            <td>{{ $participant->participant->lname . ' ' . $participant->participant->fname }}
                                             </td>
-                                            <td>{{ $Invoice->participant->participantCategory->libelle }}</td>
-                                            <td>{{ $Invoice->participant->email }}</td>
-                                            <td>{{ $Invoice->participant->organisation }}</td>
-                                            <td>{{ $Invoice->payment_method ?? 'N/A' }}</td>
+                                            <td>{{ $participant->participant->participantCategory->libelle }}</td>
+                                            <td>{{ $participant->participant->email }}</td>
+                                            <td>{{ $participant->participant->organisation }}</td>
+                                            <td>{{ $participant->payment_method ?? 'N/A' }}</td>
                                             <td>
                                                 <span class="label label-info" style="font-weight: bold">
-                                                    {{ $Invoice->total_amount . ' ' . $Invoice->currency }}
+                                                    {{ $participant->total_amount . ' ' . $participant->currency }}
                                                 </span>
                                             </td>
                                             <td>
-                                                @if ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID)
+                                                @if ($participant->status == App\Models\Invoice::PAYMENT_STATUS_PAID)
                                                     <span
-                                                        class="label label-success"> Payé </span>
+                                                        class="label label-success">{{ App\Models\Invoice::PAYMENT_STATUS_PAID }}</span>
                                                 @else
                                                     <span class="label label-danger">Impayé</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                {{ $Invoice->userValidation->name ?? 'N/A' }}
+                                                {{ $participant->userValidation->name ?? 'N/A' }}
                                             </td>
 
                                             <td class="no-sort no-click bread-actions">
-                                                @if ($Invoice->participant && $Invoice->participant->hasPendingYwpValidation())
-                                                    <span class="badge badge-warning">Traitement requis</span>
-                                                @else
-                                                    @if ($Invoice->participant)
-                                                        <a href="javascript:void(0);"
-                                                            onclick="showParticipantDetails({{ $Invoice->participant->id }})"
-                                                            class="btn btn-sm btn-warning pull-right" title="Voir">
-                                                            <i class="voyager-eye"></i>
-                                                        </a>
-                                                    @endif
-
-                                                    @if ($Invoice->status !== App\Models\Invoice::PAYMENT_STATUS_PAID)
-                                                        <button class="btn btn-sm btn-success pull-right" title="Approuver"
-                                                            style="margin-right: 5px;"
-                                                            onclick="validatePayment({{ $Invoice->id }})">
-                                                            <i class="voyager-check"></i>
-                                                        </button>
-                                                    @endif
+                                                
+                                                <a href="javascript:void(0);"
+                                                    onclick="showParticipantDetails({{ $participant->participant->id }})"
+                                                    class="btn btn-sm btn-warning pull-right" title="Voir">
+                                                    <i class="voyager-eye"></i>
+                                                </a>
+                                                
+                                                @if ($participant->status !== App\Models\Invoice::PAYMENT_STATUS_PAID)
+                                                    <button class="btn btn-sm btn-success pull-right" title="Approuver"
+                                                        style="margin-right: 5px;"
+                                                        onclick="validatePayment({{ $participant->id }})">
+                                                        <i class="voyager-check"></i>
+                                                    </button>
                                                 @endif
+
                                             </td>
                                         </tr>
                                     @endforeach

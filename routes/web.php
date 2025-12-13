@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminRegistrationController;
 use App\Http\Controllers\Admin\BadgeController;
 use App\Http\Controllers\Admin\InvitationLetterController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ValidationPaymentController;
 use App\Http\Controllers\Admin\ValidationStudentYwpController;
+use App\Http\Controllers\Admin\viewAdminRegistrationController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OtpController;
@@ -138,9 +140,32 @@ Route::prefix('badge')->group(function () {
 Route::get('/send_inv', function () {
     try {
         $invoice = App\Models\Invoice::latest('id')->first();
-        $mail = Mail::to('gouli1212@gmail.com')->send(new App\Mail\Invoice\InvoiceMail($invoice));
+        $mail = Mail::to($invoice->participant->email)->send(new App\Mail\Invoice\InvoiceMail($invoice));
         return true;
     } catch (\Exception $th) {
         return $th->getMessage();
     }
 });
+
+// Routes pour le dashboard des inscrits
+
+Route::get('/dashboard-registrations', [viewAdminRegistrationController::class, 'index'])
+    ->name('voyager.dashboard.registrations');
+
+Route::get('/dashboard-registrations/data', [viewAdminRegistrationController::class, 'getDashboardData'])
+    ->name('voyager.dashboard.registrations.data');
+
+Route::get('/dashboard-registrations/recent', [viewAdminRegistrationController::class, 'getRecentRegistrations'])
+    ->name('voyager.dashboard.registrations.recent');
+
+Route::get('/dashboard-registrations/export', [viewAdminRegistrationController::class, 'exportData'])
+    ->name('voyager.dashboard.registrations.export');
+
+Route::get('/participants/{id}/details', [viewAdminRegistrationController::class, 'getParticipantDetails'])
+    ->name('voyager.participants.details');
+
+Route::get('/participants/{id}/details', [viewAdminRegistrationController::class, 'index']);
+
+Route::get('/test', [AdminRegistrationController::class, 'home']);
+
+

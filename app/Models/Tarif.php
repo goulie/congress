@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tarif extends Model
 {
     protected $table = 'tarifs';
-    protected $fillable = ['periode_id', 'categorie_registrant_id', 'montant', 'congres_id','tarif_id'];
+    protected $fillable = ['periode_id', 'categorie_registrant_id', 'montant', 'congres_id'];
 
     public function periode()
     {
@@ -28,5 +28,18 @@ class Tarif extends Model
     public function tarif()
     {
         return $this->belongsTo(Tarif::class, 'tarif_id');
+    }
+
+    public static function TarifDuJour($categorie_registrant_id, $congres_id)
+    {
+        $periode = Periode::PeriodeActive($congres_id);
+
+        if (!$periode) {
+            return null;
+        }
+
+        return Tarif::where('periode_id', $periode->id)
+            ->where('categorie_registrant_id', $categorie_registrant_id)
+            ->first();
     }
 }

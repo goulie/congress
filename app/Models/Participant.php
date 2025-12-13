@@ -63,6 +63,7 @@ class Participant extends Model
         'ywp_or_student',
         'expiration_passeport_date',
         'code_path',
+        'sigle_organisation'
     ];
 
     protected static function booted()
@@ -150,6 +151,7 @@ class Participant extends Model
         return $this->belongsTo(Country::class, 'job_country_id');
     }
 
+
     public function badge_color()
     {
         return $this->belongsTo(BadgeColor::class, 'badge_color_id');
@@ -160,9 +162,26 @@ class Participant extends Model
         return $this->belongsTo(TypeOrganisation::class, 'organisation_type_id');
     }
 
-    public function validation_ywp_student()
+    public function validation_ywp_students()
     {
         return $this->hasMany(StudentYwpValidation::class);
+    }
+
+    // Ajoutez cette méthode pour vérifier facilement s'il y a une validation en attente
+    public function hasPendingYwpValidation()
+    {
+        if (!$this->validation_ywp_students || $this->validation_ywp_students->isEmpty()) {
+            return false;
+        }
+
+        $latest = $this->validation_ywp_students->last();
+        return $latest && $latest->status == StudentYwpValidation::STATUS_PENDING;
+    }
+
+    // Optionnel : méthode pour obtenir la dernière validation
+    public function getLatestYwpValidationAttribute()
+    {
+        return $this->validation_ywp_students->last();
     }
 
     private static function getLastCongress()
@@ -184,6 +203,7 @@ class Participant extends Model
         if (!$lastCongress) {
             return collect();
         }
+
 
         return self::where('congres_id', $lastCongress->id)
             ->with([
@@ -213,9 +233,7 @@ class Participant extends Model
 
         return self::where('congres_id', $lastCongress->id)
             ->where(function ($query) {
-                $query->where('ywp_or_student', 'student')
-                    ->orWhere('isYwpOrStudent', 'student')
-                    ->orWhereNotNull('student_level_id');
+                $query->where('ywp_or_student', 'student');
             })
             ->with([
                 'civility',
@@ -244,15 +262,7 @@ class Participant extends Model
 
         return self::where('congres_id', $lastCongress->id)
             ->where(function ($query) {
-                $query->where('ywp_or_student', 'ywp')
-                    ->orWhere('isYwpOrStudent', 'ywp')
-                    ->orWhere('participant_category_id', function ($subquery) {
-                        // Supposons que vous avez une catégorie YWP spécifique
-                        $subquery->select('id')
-                            ->from('category_participants')
-                            ->where('name', 'like', '%YWP%')
-                            ->orWhere('name', 'like', '%Young Water Professional%');
-                    });
+                $query->where('ywp_or_student', 'ywp');
             })
             ->with([
                 'civility',

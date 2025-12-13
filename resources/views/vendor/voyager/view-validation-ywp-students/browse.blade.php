@@ -250,7 +250,7 @@
                                             </td>
                                             <td>
                                                 @php
-                                                    $validation = $participant->validation_ywp_student->last();
+                                                    $validation = $participant->validation_ywp_students->last();
                                                 @endphp
 
                                                 @if ($validation->status == App\Models\StudentYwpValidation::STATUS_APPROVED)

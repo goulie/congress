@@ -20,7 +20,7 @@ class ValidationStudentYwpController extends VoyagerBaseController
         $congress = Congress::latest()->first();
 
         // Construction de la requête avec filtres
-        $query = Participant::with(['validation_ywp_student', 'congres'])->where(['participant_category_id' => 4, 'congres_id' => $congress->id]);
+        $query = Participant::with(['validation_ywp_students', 'congres'])->where(['participant_category_id' => 4, 'congres_id' => $congress->id]);
 
         // Filtre par type
         if ($request->filled('type_filter')) {
@@ -29,7 +29,7 @@ class ValidationStudentYwpController extends VoyagerBaseController
 
         // Filtre par statut de validation
         if ($request->filled('status_filter')) {
-            $query->whereHas('validation_ywp_student', function ($q) use ($request) {
+            $query->whereHas('validation_ywp_students', function ($q) use ($request) {
                 $q->where('status', $request->status_filter);
             });
         }
@@ -48,19 +48,19 @@ class ValidationStudentYwpController extends VoyagerBaseController
             'totalParticipants' => (clone $query)->count(),
 
             'validatedParticipants' => (clone $query)
-                ->whereHas('validation_ywp_student', function ($q) {
+                ->whereHas('validation_ywp_students', function ($q) {
                     $q->where('status', StudentYwpValidation::STATUS_APPROVED);
                 })
                 ->count(),
 
             'pendingValidations' => (clone $query)
-                ->whereHas('validation_ywp_student', function ($q) {
+                ->whereHas('validation_ywp_students', function ($q) {
                     $q->where('status', StudentYwpValidation::STATUS_PENDING);
                 })
                 ->count(),
 
             'rejectedValidations' => (clone $query)
-                ->whereHas('validation_ywp_student', function ($q) {
+                ->whereHas('validation_ywp_students', function ($q) {
                     $q->where('status', StudentYwpValidation::STATUS_REJECTED);
                 })
                 ->count(),
@@ -129,7 +129,7 @@ class ValidationStudentYwpController extends VoyagerBaseController
 
     public function details($id)
     {
-        $participant = Participant::with('validation_ywp_student')->findOrFail($id);
+        $participant = Participant::with('validation_ywp_students')->findOrFail($id);
 
         // Détermine le fichier fourni
         $documentUrl = null;
@@ -149,7 +149,7 @@ class ValidationStudentYwpController extends VoyagerBaseController
             'email' => $participant->email,
             'phone' => $participant->phone,
             'ywp_or_student' => $participant->ywp_or_student,
-            'validation_status' => optional($participant->validation_ywp_student->last())->status ?? "pending",
+            'validation_status' => optional($participant->validation_ywp_students->last())->status ?? "pending",
 
             'document_type' => $documentType,
             'document_url' => $documentUrl,

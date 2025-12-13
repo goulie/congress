@@ -1,6 +1,7 @@
 @php
     $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
     $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
+    $DinnerNonMember = App\Models\CategorieRegistrant::DinnerNonMemberforCongress($congres->id);
     $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
     $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
     $non_member = App\Models\CategorieRegistrant::NonMemberPriceforCongress($congres->id);
@@ -138,13 +139,12 @@
             <div class="col-md-4">
                 <label class="control-label font-weight-bold text-dark required">
                     <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
-                        class="text-danger">({{ $dinner->montant . ' ' . $congres->currency . ' - ' . $congres->nbre_place_dinner }}
+                        class="text-danger">({{ $congres->nbre_place_dinner }}
                         {{ app()->getLocale() == 'fr' ? 'Places restantes' : 'Remaining seats' }} ) </span>
                 </label>
                 <select class="form-control" name="dinner" id="dinner" required>
                     <option value="" selected disabled>{{ __('registration.choose') }}</option>
-                    <option value="oui" data-amount="{{ $dinner->montant }}"
-                        {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
+                    <option value="oui" {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
                         {{ __('registration.step3.fields.oui') }}
                     </option>
                     <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
@@ -241,12 +241,13 @@
                     <i class="bi bi-card-image"></i> {{ __('registration.step3.fields.student_card') }}
                     <span class="text-danger">jpeg, jpg, png, Pdf, Max: 2Mo</span>
                 </label>
-                <input type="file" class="form-control" name="student_card" id="student_card" accept="image/*,application/pdf"
+                <input type="file" class="form-control" name="student_card" id="student_card"
+                    accept="image/*,application/pdf"
                     {{ !isset($participant) || !$participant->student_card ? 'required' : '' }}>
                 @if (isset($participant) && $participant->student_card)
-                    <a  href="{{ Voyager::image($participant->student_card) }}"
-                        target="_blank">
-                        <i class="bi bi-box-arrow-up-right"></i> {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
+                    <a href="{{ Voyager::image($participant->student_card) }}" target="_blank">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
                         {{-- <span class="text-danger">jpeg, jpg, png, Max: 2Mo</span> --}}
                     </a>
                     <div class="form-check mt-2">
@@ -267,9 +268,9 @@
                     accept="image/*,application/pdf"
                     {{ !isset($participant) || !$participant->student_letter ? 'required' : '' }}>
                 @if (isset($participant) && $participant->student_letter)
-                    <a href="{{ Voyager::image($participant->student_letter) }}"
-                        target="_blank">
-                        <i class="bi bi-box-arrow-up-right"></i> {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
+                    <a href="{{ Voyager::image($participant->student_letter) }}" target="_blank">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        {{ app()->getLocale() == 'fr' ? 'Ancien fichier joint' : 'Old file attached' }}
                     </a>
                     <div class="form-check mt-2">
                         <label class="form-check-label text-danger" for="remove_student_letter">
@@ -334,6 +335,7 @@
                 passDelegue: parseFloat("{{ $passDeleguate->montant ?? 0 }}"),
                 nonMembre: parseFloat("{{ $non_member->montant ?? 0 }}"),
                 dinner: parseFloat("{{ $dinner->montant ?? 0 }}"),
+                DinnerNonMember: parseFloat("{{ $DinnerNonMember->montant ?? 0 }}"),
                 visite: parseFloat("{{ $tours->montant ?? 0 }}"),
                 delegue: parseFloat("{{ $deleguate->montant ?? 0 }}"),
                 student: parseFloat("{{ $student_ywp->montant ?? 0 }}"),
@@ -523,31 +525,74 @@
                     return;
                 }
 
-                // ---- DÉLÉGUÉ ----
+                /* ============================
+                 * DÉLÉGUÉ
+                 * ============================ */
                 if (cat === '1') {
+
+                    // 🔴 PRIORITÉ AU PASS JOUR
                     if (pass === 'oui' && nbPass > 0) {
+
+                        // Prix uniquement par jour
                         total += nbPass * montant.passDelegue;
+
+                        // 🍽️ Dîner = NON MEMBRE
+                        if (dinner === 'oui') {
+                            total += montant.DinnerNonMember;
+                        }
+
                     } else {
-                        total += (membership === 'oui') ? montant.delegue : montant.nonMembre;
+
+                        // Délégué classique
+                        total += (membership === 'oui') ?
+                            montant.delegue :
+                            montant.nonMembre;
+
+                        // 🍽️ Dîner délégué
+                        if (dinner === 'oui') {
+                            total += montant.dinner;
+                        }
                     }
                 }
 
-                // ---- STUDENT ----
+                /* ============================
+                 * STUDENT / YWP
+                 * ============================ */
                 else if (cat === '4') {
-                    total += montant.student; // Toujours le prix étudiant standard
+
+                    total += montant.student;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
                 }
 
-                // ---- AUTRES CATÉGORIES (si existait) ----
+                /* ============================
+                 * AUTRES CATÉGORIES
+                 * ============================ */
                 else {
-                    const montantCategorie = parseFloat($('#categorie option:selected').data('amount')) || 0;
-                    total += (membership === 'oui') ? montantCategorie : montant.nonMembre;
+                    const montantCategorie =
+                        parseFloat($('#categorie option:selected').data('amount')) || 0;
+
+                    total += (membership === 'oui') ?
+                        montantCategorie :
+                        montant.nonMembre;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
                 }
 
-                if (dinner === 'oui') total += montant.dinner;
-                if (visit === 'oui') total += montant.visite;
+                /* ============================
+                 * VISITE TECHNIQUE
+                 * ============================ */
+                if (visit === 'oui') {
+                    total += montant.visite;
+                }
 
                 $('#total-amount').text(total.toFixed(2));
             }
+
 
             /* ============================================================
              * VALIDATION DATE PASSEPORT

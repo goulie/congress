@@ -9,6 +9,7 @@ class Invoice extends Model
 {
     const PAYMENT_STATUS_PAID = 'Paid';
     const PAYMENT_STATUS_UNPAID = 'Unpaid';
+    const PAYMENT_STATUS_EXPIRED = 'Expired';
 
     const PAYMENT_METHOD_ONLINE = 'Online';
     const PAYMENT_METHOD_TRANSFERT = 'Transfert';
@@ -41,6 +42,7 @@ class Invoice extends Model
         return [
             self::PAYMENT_STATUS_PAID => 'Paid',
             self::PAYMENT_STATUS_UNPAID => 'Unpaid',
+            self::PAYMENT_STATUS_EXPIRED => 'Expired',
         ];
     }
 

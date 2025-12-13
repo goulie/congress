@@ -39,7 +39,7 @@ class InvoiceService
                     // ✅ Mise à jour de la facture existante
                     $invoice->update([
                         'currency'  => $congres->currency ?? 'FCFA',
-                        'status'    => $data['status'] ?? 'pending',
+                        'status'    => $data['status'] ?? Invoice::PAYMENT_STATUS_UNPAID,,
                         'invoice_date' => Carbon::now(),
                     ]);
                     //envoie email de facture
@@ -55,7 +55,7 @@ class InvoiceService
                         'user_id'        => Auth::user()->user_id ?? Auth::user()->id,
                         'participant_id' => $data['participant_id'],
                         'currency'       => $congres->currency ?? 'FCFA',
-                        'status'         => 'pending',
+                        'status'         => Invoice::PAYMENT_STATUS_UNPAID,
                         'invoice_date'   => Carbon::now(),
                         'congres_id'     => $congres->id,
                     ]);

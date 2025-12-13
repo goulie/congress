@@ -108,6 +108,11 @@ class CategorieRegistrant extends Model
         return self::getCategoryWithAmount($congresId, 'dinner');
     }
 
+    public static function DinnerNonMemberforCongress($congresId)
+    {
+        return self::getCategoryWithAmount($congresId, 'non_member_dinner');
+    }
+    
     public static function accompanyingPersonForCongress($congresId)
     {
         return self::getCategoryWithAmount($congresId, 'accompanying_person');

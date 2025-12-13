@@ -121,7 +121,8 @@
 
 @section('content')
     @php
-        $periode = App\Models\Periode::PeriodeActive(App\Models\Congress::latest()->first()->id);
+        $congres = App\Models\Congress::latest()->first();
+        $periode = App\Models\Periode::PeriodeActive($congres->id);
         $locale = app()->getLocale(); // 'fr' or 'en'
         \Carbon\Carbon::setLocale($locale);
         $start = \Carbon\Carbon::parse($periode->start_date);
@@ -133,7 +134,7 @@
     @endphp
 
     <div class="page-content">
-        <div class="container">
+        <div class="container-fluid">
             <!-- Carte / Period Card -->
             <div class="period-card">
                 <h3>
@@ -207,9 +208,41 @@
                     @endforeach
                 </div>
             </div>
+            @if (auth()->user()->isFinance() || auth()->user()->isAdmin()|| auth()->user()->isSecretary())
+                <div class="col-md-12">
+                    <div class="row">
+                        @foreach (App\Models\Periode::all() as $periode)
+                            <div class="col-md-4 mt-4 card"
+                                style="font-weight: bold;font-size: 1.5em;border:1px solid #6c6d6e;border-radius: 10px;padding:10px">
+                                <div class="card-title text-center">
+                                    {{ $periode->translate($locale, 'fallbackLocale')->libelle }}
+                                    ({{ \Carbon\Carbon::parse($periode->start_date)->format('d/M/Y') . ' - ' . \Carbon\Carbon::parse($periode->end_date)->format('d/M/Y') }})
+                                </div>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Tarif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($periode->tarifs as $tarif)
+                                            <tr>
+                                                <td>{{ $tarif->categorie_registrant->translate($locale, 'fallbackLocale')->libelle }}
+                                                </td>
+                                                <td>{{ $tarif->montant . ' ' . $tarif->congres->currency }} </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
 
-            @if (!auth()->user()->isValidator())
+            @if (auth()->user()->isParticipant() || auth()->user()->isAdmin())
 
 
                 <div class="row dashboard">
@@ -257,7 +290,7 @@
                         </a>
                     </div>
 
-                    
+
                 </div>
 
 
@@ -330,9 +363,9 @@
                     </div>
 
                 </div>
-            @else
+            @elseif(auth()->user()->isValidator() || auth()->user()->isAdmin())
                 <div class="row dashboard">
-                    
+
                     <div class="col-md-12 col-sm-12 mb-4">
                         <a href="{{ route('voyager.view-validation-ywp-students.index') }}" class="btn btn-block">
                             <div class="dash-btn" style="background-color: #9cc9f7">
@@ -344,12 +377,33 @@
                                         Process Young Professionals and Students
                                     @endif
                                 </h4>
-                                
+
                             </div>
                         </a>
                     </div>
 
                 </div>
+            @elseif(auth()->user()->isFinance() || auth()->user()->isAdmin())
+                <div class="row dashboard">
+
+                    <div class="col-md-12 col-sm-12 mb-4">
+                        <a href="{{ route('voyager.view-validation-payments.index') }}" class="btn btn-block">
+                            <div class="dash-btn" style="background-color: #9cc9f7">
+                                <i class="bi bi-file-medical-fill"></i>
+                                <h4>
+                                    @if ($locale === 'fr')
+                                        Traiter les factures
+                                    @else
+                                        Traiter les factures
+                                    @endif
+                                </h4>
+
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            @else
             @endif
         </div>
     </div>

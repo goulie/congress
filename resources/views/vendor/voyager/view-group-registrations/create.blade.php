@@ -1,6 +1,7 @@
 @php
     $categories = App\Models\CategorieRegistrant::forCongress($congres->id);
     $dinner = App\Models\CategorieRegistrant::DinnerforCongress($congres->id);
+    $DinnerNonMember = App\Models\CategorieRegistrant::DinnerNonMemberforCongress($congres->id);
     $accompanying = App\Models\CategorieRegistrant::accompanyingPersonForCongress($congres->id);
     $tours = App\Models\CategorieRegistrant::ToursforCongress($congres->id);
     $passDeleguate = App\Models\CategorieRegistrant::PassDeleguateforCongress($congres->id);
@@ -17,8 +18,18 @@
             enctype="multipart/form-data">
 @endif
 @csrf
+
+
+
 <input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 <div class="box-body">
+
+    <div class="row">
+        <div class="col-md-12 text-center">
+            {!! __('registration.fields_required') !!}
+        </div>
+    </div>
+
     <div class="row">
         <!-- Catégorie -->
         <div class="col-md-4">
@@ -148,7 +159,7 @@
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
-                    class="text-danger">({{ $dinner->montant . ' ' . $congres->currency . ' - ' . $congres->nbre_place_dinner }}
+                    class="text-danger">({{ $congres->nbre_place_dinner }}
                     {{ app()->getLocale() == 'fr' ? 'Places' : 'seats' }} ) </span>
             </label>
             <select class="form-control" name="dinner" id="dinner" required>
@@ -330,22 +341,26 @@
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-person"></i>
-                {{ __('registration.step1.fields.first_name') }}
+                {{ __('registration.step1.fields.last_name') }}
             </label>
-            <input type="text" class="form-control" name="first_name"
-                placeholder="{{ __('registration.step1.placeholders.first_name') }}"
-                @isset($participant) value="{{ $participant->fname }}" @endisset required>
+            <input type="text" class="form-control" name="last_name"
+                placeholder="{{ __('registration.step1.placeholders.last_name') }}"
+                onkeyup="this.value = this.value.toUpperCase();"
+                @isset($participant) value="{{ $participant->lname }}" @endisset required>
         </div>
 
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-person"></i>
-                {{ __('registration.step1.fields.last_name') }}
+                {{ __('registration.step1.fields.first_name') }}
             </label>
-            <input type="text" class="form-control" name="last_name"
-                placeholder="{{ __('registration.step1.placeholders.last_name') }}"
-                @isset($participant) value="{{ $participant->lname }}" @endisset required>
+            <input type="text" class="form-control" name="first_name"
+                placeholder="{{ __('registration.step1.placeholders.first_name') }}"
+                onkeyup="this.value = this.value.toUpperCase();"
+                @isset($participant) value="{{ $participant->fname }}" @endisset required>
         </div>
+
+
 
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
@@ -421,16 +436,42 @@
 
             <input type="hidden" id="telephone" name="telephone_complet">
         </div>
+
         <div class="col-md-4">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-building"></i>
                 {{ __('registration.step2.fields.organisation') }}
             </label>
-            <input type="text" class="form-control" name="organisation"
+            <input type="text" class="form-control" name="organisation" id="organisation"
                 placeholder="{{ __('registration.step2.placeholders.organisation') }}"
                 @isset($participant) value="{{ $participant->organisation }}" @endisset required>
-        </div>
 
+
+        </div>
+        <!-- Champ sigle (caché par défaut) -->
+        <div class="col-md-4 hidden" id="sigle-container">
+            <label class="control-label font-weight-bold text-dark required">
+                <i class="bi bi-abbr"></i>
+                {{ __('registration.sigle') }}
+            </label>
+            <input type="text" class="form-control text-uppercase" id="sigle" name="sigle_organisation"
+                placeholder="Ex: UNESCO, UNICEF, OMS..." maxlength="10"
+                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset>
+
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <small class="text-muted">
+                    <span id="sigle-counter">0</span>/10 {{ __('registration.caracteres') }}
+                </small>
+                <small class="text-info">
+                    <i class="bi bi-info-circle"></i> {{ __('registration.maj_only') }}
+                </small>
+            </div>
+            <!-- Message d'avertissement (caché par défaut) -->
+            {{-- <div id="organisation-warning" class="text-danger mt-2 p-2 hidden">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Caractères > 10, veuillez entrer un sigle
+            </div> --}}
+        </div>
         @php
             $levels = App\Models\TypeOrganisation::get()
                 ->translate(app()->getLocale(), 'fallbackLocale')
@@ -662,12 +703,14 @@
     <!-- BOOTSTRAP 3 DATEPICKER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.fr.min.js">
-    //jquery cdn
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        //jquery cdn
+        <
+        script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" >
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
 
-    </script>
+
     <script>
         $(document).ready(function() {
             const phoneInput = document.querySelector("#telephone");
@@ -704,6 +747,14 @@
 
                 });
             }
+
+            //Fonction pour désactiver l'autocomplétion sur tous les inputs text
+            $('input').attr({
+                'autocomplete': 'off',
+                'spellcheck': 'false',
+                'data-form-type': 'other', // Pour 1Password
+                'data-persist': 'false' // Attribut personnalisé
+            });
         });
     </script>
     <script>
@@ -725,6 +776,7 @@
                 visite: parseFloat("{{ $tours->montant ?? 0 }}") || 0,
                 delegue: parseFloat("{{ $deleguate->montant ?? 0 }}") || 0,
                 student: parseFloat("{{ $student_ywp->montant ?? 0 }}") || 0,
+                DinnerNonMember: parseFloat("{{ $DinnerNonMember->montant ?? 0 }}"),
             };
 
             // Flags based on existing participant files (server side)
@@ -775,6 +827,7 @@
             // ============================
             function calculerTotal() {
                 let total = 0;
+
                 const cat = $('#categorie').val();
                 const membership = $('#membership').val();
                 const dinner = $('#dinner').val();
@@ -787,24 +840,74 @@
                     return;
                 }
 
-                if (cat === DELEGUE_ID) {
+                /* ============================
+                 * DÉLÉGUÉ
+                 * ============================ */
+                if (cat === '1') {
+
+                    // 🔴 PRIORITÉ AU PASS JOUR
                     if (pass === 'oui' && nbPass > 0) {
+
+                        // Prix uniquement par jour
                         total += nbPass * montant.passDelegue;
+
+                        // 🍽️ Dîner = NON MEMBRE
+                        if (dinner === 'oui') {
+                            total += montant.DinnerNonMember;
+                        }
+
                     } else {
-                        total += (membership === 'oui') ? montant.delegue : montant.nonMembre;
+
+                        // Délégué classique
+                        total += (membership === 'oui') ?
+                            montant.delegue :
+                            montant.nonMembre;
+
+                        // 🍽️ Dîner délégué
+                        if (dinner === 'oui') {
+                            total += montant.dinner;
+                        }
                     }
-                } else if (cat === STUDENT_ID) {
-                    total += montant.student;
-                } else {
-                    const montantCategorie = parseFloat($('#categorie option:selected').data('amount')) || 0;
-                    total += (membership === 'oui') ? montantCategorie : montant.nonMembre;
                 }
 
-                if (dinner === 'oui') total += montant.dinner;
-                if (visit === 'oui') total += montant.visite;
+                /* ============================
+                 * STUDENT / YWP
+                 * ============================ */
+                else if (cat === '4') {
+
+                    total += montant.student;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
+                }
+
+                /* ============================
+                 * AUTRES CATÉGORIES
+                 * ============================ */
+                else {
+                    const montantCategorie =
+                        parseFloat($('#categorie option:selected').data('amount')) || 0;
+
+                    total += (membership === 'oui') ?
+                        montantCategorie :
+                        montant.nonMembre;
+
+                    if (dinner === 'oui') {
+                        total += montant.DinnerNonMember;
+                    }
+                }
+
+                /* ============================
+                 * VISITE TECHNIQUE
+                 * ============================ */
+                if (visit === 'oui') {
+                    total += montant.visite;
+                }
 
                 $('#total-amount').text(total.toFixed(2));
             }
+
 
             // ============================
             // VALIDATION PASSEPORT (client)
@@ -1113,5 +1216,154 @@
             renderForm();
 
         }); // end jQuery ready
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            const MAX_LENGTH = 10;
+            const $orgInput = $('#organisation');
+            const $orgWarning = $('#organisation-warning');
+            const $sigleContainer = $('#sigle-container');
+            const $sigleInput = $('#sigle');
+            const $sigleCounter = $('#sigle-counter');
+
+            // Vérifier la longueur au chargement
+            checkOrganisationLength();
+
+            // Vérifier la longueur de l'organisation
+            function checkOrganisationLength() {
+                const orgValue = $orgInput.val().trim();
+                const orgLength = orgValue.length;
+
+                if (orgLength > MAX_LENGTH) {
+                    // Afficher l'avertissement
+                    $orgWarning.removeClass('hidden');
+
+                    // Afficher le champ sigle
+                    $sigleContainer.removeClass('hidden');
+                    $sigleInput.prop('required', true);
+
+                    // Générer un sigle suggéré si vide
+                    if ($sigleInput.val() === '' && orgLength <= 30) {
+                        const suggestedSigle = generateSigle(orgValue);
+                        $sigleInput.val(suggestedSigle);
+                        updateSigleCounter();
+                    }
+                } else {
+                    // Cacher l'avertissement et le champ sigle
+                    $orgWarning.addClass('hidden');
+                    $sigleContainer.addClass('hidden');
+                    $sigleInput.prop('required', false);
+                }
+            }
+
+            // Générer un sigle suggéré
+            function generateSigle(organisation) {
+                // Nettoyer et convertir en majuscules
+                const words = organisation.toUpperCase()
+                    .replace(/[^A-Z\s]/g, '') // Garder uniquement lettres et espaces
+                    .split(/\s+/)
+                    .filter(word => word.length > 2); // Ignorer mots courts
+
+                if (words.length === 0) return '';
+
+                let sigle = '';
+                for (let word of words) {
+                    if (sigle.length >= MAX_LENGTH) break;
+
+                    // Pour les mots courts, prendre tout le mot
+                    if (word.length <= 3 && sigle.length + word.length <= MAX_LENGTH) {
+                        sigle += word;
+                    } else {
+                        // Sinon prendre la première lettre
+                        sigle += word.charAt(0);
+                    }
+                }
+
+                return sigle.substring(0, MAX_LENGTH);
+            }
+
+            // Forcer les majuscules dans le champ sigle
+            function forceUppercase() {
+                const cursorPos = this.selectionStart;
+                const originalValue = $(this).val();
+
+                // Convertir en majuscules et supprimer caractères non alphabétiques
+                const uppercaseValue = originalValue.toUpperCase()
+                    .replace(/[^A-Z]/g, '');
+
+                $(this).val(uppercaseValue);
+
+                // Restaurer la position du curseur
+                this.setSelectionRange(cursorPos, cursorPos);
+
+                updateSigleCounter();
+            }
+
+            // Mettre à jour le compteur de caractères
+            function updateSigleCounter() {
+                const length = $sigleInput.val().length;
+                $sigleCounter.text(length);
+
+                // Changer la couleur du compteur
+                $sigleCounter.removeClass('text-success text-warning text-danger');
+
+                if (length === MAX_LENGTH) {
+                    $sigleCounter.addClass('text-danger');
+                } else if (length >= MAX_LENGTH - 2) {
+                    $sigleCounter.addClass('text-warning');
+                } else if (length > 0) {
+                    $sigleCounter.addClass('text-success');
+                } else {
+                    $sigleCounter.addClass('text-muted');
+                }
+            }
+
+            // Événements
+            $orgInput.on('input keyup blur', checkOrganisationLength);
+            $sigleInput.on('input keyup', forceUppercase);
+
+            // Initialiser le compteur
+            updateSigleCounter();
+
+            // Validation du formulaire
+            $('form').on('submit', function(e) {
+                const orgValue = $orgInput.val().trim();
+                const sigleValue = $sigleInput.val().trim();
+
+                // Vérifier si organisation > 10 caractères et sigle vide
+                if (orgValue.length > MAX_LENGTH && sigleValue.length === 0) {
+                    e.preventDefault();
+
+                    // Afficher une alerte
+                    alert(
+                        'Veuillez entrer un sigle pour votre organisation (max 10 caractères en majuscules)'
+                    );
+
+                    // Focus sur le champ sigle
+                    $sigleInput.focus();
+
+                    // Ajouter une classe d'erreur
+                    $sigleInput.addClass('is-invalid');
+
+                    return false;
+                }
+
+                // Vérifier si le sigle dépasse la limite
+                if (sigleValue.length > MAX_LENGTH) {
+                    e.preventDefault();
+                    alert(`Le sigle ne peut pas dépasser ${MAX_LENGTH} caractères`);
+                    $sigleInput.focus();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Supprimer la classe d'erreur quand l'utilisateur commence à taper
+            $sigleInput.on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
     </script>
 @endsection

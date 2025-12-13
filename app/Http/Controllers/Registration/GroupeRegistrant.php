@@ -82,7 +82,7 @@ class GroupeRegistrant extends Controller
                 'pass_deleguate'    => $locale == 'fr' ? 'pass délégué' : 'delegat pass', //'pass délégué',
                 'pass_date'         => $locale == 'fr' ? 'jour de pass' : 'pass date', //'jour de pass',
                 'ywp_or_student'    => $locale == 'fr' ? 'type étudiant ou jeune professionnel' : 'student or young water professional', //'type étudiant',
-                'student_card'      => $locale == 'fr' ? 'numéro de passeport' : 'student card', //'carte étudiant',
+                'student_card'      => $locale == 'fr' ? 'carte étudiant' : 'student card', //'carte étudiant',
                 'student_letter'    => $locale == 'fr' ? 'lettre d\'attestation' : 'invitation letter', //'lettre d\'attestation',
                 'visit'             => $locale == 'fr' ? 'visite technique' : 'Technical visit', //'visite technique',
                 'site_visit'        => $locale == 'fr' ? 'site de visite' : 'Visit site', //'site de visite',
@@ -109,8 +109,9 @@ class GroupeRegistrant extends Controller
                 'autre_type_org'    => 'required_if:type_organisation,10|string|nullable|max:255',
                 'fonction'          => 'required|string|max:255',
                 'job_country'       => 'nullable|exists:countries,id',
-                'passport_number' => 'required|string|max:50',
-                'passport_date'   => 'required|date|after:today',
+                'passport_number'   => 'required|string|max:50',
+                'passport_date'     => 'required|date|after:today',
+                'sigle_organisation' => 'nullable|string|max:10',
             ];
 
 
@@ -119,7 +120,7 @@ class GroupeRegistrant extends Controller
             // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             if ($request->categorie == 1) {
 
-                
+
 
                 // Pass obligatoire ?
                 $rules['pass_deleguate'] = 'required|in:oui,non';
@@ -143,7 +144,7 @@ class GroupeRegistrant extends Controller
             if ($request->categorie == 4) {
                 // fichiers obligatoires
                 if ($request->ywp_or_student == 'student') {
-                    $rules['student_card'] = 'required|mimes:jpeg,png,jpg|max:2048';
+                    $rules['student_card'] = 'required|mimes:jpeg,png,jpg,pdf|max:2048';
                 }
                 if ($request->ywp_or_student == 'ywp') {
                     $rules['student_letter'] = 'required|mimes:jpeg,png,jpg,pdf|max:2048';
@@ -211,6 +212,7 @@ class GroupeRegistrant extends Controller
                 'langue'                  => $locale,
                 'congres_id'              => $congresId,
                 'user_id'                 => auth()->id(),
+                'sigle_organisation'      => $request->sigle_organisation,
             ]);
 
             /* ============================================================
@@ -236,7 +238,7 @@ class GroupeRegistrant extends Controller
                     $admin->notify(new StudentOrYwpregistrantNotification($participant));
                 }
 
-                $participant->validation_ywp_student()->create([
+                $participant->validation_ywp_students()->create([
                     'status' => StudentYwpValidation::STATUS_PENDING
                 ]);
             }
@@ -365,7 +367,7 @@ class GroupeRegistrant extends Controller
                 'lettre_invitation' => 'required|in:oui,non',
                 'passport_number'   => 'required|string|max:255',
                 'passport_date'     => 'required|date|after:today',
-                
+
             ];
 
             /* ============================================================
@@ -438,7 +440,7 @@ class GroupeRegistrant extends Controller
             $participant->update([
                 'civility_id'             => $request->title,
                 'gender_id'               => $request->gender,
-                'type_member_id'          => $request->member_code ? $this->getMembershipTypeIdFromCode($request->member_code): null,
+                'type_member_id'          => $request->member_code ? $this->getMembershipTypeIdFromCode($request->member_code) : null,
                 'fname'                   => $request->first_name,
                 'lname'                   => $request->last_name,
                 'student_level_id'        => $request->education,
@@ -490,7 +492,7 @@ class GroupeRegistrant extends Controller
                     $admin->notify(new StudentOrYwpregistrantNotification($participant));
                 }
 
-                $participant->validation_ywp_student()->create([
+                $participant->validation_ywp_students()->create([
                     'status' => StudentYwpValidation::STATUS_PENDING
                 ]);
             }
