@@ -159,7 +159,7 @@ class SingleRegitrantInvoiceObserver
 
             // DÉLÉGUÉ (category_id = 1)
             if ($categoryId == 1) {
-                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner,$DinnerNonMember, $tours, $passDeleguate);
+                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner, $DinnerNonMember, $tours, $passDeleguate);
             }
             // ÉTUDIANT/YWP (category_id = 4)
             elseif ($categoryId == 4) {
@@ -175,8 +175,7 @@ class SingleRegitrantInvoiceObserver
             // DÉLÉGUÉ (category_id = 1)
             if ($categoryId == 1) {
 
-                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner,$DinnerNonMember, $tours, $passDeleguate);
-            
+                $items = $this->getDelegateItems($participant, $deleguate, $non_member, $dinner, $DinnerNonMember, $tours, $passDeleguate);
             } elseif ($categoryId == 4) {
                 $isMember = false;
                 if ($participant->membership == 'oui' && isset($participant->membership_code)) {
@@ -185,11 +184,10 @@ class SingleRegitrantInvoiceObserver
                 }
 
                 $items = $this->getStudentItems($participant, $student_ywp, $student_ywp_member = null, $dinner, $tours, $isMember);
-            
             } else {
                 $items = $this->getOtherCategoryItems($participant, $dinner, $tours);
             }
-        } 
+        }
 
 
         $this->SingleRegistrantInvoice->createOrUpdateInvoice($data, $items);
@@ -213,9 +211,9 @@ class SingleRegitrantInvoiceObserver
         }
 
         $pass = JourPassDelegue::whereIn('id', $passIds)->get();
-        $hasDayPass = $pass->count() > 0;
+        $hasDayPass = $participant->pass_deleguate == 'oui';
 
-        if ($hasDayPass) {
+        if ($hasDayPass || $pass->count() > 0) {
             // Facturer chaque pass journalier sélectionné
             foreach ($pass as $passItem) {
 
@@ -276,7 +274,7 @@ class SingleRegitrantInvoiceObserver
         // Ajouter le dinner
         if ($participant->diner === 'oui') {
             $dinnerTarif = $hasDayPass ? $DinnerNonMember : $dinner;
-    
+            
             $items[] = [
                 'description' => $participant->langue == 'fr'
                     ? 'Dîner gala'

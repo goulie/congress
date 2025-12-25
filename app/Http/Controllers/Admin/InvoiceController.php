@@ -4,16 +4,34 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AgeRange;
+use App\Models\Congress;
 use App\Models\Invoice;
 use App\Models\Participant;
 use App\Services\InvoicePdfService;
 use App\Services\InvoiceService;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $invoices = Invoice::AllInvoices(Congress::latest()->first()->id);
+        
+        if (Auth::user()->isAdmin()|| Auth::user()->isFinance() || Auth::user()->isSecretary()) {
+            $invoices = $invoices->get();
+        } else {
+            $invoices = $invoices->where('participants.user_id', Auth::user()->id)->get();
+            
+        }
+
+
+        return view('voyager::invoices.index', compact('invoices'));
+    }
     public function store(Request $request, InvoiceService $invoiceService, InvoicePdfService $pdfService)
     {
         // Création / mise à jour de la facture
@@ -31,19 +49,62 @@ class InvoiceController extends Controller
     public function downloadByParticipant(Participant $participant, InvoicePdfService $pdfService)
     {
         // Charger la dernière facture avec ses items
-        $invoice = $participant->invoices()->with('items', 'congres', 'user')->latest()->first();
+        $invoice = $participant->invoices()
+            ->with('items', 'congres', 'user')
+            ->latest()
+            ->first();
 
         if (!$invoice) {
             abort(404, 'Facture non trouvée pour ce participant.');
         }
 
-        // Télécharger le PDF directement
+        // Trier les items par date (EN + FR)
+        $invoice->items = $invoice->items
+            ->sortBy(function ($item) {
+
+                $text = $item->description_en
+                    ?? $item->description_fr
+                    ?? '';
+
+                // FORMAT ISO (EN) : 2026-02-09
+                if (preg_match('/(\d{4})-(\d{2})-(\d{2})/', $text, $m)) {
+                    return Carbon::createFromDate(
+                        (int) $m[1], // year
+                        (int) $m[2], // month
+                        (int) $m[3]  // day
+                    );
+                }
+
+                // FORMAT FR : 09 février 2026
+                if (preg_match('/(\d{2})\s+février\s+(\d{4})/iu', $text, $m)) {
+                    return Carbon::createFromDate(
+                        (int) $m[2], // year
+                        2,           // month (février)
+                        (int) $m[1]  // day
+                    );
+                }
+
+                // Sans date → à la fin
+                return Carbon::maxValue();
+            })
+            ->values(); // réindexation propre
+
+        // Télécharger le PDF
         return $pdfService->download($invoice);
     }
 
     public function export(Request $request)
     {
+        $request->validate([
+            'organization' => 'required',
+            'email' => 'required|email',
+            'Adresse' => 'nullable'
+        ]);
+
         $ids = $request->input('participant_ids', []);
+        $organisation = $request->input('organization');
+        $email = $request->input('email');
+        $Adresse = $request->input('Adresse');
         if (empty($ids)) {
             return back()->with('error', 'Veuillez sélectionner au moins un participant.');
         }
@@ -67,31 +128,42 @@ class InvoiceController extends Controller
             'participants' => $participants,
             'totalAmount' => $totalAmount,
             'currency' => $currency,
+            'email' => $email,
+            'organisation' => $organisation,
+            'Adresse' => $Adresse
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download('facture_groupee.pdf');
+        return $pdf->download('facture_groupee_' . $organisation . '.pdf');
     }
 
-    public function index()
+    /* public function index()
     {
         $participants = Participant::with(['invoices.items', 'participantCategory'])->get();
         dd($participants);
         // return view('invoice.index');
     }
-
+ */
     public function details($id)
     {
-        $participant = Participant::with(['congres', 'country', 'gender', 'participantCategory','ageRange','user'])
-            ->findOrFail($id);
+        try {
 
-        $invoice = Invoice::where('participant_id', $id)
-            ->with('items')
-            ->first();
+            $participant = Participant::with(['congres', 'country', 'gender', 'participantCategory', 'ageRange'])
+                ->findOrFail($id);
 
-        return response()->json([
-            'participant' => $participant,
-            'invoice' => $invoice,
-            'items' => $invoice ? $invoice->items : []
-        ]);
+            $invoice = Invoice::where('participant_id', $id)
+                ->with('items')
+                ->first();
+
+            return response()->json([
+                'participant' => $participant,
+                'invoice' => $invoice,
+                'items' => $invoice ? $invoice->items : []
+            ]);
+        } catch (\Exception $e) {
+            Log::error("message: " . $e->getMessage());
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

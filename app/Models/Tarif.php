@@ -30,8 +30,6 @@ class Tarif extends Model
         return $this->belongsTo(Tarif::class, 'tarif_id');
     }
 
-<<<<<<< HEAD
-=======
     public static function TarifDuJour($categorie_registrant_id, $congres_id)
     {
         $periode = Periode::PeriodeActive($congres_id);
@@ -44,5 +42,4 @@ class Tarif extends Model
             ->where('categorie_registrant_id', $categorie_registrant_id)
             ->first();
     }
->>>>>>> 7c72303 ('home13122025')
 }

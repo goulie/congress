@@ -39,4 +39,12 @@ return [
 
     ],
 
+    'dbs' => [
+        'key' => env('DBS_API_KEY'),
+        'site_id' => env('DBS_SITE_ID'),
+        'base_url' => env('DBS_BASE_URL'),
+        'timeout'  => 30,
+
+    ]
+
 ];

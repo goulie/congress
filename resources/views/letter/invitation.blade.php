@@ -99,7 +99,7 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            width:250px
+            width:200px
             
         }
 
@@ -128,7 +128,7 @@
 
         /* Style pour l'image de signature */
         .signature img {
-            height: 150px !important;
+            height: 90px !important;
             width: auto !important;
             margin-bottom: 10px;
         }
@@ -178,7 +178,7 @@
             '{nationality}' => $data->nationality->libelle_fr ?? ($data->nationality->libelle_en ?? ''),
             '{country}' => $data->country->libelle_fr ?? ($data->country->libelle_en ?? ''),
             '{gender}' => $data->gender->libelle ?? '',
-            '{civility}' => $data->civility->libelle ?? '',
+            '{civility}' => $data->civility->translate($content->langue, 'fallbackLocale')->libelle ?? '',
             '{participant_category}' => $data->participantCategory->libelle ?? '',
             '{type_member}' => $data->typeMember->libelle ?? '',
             '{type_accompagning}' => $data->type_accompagning->libelle ?? '',
@@ -218,11 +218,7 @@
         <div class="recipient-address">
             <p>{{ ($content->langue ?? app()->getLocale()) == 'fr' ? 'À:' : 'To:' }}<br />
                 <span class="highlight">
-                    {{ ($content->langue ?? app()->getLocale()) == 'fr'
-                        ? ($data->gender_id == 1 || $data->civility_id == 1
-                            ? 'Madame '
-                            : 'Monsieur ')
-                        : 'Dear ' }}
+                    {{ $data->civility->translate($content->langue, 'fallbackLocale')->libelle ?? '' }}
                     {{ $data->fname . ' ' . $data->lname }}</span><br />
                 <span class="highlight">{{ $data->job }}</span><br />
                 <span class="highlight">{{ $data->organisation }}</span><br />

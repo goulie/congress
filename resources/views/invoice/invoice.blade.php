@@ -260,6 +260,7 @@
                 $date = $invoice->payment_date ?? $invoice->created_at;
                 $dateFr = Carbon::parse($date)->locale('fr')->isoFormat('D MMMM YYYY');
                 $dateEn = Carbon::parse($date)->locale('en')->isoFormat('MMMM D, YYYY');
+/*  */
 
             @endphp
 
@@ -348,10 +349,10 @@
                 <strong>SWIFT Code:</strong> {{ $transfert_info->swift }}<br>
             </div>
             <p><strong> {{ __('facture.bank_instructions') }}:</strong></p>
-            <p><strong>{{ $locale == 'fr' ? '- PAIEMENT EN LIGNE' : '- ONLINE PAYMENT' }}</strong> <br>
+{{--             <p><strong>{{ $locale == 'fr' ? '- PAIEMENT EN LIGNE' : '- ONLINE PAYMENT' }}</strong> <br>
                 <a href="https://congress.afwasa.org/get_register/admin/invoices"
                     target="_blank">https://congress.afwasa.org/get_register/admin/invoices</a>
-            </p>
+            </p> --}}
         </div>
 
         <!-- Pied de page -->

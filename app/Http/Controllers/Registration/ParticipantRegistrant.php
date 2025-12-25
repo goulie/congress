@@ -62,7 +62,7 @@ class ParticipantRegistrant extends VoyagerBaseController
     {
         try {
             //Locale
-            $locale = app()->getLocale();
+            $locale = $request->langue ?? app()->getLocale();
             $participant = Participant::where('uuid', $request->uuid)->first();
 
             //
@@ -150,7 +150,7 @@ class ParticipantRegistrant extends VoyagerBaseController
             // Règles de validation de base
             $rules = [
                 'categorie'           => 'required|in:1,4',
-                'dinner'              => 'required|in:oui,non',
+                //'dinner'              => 'nullable|in:oui,non',
                 'visit'               => 'required|in:oui,non',
                 'lettre_invitation'   => 'required|in:oui,non',
 
@@ -198,11 +198,11 @@ class ParticipantRegistrant extends VoyagerBaseController
                 'ywp_or_student' => $request->ywp_or_student ?? null,
                 'membership_code' => $request->member_code,
                 'organisation' => $participant->organisation ? $participant->organisation : $organisation,
-                'diner' => $request->dinner,
+                'diner' => $request->dinner ?? 'non',
                 'visite' => $request->visit,
                 'passeport_number' => $request->passport_number,
                 'invitation_letter' => $request->lettre_invitation,
-                'deleguate_day' => json_encode($request->pass_date),
+                'deleguate_day' => $request->pass_date ? json_encode($request->pass_date) : null,
                 'langue' => $locale,
                 'site_visit_id' => $request->site_visit ?? null,
                 'membre_aae' => $request->membership ?? 'non',
@@ -334,11 +334,12 @@ class ParticipantRegistrant extends VoyagerBaseController
                 'fonction' => 'required|string|max:255',
                 'job_country' => 'required|exists:countries,id',
                 'sigle_organisation' => 'nullable|string|min:1|max:10',
+                'email' => 'required|email|max:255',
             ]);
 
             // Mise à jour
             $participant->update([
-                'email' => Auth::user()->email ?? $participant->email,
+                'email' => $validated['email'] ?? Auth::user()->email,
                 'phone' => $validated['telephone'],
                 'organisation' => $validated['organisation'],
                 'organisation_type_id' => $validated['type_organisation'],

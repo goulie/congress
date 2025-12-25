@@ -39,6 +39,7 @@ class SingleRegistrantInvoice
                 $invoice = Invoice::where('participant_id', $data['participant_id'])->first();
 
                 if ($invoice) {
+                    
                     // ✅ Mise à jour de la facture existante
                     $invoice->update([
                         'currency'  => $congres->currency ?? 'FCFA',

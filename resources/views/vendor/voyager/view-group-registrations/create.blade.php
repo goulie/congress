@@ -23,11 +23,7 @@
 
 <input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 <div class="box-body">
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> 7c72303 ('home13122025')
     <div class="row">
         <div class="col-md-12 text-center">
             {!! __('registration.fields_required') !!}
@@ -158,25 +154,30 @@
                 placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
                 value="{{ $participant->membership_code ?? '' }}">
         </div>
+        @php
+            $dinnerRest = App\Models\Congress::dinnerRest();
+        @endphp
 
-        <!-- Dîner -->
-        <div class="col-md-4">
-            <label class="control-label font-weight-bold text-dark required">
-                <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
-                    class="text-danger">({{ $congres->nbre_place_dinner }}
-                    {{ app()->getLocale() == 'fr' ? 'Places' : 'seats' }} ) </span>
-            </label>
-            <select class="form-control" name="dinner" id="dinner" required>
-                <option value="" selected disabled>{{ __('registration.choose') }}</option>
-                <option value="oui" data-amount="{{ $dinner->montant }}"
-                    {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
-                    {{ __('registration.step3.fields.oui') }}
-                </option>
-                <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
-                    {{ __('registration.step3.fields.non') }}
-                </option>
-            </select>
-        </div>
+        @if ($dinnerRest > 0)
+            <!-- Dîner -->
+            <div class="col-md-4">
+                <label class="control-label font-weight-bold text-dark required">
+                    <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
+                        class="text-danger">({{ $congres->nbre_place_dinner }}
+                        {{ app()->getLocale() == 'fr' ? 'Places' : 'seats' }} ) </span>
+                </label>
+                <select class="form-control" name="dinner" id="dinner" required>
+                    <option value="" selected disabled>{{ __('registration.choose') }}</option>
+                    <option value="oui" data-amount="{{ $dinner->montant }}"
+                        {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
+                        {{ __('registration.step3.fields.oui') }}
+                    </option>
+                    <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
+                        {{ __('registration.step3.fields.non') }}
+                    </option>
+                </select>
+            </div>
+        @endif
 
         <!-- Visite -->
         <div class="col-md-4">
@@ -453,14 +454,15 @@
 
         </div>
         <!-- Champ sigle (caché par défaut) -->
-        <div class="col-md-4 hidden" id="sigle-container">
+        <div class="col-md-4" id="sigle-container">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-abbr"></i>
                 {{ __('registration.sigle') }}
             </label>
             <input type="text" class="form-control text-uppercase" id="sigle" name="sigle_organisation"
                 placeholder="Ex: UNESCO, UNICEF, OMS..." maxlength="10"
-                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset>
+                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset
+                required>
 
             <div class="d-flex justify-content-between align-items-center mt-1">
                 <small class="text-muted">
@@ -1245,19 +1247,19 @@
 
                     // Afficher le champ sigle
                     $sigleContainer.removeClass('hidden');
-                    $sigleInput.prop('required', true);
+                    //$sigleInput.prop('required', true);
 
                     // Générer un sigle suggéré si vide
                     if ($sigleInput.val() === '' && orgLength <= 30) {
                         const suggestedSigle = generateSigle(orgValue);
-                        $sigleInput.val(suggestedSigle);
+                        //$sigleInput.val(suggestedSigle);
                         updateSigleCounter();
                     }
                 } else {
                     // Cacher l'avertissement et le champ sigle
-                    $orgWarning.addClass('hidden');
-                    $sigleContainer.addClass('hidden');
-                    $sigleInput.prop('required', false);
+                    //$orgWarning.addClass('hidden');
+                    //$sigleContainer.addClass('hidden');
+                    //$sigleInput.prop('required', false);
                 }
             }
 

@@ -3,6 +3,7 @@
         @if (rand(1, 100) == 100)
             {{-- <i class="voyager-rum-1"></i> {{ __('voyager::theme.footer_copyright2') }} --}}
         @else
+        @if (!auth()->user()->isSecretary() && !auth()->user()->isFinance())
             <div class="support-float">
                 <a class="support-btn" href="mailto:event@afwasa.org">
                     <div class="pulse-ring"></div>
@@ -12,6 +13,8 @@
                     </div>
                 </a>
             </div>
+        @endif
+            
         @endif
         @php $version = Voyager::getVersion(); @endphp
         {{-- @if (!empty($version))

@@ -13,6 +13,7 @@
     @csrf
     <div class="box-body">
         <input type="hidden" name="uuid" value="{{ $participant->uuid ?? '' }}">
+        <input type="hidden" name="langue" value="{{ app()->getLocale() }}">
 
         <div class="row align-items-end">
             <!-- Catégorie -->
@@ -79,7 +80,10 @@
                 @php
                     use Carbon\Carbon;
                     Carbon::setLocale('fr');
-                    $dates = App\Models\JourPassDelegue::where('congres_id', $congres->id)->select('date', 'id')->get();
+                    $dates = App\Models\JourPassDelegue::where('congres_id', $congres->id)
+                        ->select('date', 'id')
+                        ->OrderBy('date')
+                        ->get();
                     // Récupérer les dates déjà sélectionnées
                     $selectedDates =
                         isset($participant) && $participant->deleguate_day
@@ -134,25 +138,31 @@
                     placeholder="{{ __('registration.step3.placeholders.membershipcode') }}"
                     value="{{ $participant->membership_code ?? '' }}">
             </div>
+            @php
+                $dinnerRest = App\Models\Congress::dinnerRest();
+            @endphp
 
-            <!-- Dîner -->
-            <div class="col-md-4">
-                <label class="control-label font-weight-bold text-dark required">
-                    <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
-                        class="text-danger">({{ $congres->nbre_place_dinner }}
-                        {{ app()->getLocale() == 'fr' ? 'Places restantes' : 'Remaining seats' }} ) </span>
-                </label>
-                <select class="form-control" name="dinner" id="dinner" required>
-                    <option value="" selected disabled>{{ __('registration.choose') }}</option>
-                    <option value="oui" {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.oui') }}
-                    </option>
-                    <option value="non" {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
-                        {{ __('registration.step3.fields.non') }}
-                    </option>
-                </select>
-            </div>
-
+            @if ($dinnerRest > 0)
+                <!-- Dîner -->
+                <div class="col-md-4">
+                    <label class="control-label font-weight-bold text-dark required">
+                        <i class="bi bi-cup-straw"></i> {{ __('registration.step3.fields.diner_gala') }} <span
+                            class="text-danger">({{ $dinnerRest }}
+                            {{ app()->getLocale() == 'fr' ? 'Places restantes' : 'Remaining seats' }} ) </span>
+                    </label>
+                    <select class="form-control" name="dinner" id="dinner" required>
+                        <option value="" selected disabled>{{ __('registration.choose') }}</option>
+                        <option value="oui"
+                            {{ isset($participant) && $participant->diner == 'oui' ? 'selected' : '' }}>
+                            {{ __('registration.step3.fields.oui') }}
+                        </option>
+                        <option value="non"
+                            {{ isset($participant) && $participant->diner == 'non' ? 'selected' : '' }}>
+                            {{ __('registration.step3.fields.non') }}
+                        </option>
+                    </select>
+                </div>
+            @endif
             <!-- Visite -->
             <div class="col-md-4">
                 <label class="control-label font-weight-bold text-dark required">
@@ -289,20 +299,27 @@
             </div>
         </div>
     </div>
-
-    <div class="box-footer">
-        <div class="navigation-buttons mt-3">
-            @if (isset($step) && $step > 1)
-                <a href="{{ route('form.previous') }}" type="button" class="btn btn-outline">
-                    <i class="bi bi-arrow-left"></i> {{ __('registration.step1.buttons.previous') }}
-                </a>
-            @endif
-            <button type="button" id="submit" class="btn btn-primary">
-                {{ __('registration.step1.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
-            </button>
-        </div>
-    </div>
-
+    @if (isset($participant) && $participant->invoices()?->latest()->first()?->status == 'Paid')
+        <div class="box-footer">
+            <div class="navigation-buttons mt-3">
+                <div class="alert alert-success text-center fs-5 fw-bold">
+                    {{ app()->getLocale() == 'fr' ? 'Vous avez payé votre inscription, vous ne pouvez plus modifier votre inscription' : 'You have paid your registration, you can no longer modify your registration' }}
+                </div>
+            </div>
+        @else
+            <div class="box-footer">
+                <div class="navigation-buttons mt-3">
+                    @if (isset($step) && $step > 1)
+                        <a href="{{ route('form.previous') }}" type="button" class="btn btn-outline">
+                            <i class="bi bi-arrow-left"></i> {{ __('registration.step1.buttons.previous') }}
+                        </a>
+                    @endif
+                    <button type="button" id="submit" class="btn btn-primary">
+                        {{ __('registration.step1.buttons.save_continue') }} <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+    @endif
 </form>
 
 @push('javascript')

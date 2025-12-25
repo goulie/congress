@@ -43,7 +43,7 @@
         }
 
         .card-value {
-            font-size: 24px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 0;
         }
@@ -277,19 +277,21 @@
                                         <th>Methode Paiement</th>
                                         <th>Montant</th>
                                         <th>Statut</th>
-                                        <th>Validé par</th>
+                                        <th>Validateur</th>
+                                        <th>Approbateur</th>
                                         <th class="actions text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($Invoices as $Invoice)
+                                    @foreach ($invoices as $Invoice)
                                         <tr>
                                             <td>
                                                 <input type="checkbox" class="invoice-check" value="{{ $Invoice->id }}"
                                                     @if ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID) disabled @endif>
                                             </td>
                                             <td>
-                                                <a href="#" style="text-decoration: none">
+                                                <a href="{{ route('invoices.download.participant', $Invoice->participant->id) }}"
+                                                    style="text-decoration: none">
                                                     <span class="label label-info">
                                                         {{ $Invoice->invoice_number }}
                                                     </span>
@@ -300,7 +302,8 @@
                                             </td>
                                             <td>{{ $Invoice->participant->participantCategory->libelle }}</td>
                                             <td>{{ $Invoice->participant->email }}</td>
-                                            <td>{{ $Invoice->participant->organisation }}</td>
+                                            <td>{{ $Invoice->participant->sigle_organisation ?? $Invoice->participant->organisation }}
+                                            </td>
                                             <td>{{ $Invoice->payment_method ?? 'N/A' }}</td>
                                             <td>
                                                 <span class="label label-info" style="font-weight: bold">
@@ -309,19 +312,27 @@
                                             </td>
                                             <td>
                                                 @if ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID)
-                                                    <span
-                                                        class="label label-success"> Payé </span>
+                                                    <span class="label label-success"> Payé </span>
                                                 @else
                                                     <span class="label label-danger">Impayé</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                {{ $Invoice->userValidation->name ?? 'N/A' }}
+                                                {{ $Invoice->userValidationPending->name ?? 'N/A' }}
                                             </td>
+                                            <td>
+                                                @if ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PENDING && !$Invoice->userValidation?->name)
+                                                    <span class="badge badge-dark">En attente</span>
+                                                @else
+                                                    {{ $Invoice->userValidation->name ?? 'N/A' }}
+                                                @endif
 
+                                            </td>
                                             <td class="no-sort no-click bread-actions">
                                                 @if ($Invoice->participant && $Invoice->participant->hasPendingYwpValidation())
                                                     <span class="badge badge-warning">Traitement requis</span>
+                                                @elseif ($Invoice->status == App\Models\Invoice::PAYMENT_STATUS_PENDING)
+                                                    <span class="badge badge-dark">Approbation requis</span>
                                                 @else
                                                     @if ($Invoice->participant)
                                                         <a href="javascript:void(0);"
@@ -332,8 +343,8 @@
                                                     @endif
 
                                                     @if ($Invoice->status !== App\Models\Invoice::PAYMENT_STATUS_PAID)
-                                                        <button class="btn btn-sm btn-success pull-right" title="Approuver"
-                                                            style="margin-right: 5px;"
+                                                        <button class="btn btn-sm btn-success pull-right"
+                                                            title="Approuver" style="margin-right: 5px;"
                                                             onclick="validatePayment({{ $Invoice->id }})">
                                                             <i class="voyager-check"></i>
                                                         </button>
@@ -462,23 +473,35 @@
                 </div>
 
                 <div class="modal-body">
-                    <label>Méthode de paiement :</label>
-                    <select id="groupPaymentMethod" class="form-control">
-                        @foreach (App\Models\Invoice::getPaymentMethod() as $k => $v)
-                            <option value="{{ $k }}">{{ $v }}</option>
-                        @endforeach
-                    </select>
+
+                    <div class="form-group">
+                        <label><strong>Méthode de paiement :</strong></label>
+                        <select id="groupPaymentMethod" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            @foreach (App\Models\Invoice::getPaymentMethod() as $k => $v)
+                                <option value="{{ $k }}">{{ $v }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <label><strong>Date de paiement :</strong></label>
+                        <input type="date" id="groupPaymentDate" class="form-control">
+                    </div>
 
                     <input type="hidden" id="groupInvoices">
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-success" id="btnConfirmGroupPay">Confirmer le paiement</button>
+                    <button class="btn btn-success" id="btnConfirmGroupPay">
+                        <i class="bi bi-check-circle"></i> Confirmer le paiement
+                    </button>
                 </div>
 
             </div>
         </div>
     </div>
+
 @stop
 
 
@@ -571,13 +594,16 @@
             Swal.fire({
                 title: "Valider le paiement",
                 html: `
-            <div class="text-left">
-                <label><strong>Mode de paiement :</strong></label>
-                <select id="paymentMethod" class="swal2-select" style="width:320px; padding:8px;">
-                    ${options}
-                </select>
-            </div>
-        `,
+        <div class="text-left">
+            <label><strong>Mode de paiement :</strong></label>
+            <select id="paymentMethod" class="swal2-select" style="width:320px; padding:8px;">
+                ${options}
+            </select>
+
+            <label style="margin-top:10px;"><strong>Date de paiement :</strong></label>
+            <input type="date" id="paymentDate" class="swal2-input" style="width:320px; padding:8px;">
+        </div>
+    `,
                 icon: "info",
                 showCancelButton: true,
                 confirmButtonText: "Valider",
@@ -586,25 +612,36 @@
                 cancelButtonColor: "#d33",
 
                 preConfirm: () => {
-                    let method = document.getElementById("paymentMethod").value;
+                    const method = document.getElementById("paymentMethod").value;
+                    const paymentDate = document.getElementById("paymentDate").value;
 
                     if (!method) {
                         Swal.showValidationMessage("Veuillez choisir une méthode de paiement.");
+                        return false;
+                    }
+
+                    if (!paymentDate) {
+                        Swal.showValidationMessage("Veuillez choisir une date de paiement.");
+                        return false;
                     }
 
                     return {
-                        method: method
+                        method: method,
+                        payment_date: paymentDate
                     };
                 }
             }).then((result) => {
+
                 if (result.isConfirmed) {
                     $('#loader').removeClass('hidden').show();
+
                     $.ajax({
-                        url: "/get_register/payment/approve/" + id,
+                        url: "/get_register/payment/approve-for-pending/" + id,
                         method: "POST",
                         data: {
                             _token: $("meta[name='csrf-token']").attr("content"),
-                            payment_method: result.value.method
+                            payment_method: result.value.method,
+                            payment_date: result.value.payment_date
                         },
                         success: function(res) {
                             $('#loader').hide();
@@ -620,19 +657,21 @@
 
                             setTimeout(() => location.reload(), 1200);
                         },
-                        error: function() {
+                        error: function(xhr) {
                             $('#loader').hide();
+
                             Swal.fire({
                                 icon: "error",
                                 title: "Erreur",
-                                text: "Une erreur s'est produite lors de la validation.",
+                                text: xhr.responseJSON?.message ??
+                                    "Une erreur s'est produite lors de la validation."
                             });
                         }
                     });
-
                 }
             });
         }
+
 
         // Cocher / décocher tout
         $('#checkAll').on('click', function() {
@@ -656,27 +695,60 @@
 
         // Confirmation du paiement groupé
         $('#btnConfirmGroupPay').on('click', function() {
+
+            const method = $('#groupPaymentMethod').val();
+            const paymentDate = $('#groupPaymentDate').val();
+            const invoices = $('#groupInvoices').val(); // IDs séparés par virgule
+
+            if (!method) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Attention',
+                    text: 'Veuillez sélectionner une méthode de paiement.'
+                });
+                return;
+            }
+
+            if (!paymentDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Attention',
+                    text: 'Veuillez sélectionner une date de paiement.'
+                });
+                return;
+            }
+
             $('#loader').removeClass('hidden').show();
-            $("#groupPayModal").modal("hide");
-            let ids = JSON.parse($("#groupInvoices").val());
-            let method = $("#groupPaymentMethod").val();
 
             $.ajax({
-                url: "/get_register/payment/group",
-                method: "POST",
+                url: '/get_register/payment/group-pending',
+                method: 'POST',
                 data: {
-                    _token: $("meta[name='csrf-token']").attr("content"),
-                    invoices: ids,
-                    method: method
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    invoices: invoices,
+                    payment_method: method,
+                    payment_date: paymentDate
                 },
                 success: function(res) {
                     $('#loader').hide();
-                    Swal.fire("Succès", res.message, "success");
-                    setTimeout(() => location.reload(), 1000);
+                    $('#groupPayModal').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Paiement groupé validé',
+                        text: res.message
+                    });
+
+                    setTimeout(() => location.reload(), 1200);
                 },
-                error: function() {
+                error: function(xhr) {
                     $('#loader').hide();
-                    Swal.fire("Erreur", "Impossible de valider le paiement groupé.", "error");
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: xhr.responseJSON?.message ?? 'Une erreur est survenue.'
+                    });
                 }
             });
         });

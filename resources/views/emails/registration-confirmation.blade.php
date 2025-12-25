@@ -42,6 +42,7 @@ Nous avons le plaisir de vous confirmer votre inscription au **{{ $participant->
     {{ $participant->diner == 'oui' ? 'Votre place au diner gala ne sera garantie qu\'après le paiement de vos frais de participation.' : '' }}
 </p>
 - **Visite technique** : {{ $participant->visite == 'oui' ? '✅ Oui' : '❌ Non' }}
+
 @if ($participant->participant_category_id !==4)
 - **Pass journalier** : {{ $participant->pass_deleguate == 'oui' ? '✅ Oui' : '❌ Non' }}
 @endif
@@ -136,6 +137,7 @@ We are pleased to confirm your registration for the **{{ $participant->congres->
     {{ $participant->diner == 'oui' ? 'Your seat for the gala dinner will only be guaranteed after the payment of your participation fees.' : '' }}
 </p>
 - **Technical Visit**: {{ $participant->visite == 'oui' ? '✅ Yes' : '❌ No' }}
+
 @if ($participant->participant_category_id !==4)
 - **Daily Pass**: {{ $participant->pass_deleguate == 'oui' ? '✅ Yes' : '❌ No' }}
 @endif

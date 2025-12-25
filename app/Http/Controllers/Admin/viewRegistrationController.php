@@ -16,9 +16,49 @@ class viewRegistrationController extends \TCG\Voyager\Http\Controllers\VoyagerBa
 {
     public function index(Request $request)
     {
-        $congress = Congress::latest()->first();
         // Récupération des données avec filtres
-        $query = Participant::where(['congres_id' => $congress->id])->with(['country', 'civility', 'participantCategory']);
+        $latestCongress = Congress::latest('id')->first();
+        $query = Participant::getLastCongressParticipants($latestCongress->id);
+
+        $participantIds = (clone $query)->pluck('id');
+
+        //Statistiques generales
+        $stats = [
+            // 1. Total participants
+            'totalParticipants' => (clone $query)->count(),
+
+            // 2. Total Delegues
+            'TotalDelegues' => (clone $query)
+                ->where('participant_category_id', 1)
+                ->count(),
+
+            // 2. Total Étudiants
+            'TotalEtudiant' => (clone $query)
+                ->where('ywp_or_student', 'student')
+                ->count(),
+
+            // 3. Total YWP
+            'TotalYwp' => (clone $query)
+                ->where('ywp_or_student', 'ywp')
+                ->count(),
+
+            'TotalNationalites' => Participant::countNationalities(),
+
+            'TotalOrganisations' => (clone $query)->whereNotNull('organisation')->pluck('organisation')->unique()->count(),
+
+            //totaDiner,TotalVisite,TotalPass,TotalPaid,TotalUnpaid,TotalExpired
+            'TotalDiner' => (clone $query)->where('diner', 'oui')->count(),
+
+            'TotalVisite' => (clone $query)->where('visite', 'oui')->count(),
+
+            'TotalPass' => (clone $query)->where('pass_deleguate', 'oui')->count(),
+
+            'paidParticipants' => Invoice::PaidInvoices($latestCongress->id)->count(),
+
+            'TotalUnpaid' => Invoice::UnpaidInvoices($latestCongress->id)->count(),
+
+            'TotalExpired' => Invoice::whereIn('participant_id', $participantIds)->where('invoices.status', Invoice::PAYMENT_STATUS_EXPIRED)->count(),
+        ];
 
         // Application des filtres
         if ($request->has('search') && $request->search) {
@@ -38,31 +78,18 @@ class viewRegistrationController extends \TCG\Voyager\Http\Controllers\VoyagerBa
             $query->where('nationality_id', $request->country);
         }
 
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+        if ($request->has('invoices.status') && $request->status) {
+            $query->where('invoices.status', $request->status);
         }
 
         // Récupérer les données paginées
-        $dataTypeContent = $query->orderBy('created_at', 'desc')->paginate(20);
+        $dataTypeContent = $query;
 
         // Données pour les filtres
         $categories = CategoryParticipant::all();
         $countries = Country::all();
 
-        // Statistiques
-        $stats = [
-            'totalParticipants' => Participant::where('congres_id', $congress->id)
-            ->where('diner', '<>', '')
-            ->where('visite', '<>', '')
-            ->count(),
-            'paidParticipants' => Participant::where('congres_id', $congress->id)->where('status', 'paid')->count(),
-            'countriesCount' => Participant::where('congres_id', $congress->id)->distinct('nationality_id')->count('nationality_id')
-        ];
-
-        $invoices = Invoice::where([
-            'congres_id' => $congress->id,
-            ['total_amount', '>', 0]
-        ])->get();
+        $invoices = Invoice::AllInvoices($latestCongress->id)->get();
 
         $view = 'voyager::view-registrations.browse';
 
@@ -70,8 +97,7 @@ class viewRegistrationController extends \TCG\Voyager\Http\Controllers\VoyagerBa
             'categories',
             'countries',
             'stats',
-            'dataTypeContent',
-            'invoices'
+            'dataTypeContent','invoices'
         ));
     }
 }

@@ -57,11 +57,7 @@ class AdminRegistrationController extends Controller
                 ]);
 
                 // Création nouvelle facture
-<<<<<<< HEAD
-                $invoiceNumber = 'INV' . Carbon::parse($congres->end_date)->year . '-' . strtoupper(Str::random(6));
-=======
                 $invoiceNumber = 'INV-ICE' . Carbon::parse($congres->end_date)->year . '-' . strtoupper(Str::random(6));
->>>>>>> 7c72303 ('home13122025')
                 $userId = Auth::id() ?: ($oldInvoice->user_id ?? null);
 
                 $newInvoice = Invoice::create([

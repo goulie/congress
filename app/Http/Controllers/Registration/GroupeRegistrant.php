@@ -93,7 +93,7 @@ class GroupeRegistrant extends Controller
                  * ============================================================ */
             $rules = [
                 'categorie'         => 'required|exists:category_participants,id',
-                'dinner'            => 'required|in:oui,non',
+                //'dinner'            => 'required|in:oui,non',
                 'visit'             => 'required|in:oui,non',
                 'lettre_invitation' => 'required|in:oui,non',
                 'title'             => 'required|exists:civilities,id',
@@ -200,7 +200,7 @@ class GroupeRegistrant extends Controller
                 'membre_aae'              => $request->membership,
                 'membership_code'         => $request->member_code,
                 'ywp_or_student'          => $request->ywp_or_student,
-                'diner'                   => $request->dinner,
+                'diner'                   => $request->dinner ?? 'non',
                 'visite'                  => $request->visit,
                 'site_visit_id'           => $request->site_visit,
                 'passeport_number'        => $request->passport_number,
@@ -569,7 +569,7 @@ class GroupeRegistrant extends Controller
     {
         $participant = Participant::where('uuid', $uuid)->first();
         $edit = 'recap';
-
+        App::setlocale($participant->langue);
         return view('voyager::view-group-registrations.browse', compact('participant', 'edit'));
     }
 }

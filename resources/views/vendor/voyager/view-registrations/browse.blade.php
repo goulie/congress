@@ -5,162 +5,120 @@
 @section('page_header')
     <div class="container-fluid">
         <h1 class="page-title">
-            <i class="voyager-people"></i> Gestion des Participants
+            <i class="voyager-people"></i>
+            {{ app()->getLocale() == 'fr' ? 'Gestion des Participants' : 'Participants Management' }}
         </h1>
     </div>
 @stop
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap4.min.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css"/>
-<style>
-    .info-box {
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        border-radius: 5px;
-        background: #fff;
-        margin-bottom: 20px;
-        display: flex;
-        min-height: 90px;
-    }
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css" />
+    <style>
+        /* Statistiques */
+        .info-box {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            background: #fff;
+            margin-bottom: 20px;
+            min-height: 90px;
+            display: flex;
+        }
 
-    .info-box-icon {
-        border-radius: 5px 0 0 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 70px;
-        font-size: 30px;
-        color: white;
-    }
+        .info-box-icon {
+            border-radius: 5px 0 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            font-size: 30px;
+            color: white;
+        }
 
-    .bg-blue { background-color: #007bff; }
-    .bg-green { background-color: #28a745; }
-    .bg-yellow { background-color: #ffc107; }
-    .bg-red { background-color: #dc3545; }
-    .bg-primary { background-color: #6f42c1; }
+        .bg-blue {
+            background-color: #007bff;
+        }
 
-    .info-box-content {
-        padding: 15px;
-        flex: 1;
-    }
+        .bg-green {
+            background-color: #28a745;
+        }
 
-    .info-box-text {
-        font-size: 14px;
-        text-transform: uppercase;
-        font-weight: bold;
-        display: block;
-        line-height: 1.2;
-    }
+        .bg-red {
+            background-color: #dc3545;
+        }
 
-    .info-box-number {
-        font-size: 24px;
-        font-weight: bold;
-        display: block;
-        margin-top: 5px;
-    }
+        .bg-primary {
+            background-color: #6f42c1;
+        }
 
-    .participant-info {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-    }
+        .info-box-content {
+            padding: 15px;
+            flex: 1;
+        }
 
-    .label {
-        font-size: 85%;
-        padding: 4px 8px;
-    }
+        .info-box-text {
+            font-size: 14px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            line-height: 1.2;
+        }
 
-    .flag-icon {
-        margin-right: 5px;
-        border-radius: 2px;
-    }
+        .info-box-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
 
-    .panel-bordered {
-        border: 1px solid #e1e4e8;
-        border-radius: 5px;
-    }
+        /* Table et éléments */
+        .panel-bordered {
+            border: 1px solid #e1e4e8;
+            border-radius: 5px;
+        }
 
-    .btn-sm {
-        padding: 4px 8px;
-        margin: 0 1px;
-    }
+        .participant-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
 
-    /* DataTable customization */
-    .dataTables_wrapper .dataTables_filter {
-        float: right;
-        margin-bottom: 15px;
-    }
+        .flag-icon {
+            margin-right: 5px;
+            border-radius: 2px;
+        }
 
-    .dataTables_wrapper .dataTables_length {
-        float: left;
-        margin-bottom: 15px;
-    }
+        /* Boutons */
+        .btn-group-sm>.btn {
+            padding: 4px 8px;
+            margin: 0 1px;
+        }
 
-    .dataTables_wrapper .dataTables_paginate {
-        margin-top: 15px;
-    }
+        /* Responsive DataTable */
+        .dataTables_wrapper .dataTables_filter {
+            float: right;
+            margin-bottom: 15px;
+        }
 
-    /* Modal improvements */
-    .modal-xl {
-        max-width: 1200px;
-    }
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+            margin-bottom: 15px;
+        }
 
-    .detail-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        border: 1px solid #e1e4e8;
-        border-radius: 5px;
-        background: #f8f9fa;
-    }
+        /* Modal */
+        .modal-xl {
+            max-width: 1200px;
+        }
 
-    .detail-section h5 {
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-        color: #007bff;
-    }
-
-    .detail-row {
-        display: flex;
-        margin-bottom: 8px;
-        padding: 5px 0;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .detail-label {
-        font-weight: bold;
-        min-width: 200px;
-        color: #495057;
-    }
-
-    .detail-value {
-        flex: 1;
-        color: #6c757d;
-    }
-
-    .voyager-refresh-animate {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    /*Detail card styles*/ 
+        /* Cartes de détails */
         .detail-card {
             background: #fff;
             border: 1px solid #e1e4e8;
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .detail-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .detail-card-header {
@@ -179,10 +137,6 @@
             font-weight: 600;
         }
 
-        .detail-card-header i {
-            font-size: 18px;
-        }
-
         .detail-card-body {
             padding: 20px;
         }
@@ -192,12 +146,6 @@
             margin-bottom: 12px;
             padding: 8px 0;
             border-bottom: 1px solid #f8f9fa;
-            transition: background-color 0.2s ease;
-        }
-
-        .detail-row:hover {
-            background-color: #f8f9fa;
-            border-radius: 4px;
         }
 
         .detail-label {
@@ -214,7 +162,7 @@
             word-break: break-word;
         }
 
-        /* Style pour les labels de statut */
+        /* Labels */
         .label {
             font-size: 12px;
             padding: 4px 8px;
@@ -235,48 +183,11 @@
             background-color: #dc3545;
         }
 
-        /* Style pour les boutons de téléchargement */
-        .btn-xs {
-            padding: 2px 8px;
-            font-size: 12px;
-            line-height: 1.5;
-            border-radius: 3px;
+        .label-info {
+            background-color: #17a2b8;
         }
 
-        /* Style pour les tables dans les cartes */
-        .detail-card .table {
-            margin-bottom: 0;
-            font-size: 13px;
-        }
-
-        .detail-card .table th {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: 600;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .detail-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .detail-label {
-                min-width: auto;
-                font-weight: 700;
-            }
-
-            .detail-card-body {
-                padding: 15px;
-            }
-
-            .detail-card-header {
-                padding: 12px 15px;
-            }
-        }
-
-        /* Animation de chargement */
+        /* Animation */
         .voyager-refresh-animate {
             animation: spin 1s linear infinite;
         }
@@ -291,11 +202,21 @@
             }
         }
 
-        /* Style pour les drapeaux */
-        .flag-icon {
-            margin-right: 5px;
-            border-radius: 2px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .detail-label {
+                min-width: auto;
+                font-weight: 700;
+            }
+
+            .detail-card-body {
+                padding: 15px;
+            }
         }
     </style>
 @stop
@@ -304,68 +225,70 @@
     <div class="page-content browse container-fluid">
         @include('voyager::alerts')
 
-        <!-- Filtres et recherche -->
+        <!-- Filtres -->
         <div class="panel panel-bordered">
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="search">{{ app()->getLocale() == 'fr' ? 'Recherche' : 'Search' }}</label>
-                            <input type="text" class="form-control" id="search" placeholder="Nom, prénom, email..."
-                                value="{{ request('search') }}">
+                <form id="filter-form" method="GET" action="{{ url()->current() }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="search">{{ app()->getLocale() == 'fr' ? 'Recherche' : 'Search' }}</label>
+                                <input type="text" class="form-control" id="search" name="search"
+                                    placeholder="{{ app()->getLocale() == 'fr' ? 'Nom, prénom, email...' : 'Name, first name, email...' }}"
+                                    value="{{ request('search') }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label for="country">{{ app()->getLocale() == 'fr' ? 'Nationalité' : 'Nationality' }}</label>
-                            <select class="form-control" id="country">
-                                <option value="">Tous</option>
-                                @foreach ($countries as $country)
-                                    <option value="{{ $country->id }}"
-                                        {{ request('country') == $country->id ? 'selected' : '' }}>
-                                        {{ app()->getLocale() == 'fr' ? $country->libelle_fr : $country->libelle_en }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label
+                                    for="country">{{ app()->getLocale() == 'fr' ? 'Nationalité' : 'Nationality' }}</label>
+                                <select class="form-control" id="country" name="country">
+                                    <option value="">{{ app()->getLocale() == 'fr' ? 'Tous' : 'All' }}</option>
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->id }}"
+                                            {{ request('country') == $country->id ? 'selected' : '' }}>
+                                            {{ app()->getLocale() == 'fr' ? $country->libelle_fr : $country->libelle_en }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label
-                                for="status">{{ app()->getLocale() == 'fr' ? 'Statut de paiement' : 'Payment Status' }}</label>
-                            <select class="form-control" id="status">
-                                <option value="">Tous</option>
-                                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>
-                                    {{ app()->getLocale() == 'fr' ? 'Payé' : 'Paid' }}
-                                </option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
-                                    {{ app()->getLocale() == 'fr' ? 'En attente' : 'Pending' }}
-                                </option>
-                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
-                                    {{ app()->getLocale() == 'fr' ? 'Annulé' : 'Cancelled' }}
-                                </option>
-                            </select>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label
+                                    for="status">{{ app()->getLocale() == 'fr' ? 'Statut de paiement' : 'Payment Status' }}</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="">Toutes</option>
+                                    @foreach (\App\Models\Invoice::getPaymentStatuses() as $value => $label)
+                                        <option value="{{ $value }}"
+                                            {{ request('method') == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div>
-                                <button type="button" class="btn btn-primary" id="apply-filters">
-                                    <i class="voyager-search"></i> {{ app()->getLocale() == 'fr' ? 'Appliquer' : 'Apply' }}
-                                </button>
-                                <button type="button" class="btn btn-default" id="reset-filters">
-                                    <i class="voyager-refresh"></i>
-                                    {{ app()->getLocale() == 'fr' ? 'Réinitialiser' : 'Reset' }}
-                                </button>
-                                <a href="#" class="btn btn-success" id="export-participants">
-                                    <i class="voyager-download"></i>
-                                    {{ app()->getLocale() == 'fr' ? 'Exporter' : 'Export' }}
-                                </a>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary" id="apply-filters">
+                                        <i class="voyager-search"></i>
+                                        {{ app()->getLocale() == 'fr' ? 'Appliquer' : 'Apply' }}
+                                    </button>
+                                    <a href="{{ url()->current() }}" class="btn btn-default" id="reset-filters">
+                                        <i class="voyager-refresh"></i>
+                                        {{ app()->getLocale() == 'fr' ? 'Réinitialiser' : 'Reset' }}
+                                    </a>
+                                    {{-- <button type="button" class="btn btn-success" id="export-excel">
+                                        <i class="voyager-download"></i>
+                                        {{ app()->getLocale() == 'fr' ? 'Exporter Excel' : 'Export Excel' }}
+                                    </button> --}}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -377,7 +300,8 @@
                         <i class="voyager-people"></i>
                     </span>
                     <div class="info-box-content">
-                        <span class="info-box-text">Total <br />Participants</span>
+                        <span
+                            class="info-box-text">{{ app()->getLocale() == 'fr' ? 'Total Participants' : 'Total Participants' }}</span>
                         <span class="info-box-number">{{ $stats['totalParticipants'] ?? 0 }}</span>
                     </div>
                 </div>
@@ -388,8 +312,9 @@
                         <i class="voyager-check"></i>
                     </span>
                     <div class="info-box-content">
-                        <span class="info-box-text">Factures <br /> payées</span>
-                        <span class="info-box-number">{{ $invoices->where('status', 'paid')->count() }}</span>
+                        <span
+                            class="info-box-text">{{ app()->getLocale() == 'fr' ? 'Factures payées' : 'Paid Invoices' }}</span>
+                        <span class="info-box-number">{{ $stats['paidParticipants'] ?? 0 }}</span>
                     </div>
                 </div>
             </div>
@@ -399,8 +324,9 @@
                         <i class="voyager-x"></i>
                     </span>
                     <div class="info-box-content">
-                        <span class="info-box-text">Factures <br /> impayées</span>
-                        <span class="info-box-number">{{ $invoices->where('status', '!=', 'paid')->count() }}</span>
+                        <span
+                            class="info-box-text">{{ app()->getLocale() == 'fr' ? 'Factures impayées' : 'Unpaid Invoices' }}</span>
+                        <span class="info-box-number">{{ $stats['TotalUnpaid'] ?? 0 }}</span>
                     </div>
                 </div>
             </div>
@@ -410,156 +336,168 @@
                         <i class="voyager-world"></i>
                     </span>
                     <div class="info-box-content">
-                        <span class="info-box-text">Pays <br />représentés</span>
-                        <span class="info-box-number">{{ $stats['countriesCount'] ?? 0 }}</span>
+                        <span
+                            class="info-box-text">{{ app()->getLocale() == 'fr' ? 'Pays représentés' : 'Countries Represented' }}</span>
+                        <span class="info-box-number">{{ $stats['TotalNationalites'] ?? 0 }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Actions groupées -->
-        <div class="panel panel-bordered">
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        
-                    </div>
-                    <div class="col-md-6 text-right">
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Liste des participants -->
+        <!-- Table des participants -->
         <div class="panel panel-bordered">
             <div class="panel-body">
                 <div class="table-responsive">
                     <table id="participants-table" class="table table-hover">
                         <thead>
                             <tr>
-                               
-                                <th width="5%">Genre</th>
-                                <th width="12%">Nom & Prénoms</th>
+                                <th width="5%">{{ app()->getLocale() == 'fr' ? 'Genre' : 'Gender' }}</th>
+                                <th width="12%">{{ app()->getLocale() == 'fr' ? 'Nom & Prénoms' : 'Name' }}</th>
                                 <th width="12%">Email</th>
-                                <th width="12%">Organisation</th>
-                                <th width="8%">Catégorie</th>
-                                <th width="6%">Diner</th>
-                                <th width="6%">Visite</th>
-                                <th width="8%">Nationnalité</th>
-                                <th width="8%">Montant</th>
-                                <th width="6%">Statut</th>
-                                
-                                <th width="8%" class="actions text-right">{{ __('voyager::generic.actions') }}</th>
+                                <th width="12%">{{ app()->getLocale() == 'fr' ? 'Organisation' : 'Organization' }}</th>
+                                <th width="8%">{{ app()->getLocale() == 'fr' ? 'Catégorie' : 'Category' }}</th>
+                                <th width="6%">{{ app()->getLocale() == 'fr' ? 'Diner' : 'Dinner' }}</th>
+                                <th width="6%">{{ app()->getLocale() == 'fr' ? 'Visite' : 'Visit' }}</th>
+                                <th width="8%">{{ app()->getLocale() == 'fr' ? 'Nationalité' : 'Nationality' }}</th>
+                                <th width="8%">{{ app()->getLocale() == 'fr' ? 'Montant' : 'Amount' }}</th>
+                                <th width="6%">{{ app()->getLocale() == 'fr' ? 'Statut' : 'Status' }}</th>
+                                <th width="8%" class="text-right">{{ __('voyager::generic.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($invoices as $invoice)
+                                @php
+                                    $participant = $invoice->participant;
+                                @endphp
                                 <tr>
-                                    
-                                    <td>
-                                        {{ $invoice->participant->gender->libelle ?? '-' }}
-                                    </td>
+                                    <td>{{ $participant?->gender?->libelle ?? '-' }}</td>
                                     <td>
                                         <div class="participant-info">
-                                            @if ($invoice->participant->civility)
+                                            @if ($participant?->civility)
                                                 <small class="text-muted">
-                                                    ({{ $invoice->participant->civility->libelle ?? '' }})
+                                                    ({{ $participant->civility->libelle ?? '' }})
                                                     &nbsp;
                                                 </small>
                                             @endif
-                                            <strong>{{ $invoice->participant->lname }}
-                                                {{ $invoice->participant->fname }}</strong>
+                                            <strong>{{ $participant->lname ?? '' }}
+                                                {{ $participant->fname ?? '' }}</strong>
                                         </div>
                                     </td>
                                     <td>
-                                        <a
-                                            href="mailto:{{ $invoice->participant->email }}">{{ $invoice->participant->email }}</a>
-                                        @if ($invoice->participant->phone)
-                                            <br><small class="text-muted">{{ $invoice->participant->phone }}</small>
+                                        @if ($participant?->email)
+                                            <a href="mailto:{{ $participant->email }}">{{ $participant->email }}</a>
+                                            @if ($participant->phone)
+                                                <br><small class="text-muted">{{ $participant->phone }}</small>
+                                            @endif
+                                        @else
+                                            -
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($invoice->participant->organisation)
-                                            {{ $invoice->participant->organisation }}
-                                            @if ($invoice->participant->organisation_type)
+                                        @if ($participant?->organisation)
+                                            {{ $participant->organisation }}
+                                            @if ($participant->organisation_type)
                                                 <br><small
-                                                    class="text-muted">{{ $invoice->participant->organisation_type->libelle }}</small>
+                                                    class="text-muted">{{ $participant->organisation_type->libelle }}</small>
                                             @endif
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
+                                    <td>{{ $participant?->participantCategory?->libelle ?? '-' }}</td>
+                                    <td>{{ $participant?->diner ?? '-' }}</td>
+                                    <td>{{ $participant?->visite ?? '-' }}</td>
                                     <td>
-                                        {{ $invoice->participant->participantCategory->libelle ?? '-' }}
-                                    </td>
-                                    <td>
-                                        {{ $invoice->participant->diner ?? '-' }}
-                                    </td>
-                                    <td>
-                                        {{ $invoice->participant->visite ?? '-' }}
-                                    </td>
-                                    <td>
-                                        @if ($invoice->participant->country)
+                                        @if ($participant?->country)
                                             <span
-                                                class="flag-icon flag-icon-{{ substr(strtolower($invoice->participant->country->abreviation), 0, -1) }}"></span>
-                                            {{ app()->getLocale() == 'fr' ? $invoice->participant->country->libelle_fr : $invoice->participant->country->libelle_en }}
+                                                class="flag-icon flag-icon-{{ strtolower(substr($participant->country->abreviation, 0, 2)) }}"></span>
+                                            {{ app()->getLocale() == 'fr' ? $participant->country->libelle_fr : $participant->country->libelle_en }}
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="label label-info">
-                                            <strong>
-                                                {{ $invoice->total_amount > 0 ? number_format($invoice->total_amount, 0, ',', ' ') : '-' }}
-                                            </strong>
-                                            {{ $invoice->congres->currency ?? 'XAF' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if ($invoice->status == 'paid')
-                                            <span class="label label-success">Payé</span>
-                                        @elseif($invoice->status == 'pending')
-                                            <span class="label label-warning">En attente</span>
+                                        @if ($invoice->total_amount > 0)
+                                            <span class="label label-info">
+                                                {{ number_format($invoice->total_amount, 0, ',', ' ') }}
+                                                {{ $invoice->congres->currency ?? 'XAF' }}
+                                            </span>
                                         @else
-                                            <span class="label label-danger">Annulé</span>
+                                            -
                                         @endif
                                     </td>
-                                    
-                                    <td class="no-sort no-click bread-actions">
+                                    <td>
+                                        @if ($invoice->status == App\Models\Invoice::PAYMENT_STATUS_PAID)
+                                            <span
+                                                class="label label-success">{{ app()->getLocale() == 'fr' ? 'Payé' : 'Paid' }}</span>
+                                        @elseif($invoice->status == App\Models\Invoice::PAYMENT_STATUS_UNPAID)
+                                            <span
+                                                class="label label-warning">{{ app()->getLocale() == 'fr' ? 'Impayé' : 'Unpaid' }}</span>
+                                        @else
+                                            <span
+                                                class="label label-danger">{{ app()->getLocale() == 'fr' ? 'Annulé' : 'Cancelled' }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right">
                                         <div class="btn-group btn-group-sm">
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-info btn-details"
-                                                data-id="{{ $invoice->participant->id }}"
-                                                title="Voir les détails du participant">
-                                                <i class="voyager-eye"></i>
+                                            <button class="btn btn-sm btn-info btn-details" style="margin: 5px"
+                                                data-id="{{ $participant->id ?? '' }}"
+                                                title="{{ app()->getLocale() == 'fr' ? 'Voir les détails' : 'View details' }}">
+                                                <i class="voyager-eye"></i> Détails
+                                            </button>
+                                            <a href="{{ route('participants.resend.invoice', $participant->id) }}"
+                                                class="btn btn-sm btn-warning"
+                                                title="{{ app()->getLocale() == 'fr' ? 'Renvoyer la facture' : 'Resend invoice' }}">
+                                                <i class="bi bi-envelope-paper-fill"></i>
+                                                {{ app()->getLocale() == 'fr' ? 'Renvoi de la facture' : 'Return invoice' }}
                                             </a>
-                                            @can('edit', $invoice->participant)
-                                                <a href="{{ route('voyager.participants.edit', $invoice->participant->id) }}"
-                                                    title="Edit" class="btn btn-sm btn-primary edit">
+
+                                            <a href="{{ route('participants.resend.invitation', $participant->id) }}"
+                                                class="btn btn-sm btn-success"
+                                                title="{{ app()->getLocale() == 'fr' ? 'Renvoyer la lettre d\'invitation' : 'Resend invitation letter' }}">
+                                                <i class="voyager-eye"></i>
+                                                {{ app()->getLocale() == 'fr' ? 'Renvoi de la lettre d\'invitation' : 'Return invitation letter' }}
+                                            </a>
+
+                                            <a href="{{ route('participants.resend.confirmation', $participant->id) }}"
+                                                class="btn btn-dark btn-sm"
+                                                title="{{ app()->getLocale() == 'fr' ? 'Renvoyer le mail de confirmation' : 'Resend confirmation email' }}">
+                                                <i class="bi bi-envelope-check"></i>
+                                                {{ app()->getLocale() == 'fr' ? 'Renvoi du mail de confirmation' : 'Return confirmation email' }}
+                                            </a>
+
+                                            @can('edit', $participant)
+                                                <a href="{{ route('voyager.participants.edit', $participant->id) }}"
+                                                    title="{{ __('voyager::generic.edit') }}" class="btn btn-sm btn-primary">
                                                     <i class="voyager-edit"></i>
                                                 </a>
                                             @endcan
-                                            @can('delete', $invoice->participant)
-                                                <a href="javascript:;" title="Delete" class="btn btn-sm btn-danger delete"
-                                                    data-id="{{ $invoice->participant->getKey() }}"
-                                                    id="delete-{{ $invoice->participant->getKey() }}">
+                                            @can('delete', $participant)
+                                                <button type="button" class="btn btn-sm btn-danger delete"
+                                                    data-id="{{ $participant->id ?? '' }}"
+                                                    title="{{ __('voyager::generic.delete') }}">
                                                     <i class="voyager-trash"></i>
-                                                </a>
+                                                </button>
                                             @endcan
-                                            <a href="#" title="Badge" class="btn btn-sm btn-success"
-                                                target="_blank">
-                                                <i class="voyager-ticket"></i>
-                                            </a>
+                                            {{-- @if ($participant)
+                                                <a href="{{ route('badge.view', $participant->id) }}"
+                                                    class="btn btn-sm btn-success"
+                                                    title="{{ app()->getLocale() == 'fr' ? 'Voir le badge' : 'View badge' }}"
+                                                    target="_blank">
+                                                    <i class="voyager-ticket"></i>
+                                                </a>
+                                            @endif --}}
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="14" class="text-center">
+                                    <td colspan="11" class="text-center">
                                         <div style="padding: 50px;">
                                             <i class="voyager-people" style="font-size: 48px; color: #ccc;"></i>
-                                            <h4 style="color: #999;">Aucun participant trouvé</h4>
-                                            <p>Commencez par ajouter des participants à votre congrès.</p>
+                                            <h4 style="color: #999;">
+                                                {{ app()->getLocale() == 'fr' ? 'Aucun participant trouvé' : 'No participants found' }}
+                                            </h4>
                                         </div>
                                     </td>
                                 </tr>
@@ -569,114 +507,182 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 
     <!-- Modal pour les détails du participant -->
-    <div class="modal fade" id="participantModal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="participantModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{ app()->getLocale() == 'fr' ? 'Détails du participant' : 'Participant Details' }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title">Détails du participant</h4>
                 </div>
                 <div class="modal-body" id="participantModalBody">
-                    <!-- Le contenu sera chargé via AJAX -->
+                    <!-- Contenu chargé via AJAX -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        {{ app()->getLocale() == 'fr' ? 'Fermer' : 'Close' }}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
 @stop
 
 @section('javascript')
     <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js">
     </script>
     <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js">
     </script>
+
     <script>
         $(document).ready(function() {
             // Configuration
             const config = {
+                locale: "{{ app()->getLocale() }}",
                 routes: {
-                    details: "{{ url('/admin/participants/details') }}/"
-                },
-                messages: {
-                    loading: `<div class="text-center">
-                            <i class="voyager-refresh voyager-refresh-animate" style="font-size: 48px;"></i>
-                            <p class="text-muted mt-3">{{ __('Loading participant details...') }}</p>
-                         </div>`,
-                    error: `<div class="text-center text-danger">
-                            <i class="voyager-warning" style="font-size: 48px;"></i>
-                            <p class="mt-3">{{ __('Error loading participant details.') }}</p>
-                         </div>`
+                    details: "{{ url('/admin/participants/details') }}/",
+                    export: "#"
                 }
             };
 
-            // Initialize DataTable
-            const dataTable = $('#dataTable').DataTable({
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-                language: {
-                    @if (app()->getLocale() == 'fr')
-                        "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json"
-                    @else
-                        "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json"
-                    @endif
+            // Initialiser DataTable
+            const table = $('#participants-table').DataTable({
+                language: config.locale === 'fr' ? {
+                    url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json"
+                } : {
+                    url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json"
                 },
-                responsive: true,
                 pageLength: 25,
-                order: [
-                    [11, 'desc']
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, "{{ app()->getLocale() === 'fr' ? 'Tous' : 'All' }}"]
                 ],
+                order: [
+                    [1, 'asc']
+                ],
+                responsive: true,
                 columnDefs: [{
                         orderable: false,
-                        targets: [0, 13]
+                        targets: [10]
                     },
                     {
                         searchable: false,
-                        targets: [0, 13]
+                        targets: [10]
                     }
                 ],
-                buttons: [{
-                        extend: 'excel',
-                        text: '<i class="voyager-download"></i> {{ __('Export Excel') }}',
-                        className: 'btn btn-success'
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="voyager-download"></i> {{ __('Export PDF') }}',
-                        className: 'btn btn-danger'
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="voyager-print"></i> {{ __('Print') }}',
-                        className: 'btn btn-info'
-                    }
-                ]
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
             });
 
-            // Add DataTable buttons to the page
-            $('.dataTables_length').before(
-                '<div class="col-sm-12 col-md-6"><div class="btn-group mb-3" id="datatable-buttons"></div></div>'
-            );
-            dataTable.buttons().container().appendTo('#datatable-buttons');
+            // Filtres
+            $('#search, #country, #status').on('keyup change', function() {
+                table.draw();
+            });
 
-            // Function to escape HTML (XSS security)
-            function escapeHtml(unsafe) {
-                if (unsafe === null || unsafe === undefined) return '-';
-                return unsafe.toString()
+            // Gestionnaire de recherche personnalisé
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    const search = $('#search').val().toLowerCase();
+                    const country = $('#country').val();
+                    const status = $('#status').val();
+
+                    // Filtre de recherche
+                    if (search) {
+                        const rowText = data.slice(1, 4).join(' ').toLowerCase();
+                        if (rowText.indexOf(search) === -1) return false;
+                    }
+
+                    // Filtre par pays
+                    if (country) {
+                        const countryCell = data[7] || '';
+                        if (countryCell.indexOf('value="' + country + '"') === -1) return false;
+                    }
+
+                    // Filtre par statut
+                    if (status) {
+                        const statusCell = data[9] || '';
+                        const statusMap = {
+                            'Paid': 'Payé',
+                            'Unpaid': 'En attente',
+                            'cancelled': 'Annulé'
+                        };
+                        const statusText = config.locale === 'fr' ? statusMap[status] : status;
+                        if (statusCell.indexOf(statusText) === -1) return false;
+                    }
+
+                    return true;
+                }
+            );
+
+            // Export Excel
+            $('#export-excel').on('click', function() {
+                const params = new URLSearchParams({
+                    search: $('#search').val(),
+                    country: $('#country').val(),
+                    status: $('#status').val()
+                });
+
+                window.location.href = config.routes.export+'?' + params.toString();
+            });
+
+            // Gestion des détails du participant
+            $(document).on('click', '.btn-details', function() {
+                const id = $(this).data('id');
+                if (!id) return;
+
+                const modal = $('#participantModal');
+                const modalBody = $('#participantModalBody');
+
+                // Afficher le loader
+                modalBody.html(`
+                    <div class="text-center py-5">
+                        <i class="voyager-refresh voyager-refresh-animate" style="font-size: 48px;"></i>
+                        <p class="text-muted mt-3">${config.locale === 'fr' ? 'Chargement...' : 'Loading...'}</p>
+                    </div>
+                `);
+
+                modal.modal('show');
+
+                // Requête AJAX
+                $.ajax({
+                    url: config.routes.details + id,
+                    method: "GET",
+                    timeout: 15000,
+                    success: function(response) {
+                        if (!response || !response.participant) {
+                            modalBody.html(`
+                                <div class="text-center text-danger py-5">
+                                    <i class="voyager-warning" style="font-size: 48px;"></i>
+                                    <p class="mt-3">${config.locale === 'fr' ? 'Données non disponibles' : 'Data not available'}</p>
+                                </div>
+                            `);
+                            return;
+                        }
+
+                        // Rendre les détails
+                        modalBody.html(renderParticipantDetails(response));
+                    },
+                    error: function() {
+                        modalBody.html(`
+                            <div class="text-center text-danger py-5">
+                                <i class="voyager-warning" style="font-size: 48px;"></i>
+                                <p class="mt-3">${config.locale === 'fr' ? 'Erreur lors du chargement' : 'Error loading data'}</p>
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            // Fonction utilitaire pour échapper le HTML
+            function escapeHtml(text) {
+                if (!text) return '-';
+                return String(text)
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
@@ -684,335 +690,301 @@
                     .replace(/'/g, "&#039;");
             }
 
-            // Function to format date
+            // Fonction pour formater une date
             function formatDate(dateString) {
                 if (!dateString) return '-';
                 try {
                     const date = new Date(dateString);
-                    return date.toLocaleDateString('{{ app()->getLocale() }}', {
+                    return date.toLocaleDateString(config.locale, {
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        day: 'numeric'
                     });
                 } catch (e) {
                     return dateString;
                 }
             }
 
-            function renderParticipantDetails(participant, invoice, items) {
-                const isFr = '{{ app()->getLocale() }}' === 'fr';
+            // Fonction pour rendre les détails du participant
+            function renderParticipantDetails(data) {
+                const {
+                    participant,
+                    invoice,
+                    items
+                } = data;
+                const isFr = config.locale === 'fr';
 
-                // Fonction utilitaire pour afficher un champ seulement s'il a une valeur
-                function renderField(labelFr, labelEn, value, isDate = false) {
-                    if (!value || value === '-' || value === '') return '';
+                // Fonction helper pour créer un champ de détail
+                function createDetailRow(labelFr, labelEn, value, isDate = false) {
+                    if (!value || value === '-') return '';
 
                     const label = isFr ? labelFr : labelEn;
                     const displayValue = isDate ? formatDate(value) : escapeHtml(value);
 
                     return `
-            <div class="detail-row">
-                <span class="detail-label">${label}:</span>
-                <span class="detail-value">${displayValue}</span>
-            </div>
-        `;
+                        <div class="detail-row">
+                            <span class="detail-label">${label}:</span>
+                            <span class="detail-value">${displayValue}</span>
+                        </div>
+                    `;
                 }
 
-                // Fonction pour afficher les relations avec libellés
-                function renderRelationField(labelFr, labelEn, relation, fallback = '-') {
+                // Fonction pour les relations
+                function createRelationRow(labelFr, labelEn, relation) {
                     if (!relation || !relation.libelle) return '';
-
-                    const label = isFr ? labelFr : labelEn;
-                    const value = escapeHtml(relation.libelle);
-
-                    return `
-            <div class="detail-row">
-                <span class="detail-label">${label}:</span>
-                <span class="detail-value">${value}</span>
-            </div>
-        `;
+                    return createDetailRow(labelFr, labelEn, relation.libelle);
                 }
 
-                // Fonction pour afficher les pays
-                function renderCountryField(labelFr, labelEn, country) {
+                // Fonction pour les pays
+                function createCountryRow(labelFr, labelEn, country) {
                     if (!country) return '';
-
-                    const label = isFr ? labelFr : labelEn;
                     const countryName = isFr ? country.libelle_fr : country.libelle_en;
-                    const flag = country.code ?
-                        `<span class="flag-icon flag-icon-${country.code.toLowerCase()}"></span>` : '';
-
-                    return `
-            <div class="detail-row">
-                <span class="detail-label">${label}:</span>
-                <span class="detail-value">${flag} ${escapeHtml(countryName)}</span>
-            </div>
-        `;
+                    return createDetailRow(labelFr, labelEn, countryName);
                 }
 
                 return `
-        <div class="row">
-            <!-- Personal Information Card -->
-            <div class="col-md-6">
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-person"></i>
-                        <h5>${isFr ? 'Informations Personnelles' : 'Personal Information'}</h5>
-                    </div>
-                    <div class="detail-card-body">
-                        ${renderRelationField('Civilité', 'Civility', participant.civility_id)}
-                        ${renderField('Nom', 'Last Name', participant.lname)}
-                        ${renderField('Prénom', 'First Name', participant.fname)}
-                        ${renderRelationField('Genre', 'Gender', participant.gender)}
-                        ${renderField('Email', 'Email', participant.email)}
-                        ${renderField('Téléphone', 'Phone', participant.phone)}
-                        ${renderCountryField('Pays de nationalité', 'Nationality Country', participant.country)}
-                        ${renderRelationField('Niveau étudiant', 'Student Level', participant.student_level)}
-                        ${renderField('Autre niveau étudiant', 'Other Student Level', participant.student_level_other)}
-                    </div>
-                </div>
-
-                <!-- Professional Information Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-briefcase"></i>
-                        <h5>${isFr ? 'Informations Professionnelles' : 'Professional Information'}</h5>
-                    </div>
-                    <div class="detail-card-body">
-                        ${renderField('Organisation', 'Organization', participant.organisation)}
-                        ${renderRelationField('Type d\'organisation', 'Organization Type', participant.organisation_type)}
-                        ${renderField('Autre type d\'organisation', 'Other Organization Type', participant.organisation_type_other)}
-                        ${renderField('Poste', 'Job', participant.job)}
-                        ${renderCountryField('Pays de travail', 'Job Country', participant.job_country)}
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <!-- Registration Information Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-ticket"></i>
-                        <h5>${isFr ? 'Informations d\'Inscription' : 'Registration Information'}</h5>
-                    </div>
-                    <div class="detail-card-body">
-                        ${renderRelationField('Catégorie de participant', 'Participant Category', participant.participant_category)}
-                        ${renderRelationField('Type de membre', 'Member Type', participant.type_member)}
-                        ${renderField('Code de membre', 'Membership Code', participant.membership_code)}
-                        ${renderField('Dîner de gala', 'Gala Dinner', participant.diner)}
-                        ${renderField('Visite', 'Visit', participant.visite)}
-                        ${renderRelationField('Site de visite', 'Visit Site', participant.site_visite)}
-                    </div>
-                </div>
-
-                <!-- Documents and Additional Info Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-paperclip"></i>
-                        <h5>${isFr ? 'Documents et Informations Supplémentaires' : 'Documents and Additional Information'}</h5>
-                    </div>
-                    <div class="detail-card-body">
-                        ${renderField('Numéro de passeport', 'Passport Number', participant.passeport_number)}
-                        ${renderField('Date d\'expiration du passeport', 'Passport Expiration Date', participant.expiration_passeport_date, true)}
-                        ${renderField('Membre AAE', 'AAE Member', participant.membre_aae)}
-                        ${renderField('YWP ou Étudiant', 'YWP or Student', participant.ywp_or_student)}
-                        ${renderField('Passe de délégué', 'Delegate Pass', participant.pass_deleguate)}
-                        ${renderRelationField(`Tranche d'âge`, `Age Range`, participant.age_range?.libelle)}
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Invoice Information Card -->
-        <div class="row">
-            <div class="col-12">
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-credit-card"></i>
-                        <h5>${isFr ? 'Informations de Facturation' : 'Billing Information'}</h5>
-                    </div>
-                    <div class="detail-card-body">
-                        ${invoice ? `
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        ${items && items.length > 0 ? `
-                                        <h6>${isFr ? 'Articles de facture' : 'Invoice Items'}:</h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-bordered">
-                                                <thead>
-                                                    <tr>
-                                                        <th>${isFr ? 'Description' : 'Description'}</th>
-                                                        <th class="text-right">${isFr ? 'Prix' : 'Price'}</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    ${items.map(item => `
-                                                            <tr>
-                                                                <td>${escapeHtml(item.description_fr)}</td>
-                                                                <td class="text-right">${escapeHtml(item.price)} ${escapeHtml(item.currency)}</td>
-                                                            </tr>
-                                                        `).join('')}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ` : `<p class="text-muted">${isFr ? 'Aucun article de facture' : 'No invoice items'}</p>`}
-                                    
-                                    </div>
-                                    <div class="row">
-                                    <div class="col-md-12">
-                                        ${renderField(isFr ? 'Numéro de facture' : 'Invoice Number', 'Invoice Number', invoice.invoice_number)}
-                                        ${renderField(isFr ? 'Montant total' : 'Total Amount', 'Total Amount', invoice.total_amount ? `${invoice.total_amount} ${invoice.currency}` : null)}
-                                        ${invoice.status ? `
-                                        <div class="detail-row">
-                                            <span class="detail-label">${isFr ? 'Statut' : 'Status'}:</span>
-                                            <span class="detail-value">
-                                                ${invoice.status === 'paid' ? 
-                                                    '<span class="label label-success">' + (isFr ? 'Payé' : 'Paid') + '</span>' : 
-                                                 invoice.status === 'pending' ? 
-                                                    '<span class="label label-warning">' + (isFr ? 'En attente' : 'Pending') + '</span>' : 
-                                                    '<span class="label label-danger">' + (isFr ? 'Annulé' : 'Cancelled') + '</span>'}
-                                            </span>
-                                        </div>
-                                    ` : ''}
-                                    
-                                    
+                    <div class="row">
+                        <!-- Informations personnelles -->
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <div class="detail-card-header">
+                                    <i class="voyager-person"></i>
+                                    <h5>${isFr ? 'Informations Personnelles' : 'Personal Information'}</h5>
                                 </div>
-                                
-
+                                <div class="detail-card-body">
+                                    ${createRelationRow('Civilité', 'Civility', participant.civility_id)}
+                                    ${createDetailRow('Nom', 'Last Name', participant.lname)}
+                                    ${createDetailRow('Prénom', 'First Name', participant.fname)}
+                                    ${createRelationRow('Genre', 'Gender', participant.gender)}
+                                    ${createDetailRow('Email', 'Email', participant.email)}
+                                    ${createDetailRow('Téléphone', 'Phone', participant.phone)}
+                                    ${createCountryRow('Nationalité', 'Nationality', participant.country)}
                                 </div>
-                            ` : `<p class="text-muted">${isFr ? 'Aucune facture disponible' : 'No invoice available'}</p>`}
-                    </div>
-                </div>
-            </div>
-        </div>
+                            </div>
 
-        <!-- System Information Card -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="voyager-info-circled"></i>
-                        <h5>${isFr ? 'Informations Système' : 'System Information'}</h5>
+                            <!-- Informations professionnelles -->
+                            <div class="detail-card">
+                                <div class="detail-card-header">
+                                    <i class="voyager-briefcase"></i>
+                                    <h5>${isFr ? 'Informations Professionnelles' : 'Professional Information'}</h5>
+                                </div>
+                                <div class="detail-card-body">
+                                    ${createDetailRow('Organisation', 'Organization', participant.organisation)}
+                                    ${createRelationRow('Type d\'organisation', 'Organization Type', participant.organisation_type)}
+                                    ${createDetailRow('Poste', 'Position', participant.job)}
+                                    ${createCountryRow('Pays de travail', 'Job Country', participant.job_country)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations d'inscription -->
+                        <div class="col-md-6">
+                            <div class="detail-card">
+                                <div class="detail-card-header">
+                                    <i class="voyager-ticket"></i>
+                                    <h5>${isFr ? 'Informations d\'Inscription' : 'Registration Information'}</h5>
+                                </div>
+                                <div class="detail-card-body">
+                                    ${createRelationRow('Catégorie', 'Category', participant.participant_category)}
+                                    ${createDetailRow('Dîner de gala', 'Gala Dinner', participant.diner)}
+                                    ${createDetailRow('Visite', 'Visit', participant.visite)}
+                                    ${createRelationRow('Site de visite', 'Visit Site', participant.site_visite)}
+                                </div>
+                            </div>
+
+                            <!-- Informations de facturation -->
+                            <div class="detail-card">
+                                <div class="detail-card-header">
+                                    <i class="voyager-credit-card"></i>
+                                    <h5>${isFr ? 'Informations de Facturation' : 'Billing Information'}</h5>
+                                </div>
+                                <div class="detail-card-body">
+                                    ${invoice ? `
+                                                                                        ${createDetailRow('Numéro de facture', 'Invoice Number', invoice.invoice_number)}
+                                                                                        ${createDetailRow('Montant total', 'Total Amount', invoice.total_amount ? invoice.total_amount + ' ' + (invoice.currency || 'XAF') : null)}
+                                                                                        ${invoice.status ? `
+                                            <div class="detail-row">
+                                                <span class="detail-label">${isFr ? 'Statut' : 'Status'}:</span>
+                                                <span class="detail-value">
+                                                    ${invoice.status === 'Paid' ? 
+                                                        '<span class="label label-success">' + (isFr ? 'Payé' : 'Paid') + '</span>' : 
+                                                     invoice.status === 'Unpaid' ? 
+                                                        '<span class="label label-warning">' + (isFr ? 'Impayé' : 'Unpaid') + '</span>' : 
+                                                        '<span class="label label-danger">' + (isFr ? 'Annulé' : 'Cancelled') + '</span>'}
+                                                </span>
+                                            </div>
+                                        ` : ''}
+                                                                                    ` : `<p class="text-muted text-center">${isFr ? 'Aucune facture disponible' : 'No invoice available'}</p>`}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="detail-card-body">
-                        
-                        ${renderField('Congrès', 'Congress', participant.congres?.title)}
-                        ${renderField('Date de création', 'Created At', participant.created_at, true)}
-                        ${renderField('Date de modification', 'Updated At', participant.updated_at, true)}
-                        ${renderField('Langue', 'Language', participant.langue)}
-                        ${renderField('Congrès', 'Congress', participant.congres?.title)}
-                        ${renderField('Inscrit par', 'Registered By', participant.user?.name ?? 'N/A' )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+                `;
             }
 
-            // Event handler for participant details
-            $(document).on('click', '.btn-details', function() {
-                const id = $(this).data('id');
-                const modal = $('#participantModal');
-
-                if (!id) {
-                    console.error('Participant ID not found');
-                    return;
-                }
-
-                // Reset and show modal
-                $('#participantModalBody').html(config.messages.loading);
-                modal.modal('show');
-
-                // AJAX request
-                $.ajax({
-                    url: config.routes.details + id,
-                    method: "GET",
-                    timeout: 15000,
-                    success: function(response) {
-                        if (!response || !response.participant) {
-                            $('#participantModalBody').html(config.messages.error);
-                            return;
-                        }
-
-                        const html = renderParticipantDetails(
-                            response.participant,
-                            response.invoice,
-                            response.items
-                        );
-                        $('#participantModalBody').html(html);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', error);
-                        let errorMessage = config.messages.error;
-
-                        if (status === 'timeout') {
-                            errorMessage = `<div class="text-center text-danger">
-                                            <i class="voyager-warning" style="font-size: 48px;"></i>
-                                            <p class="mt-3">{{ __('Timeout loading participant details.') }}</p>
-                                        </div>`;
-                        } else if (xhr.status === 404) {
-                            errorMessage = `<div class="text-center text-danger">
-                                            <i class="voyager-warning" style="font-size: 48px;"></i>
-                                            <p class="mt-3">{{ __('Participant not found.') }}</p>
-                                        </div>`;
-                        }
-
-                        $('#participantModalBody').html(errorMessage);
-                    }
-                });
-            });
-
-            // Cleanup when modal is closed
+            // Nettoyer le modal quand il est fermé
             $('#participantModal').on('hidden.bs.modal', function() {
                 $('#participantModalBody').html('');
             });
 
-            // Bulk actions handling
-            $('.bulk-action').on('click', function(e) {
+            // Gestion de la suppression
+            $(document).on('click', '.delete', function(e) {
                 e.preventDefault();
-                const action = $(this).data('action');
-                const selected = $('input[name="row_id"]:checked').map(function() {
-                    return $(this).val();
-                }).get();
+                const id = $(this).data('id');
+                if (!id) return;
 
-                if (selected.length === 0) {
-                    alert('{{ __('Please select at least one participant.') }}');
-                    return;
+                if (confirm(isFr ? 'Êtes-vous sûr de vouloir supprimer ce participant ?' :
+                        'Are you sure you want to delete this participant?')) {
+                    $.ajax({
+                        url: "{{ url('admin/participants') }}/" + id,
+                        type: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function() {
+                            alert(isFr ? 'Erreur lors de la suppression' : 'Error deleting');
+                        }
+                    });
                 }
-
-                handleBulkAction(action, selected);
             });
 
-            function handleBulkAction(action, selectedIds) {
-                switch (action) {
-                    case 'export-selected':
-                        exportParticipants(selectedIds);
-                        break;
-                    case 'generate-badges':
-                        generateBadges(selectedIds);
-                        break;
-                    case 'delete-selected':
-                        deleteParticipants(selectedIds);
-                        break;
-                }
-            }
+            document.querySelectorAll('.btn-resend-email').forEach(button => {
+                button.addEventListener('click', function() {
+                    const participantId = this.dataset.id;
+                    const type = this.dataset.type;
 
-            function generateBadges(ids) {
-                $('#badgeModal').modal('show');
-                $('#confirmGenerateBadges').off('click').on('click', function() {
-                    const count = $('#badgeCount').val();
-                    // Implement badge generation here
-                    console.log('Generating badges:', ids, 'Count:', count);
-                    $('#badgeModal').modal('hide');
+                    // Vérification de base
+                    if (!participantId || !type) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur',
+                            text: 'Données manquantes'
+                        });
+                        return;
+                    }
+
+                    // Détermination de l'URL
+                    const baseUrl = '/get_register/resend';
+                    const url = `${baseUrl}/${participantId}/resend-${type}`;
+
+                    // Demande de confirmation
+                    Swal.fire({
+                        title: appLocale === 'fr' ? 'Confirmation' : 'Confirmation',
+                        html: appLocale === 'fr' ?
+                            `Voulez-vous vraiment renvoyer ${getEmailTypeLabel(type, 'fr')} ?` :
+                            `Do you really want to resend ${getEmailTypeLabel(type, 'en')} ?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: appLocale === 'fr' ? 'Oui, envoyer' :
+                            'Yes, send',
+                        cancelButtonText: appLocale === 'fr' ? 'Annuler' : 'Cancel',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Afficher le loader
+                            Swal.fire({
+                                title: appLocale === 'fr' ?
+                                    'Envoi en cours...' : 'Sending...',
+                                html: appLocale === 'fr' ?
+                                    'Veuillez patienter' : 'Please wait',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Envoyer la requête
+                            fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document
+                                            .querySelector(
+                                                'meta[name="csrf-token"]')
+                                            .content,
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(
+                                            `HTTP error! status: ${response.status}`
+                                        );
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    // Fermer le loader
+                                    Swal.close();
+
+                                    // Afficher le résultat
+                                    Swal.fire({
+                                        icon: data.success ?
+                                            'success' : 'error',
+                                        title: data.success ?
+                                            (appLocale === 'fr' ?
+                                                'Succès' : 'Success'
+                                            ) : (appLocale === 'fr' ?
+                                                'Erreur' : 'Error'),
+                                        text: data.message,
+                                        confirmButtonText: 'OK'
+                                    });
+                                })
+                                .catch(error => {
+                                    // Fermer le loader
+                                    Swal.close();
+
+                                    // Afficher l'erreur
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: appLocale === 'fr' ?
+                                            'Erreur' : 'Error',
+                                        text: appLocale === 'fr' ?
+                                            'Erreur réseau ou serveur' :
+                                            'Network or server error',
+                                        confirmButtonText: 'OK'
+                                    });
+
+                                    console.error('Erreur:', error);
+                                });
+                        }
+                    });
                 });
+            });
+
+            // Fonction utilitaire pour obtenir le libellé du type d'email
+            function getEmailTypeLabel(type, locale) {
+                const labels = {
+                    'invoice': {
+                        'fr': 'la facture',
+                        'en': 'the invoice'
+                    },
+                    'invitation': {
+                        'fr': 'la lettre d\'invitation',
+                        'en': 'the invitation letter'
+                    },
+                    'confirmation': {
+                        'fr': 'le mail de confirmation',
+                        'en': 'the confirmation email'
+                    }
+                };
+
+                return labels[type]?.[locale] || '';
             }
 
-            // Checkbox handling
-            $('.select_all').on('click', function() {
-                $('input[name="row_id"]').prop('checked', $(this).prop('checked'));
-            });
+            // Déterminer la locale actuelle
+            const appLocale = document.documentElement.lang || 'fr';
         });
     </script>
+
+
+
+
+
 @stop

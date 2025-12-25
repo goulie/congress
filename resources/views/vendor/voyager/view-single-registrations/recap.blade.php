@@ -617,8 +617,10 @@
                     <div class="row">
                         <div class="col-md-4">
 
-                            <form action="#" method="POST" style="display: inline-block; width: 100%;">
+                            {{-- <form id="paymentForm" action="{{ route('payment.pay') }}" method="POST"
+                                style="display: inline-block; width: 100%;">
                                 @csrf
+                                <input type="hidden" name="uuid" value="{{ $participant->uuid ?? '' }}">
                                 <button type="submit" class="btn btn-success btn-lg btn-block"
                                     style="padding: 15px; margin-bottom: 10px;">
                                     <i class="bi bi-credit-card"></i><br>
@@ -628,13 +630,17 @@
                                         Confirm and Pay Now
                                     @endif
                                 </button>
-                            </form>
+                            </form> --}}
 
-                            <small class="text-muted">
+                            <small class="text-muted text-danger">
                                 @if (app()->getLocale() == 'fr')
-                                    Paiement sécurisé en ligne
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Paiement en ligne insponible
+                                    actuellement
+                                    {{-- Paiement sécurisé en ligne --}}
                                 @else
-                                    Secure online payment
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Online payment is currently
+                                    unavailable
+                                    {{-- Secure online payment --}}
                                 @endif
                             </small>
 
@@ -644,7 +650,7 @@
                         <div class="col-md-4">
 
                             <a href="/get_register/admin" class="btn btn-warning btn-lg btn-block"
-                                style="padding: 15px; margin-bottom: 10px;">
+                                style="padding: 15px; margin-bottom: 10px;" >
                                 <i class="bi bi-clock"></i><br>
                                 @if (app()->getLocale() == 'fr')
                                     Valider et payer plus tard
@@ -732,7 +738,7 @@
                         Return to Home
                     @endif
                 </a> --}}
-           {{--  <button onclick="window.print()" class="btn btn-default">
+            {{--  <button onclick="window.print()" class="btn btn-default">
                 <i class="bi bi-printer"></i>
                 @if (app()->getLocale() == 'fr')
                     Imprimer
@@ -745,9 +751,63 @@
 </div>
 </div>
 @section('javascript')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function redirectToForm() {
             window.location.href = "{{ route('form.edit.step') }}";
         }
+    </script>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const url = form.action;
+            const formData = new FormData(form);
+
+            Swal.fire({
+                title: '{{ app()->getLocale() == 'fr' ? 'Traitement du paiement...' : 'Processing payment...' }}',
+                text: '{{ app()->getLocale() == 'fr' ? 'Veuillez patienter, ne fermez pas cette page.' : 'Please wait, do not close this page.' }}',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw data;
+                    }
+
+                    // ✅ Redirection vers la page de paiement
+                    if (data.payment_url) {
+                        window.location.href = data.payment_url;
+                    } else {
+                        throw {
+                            message: '{{ app()->getLocale() == 'fr' ? 'URL de paiement introuvable' : 'Payment URL not found' }}'
+                        };
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '{{ app()->getLocale() == 'fr' ? 'Erreur de paiement' : 'Payment error' }}',
+                        text: error.message ||
+                            '{{ app()->getLocale() == 'fr' ? 'Une erreur est survenue' : 'An error occurred' }}'
+                    });
+                });
+        });
     </script>
 @endsection

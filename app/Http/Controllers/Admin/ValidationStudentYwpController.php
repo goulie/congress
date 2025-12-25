@@ -20,7 +20,7 @@ class ValidationStudentYwpController extends VoyagerBaseController
         $congress = Congress::latest()->first();
 
         // Construction de la requête avec filtres
-        $query = Participant::with(['validation_ywp_students', 'congres'])->where(['participant_category_id' => 4, 'congres_id' => $congress->id]);
+        $query = Participant::with(['validation_ywp_students', 'congres'])->where(['participant_category_id' => 4, 'congres_id' => $congress->id])->whereNotNull('email');
 
         // Filtre par type
         if ($request->filled('type_filter')) {

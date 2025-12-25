@@ -2,16 +2,11 @@
 
 namespace App\Console\Commands;
 
-<<<<<<< HEAD
-use App\Models\Invoice;
-use Carbon\Carbon;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-=======
 use App\Mail\InvoiceUpdatedMail;
 use App\Models\Congress;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\InvoicesReminder;
 use App\Models\Tarif;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -19,17 +14,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
->>>>>>> 7c72303 ('home13122025')
 
 class ProcessPendingInvoices extends Command
 {
     protected $signature = 'invoices:process-pending';
     protected $description = 'Expire les factures en attente, crée une nouvelle facture et informe le participant';
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c72303 ('home13122025')
     /**
      * Execute the console command.
      *
@@ -37,46 +27,6 @@ class ProcessPendingInvoices extends Command
      */
     public function handle()
     {
-<<<<<<< HEAD
-        // On récupère les factures en attente depuis plus de 48h
-        $pendingInvoices = Invoice::where('status', Invoice::PAYMENT_STATUS_UNPAID)
-            ->where('deadline', '<=', Carbon::now())
-            ->get();
-
-        if ($pendingInvoices->isEmpty()) {
-            $this->info('Aucune facture pending trouvée.');
-            Log::info('Aucune facture pending trouvée. Pour mise à jour');
-            return;
-        }
-
-        foreach ($pendingInvoices as $invoice) {
-
-            $participant = $invoice->participant;
-
-            /** 1️⃣ On expire l’ancienne facture */
-            $invoice->status = Invoice::PAYMENT_STATUS_EXPIRED;
-            $invoice->save();
-
-            /** 2️⃣ On crée une nouvelle facture (ex : même montant, même participant) */
-            $newInvoice = Invoice::create([
-                'participant_id' => $participant->id,
-                'amount'         => $invoice->amount,
-                'currency'       => $invoice->currency,
-                'status'         => 'pending',
-                'description'    => $invoice->description . ' (renouvelé)',
-                'due_date'       => Carbon::now()->addDays(2),
-            ]);
-
-            /** 3️⃣ On informe le participant par email */
-
-            // Email 1 : l’ancienne facture expirée
-            Mail::to($participant->email)->send(new PendingInvoiceExpired($invoice));
-
-            // Email 2 : la nouvelle facture émise
-            Mail::to($participant->email)->send(new NewInvoiceCreated($newInvoice));
-
-            $this->info("Facture #{$invoice->id} expirée et nouvelle facture #{$newInvoice->id} créée.");
-=======
         $congres = Congress::latest()->first();
 
         if (!$congres) {
@@ -147,7 +97,8 @@ class ProcessPendingInvoices extends Command
                 'currency'       => $congres->currency ?? ($oldInvoice->currency ?? 'FCFA'),
                 'status'         => Invoice::PAYMENT_STATUS_UNPAID,
                 'invoice_date'   => Carbon::now(),
-                'congres_id'     => $congres->id
+                'congres_id'     => $congres->id,
+                'deadline'       => Tarif::PeriodeActive($congres->id)->end_date
             ]);
 
             // Parcours et recréation des items avec tarification mise à jour
@@ -175,6 +126,12 @@ class ProcessPendingInvoices extends Command
                 'deadline'     => $tarif->periode->end_date ?? null,
             ]);
 
+            InvoicesReminder::create([
+                'reminder_sent_at' => now(),
+                'invoice_id'=> $newInvoice->id,
+                'reminder_type'=> 'New invoice Reminder' .$oldInvoice->invoice_number .'->'. $newInvoice->invoice_number,
+            ]);
+            
             // Envoi des emails
             $this->sendNotificationEmails($oldInvoice, $newInvoice);
 
@@ -210,7 +167,6 @@ class ProcessPendingInvoices extends Command
             // $this->emailService->sendExpiredInvoiceEmail($oldInvoice);
         } catch (\Exception $e) {
             Log::warning("Erreur envoi email facture expirée #{$oldInvoice->id}: " . $e->getMessage());
->>>>>>> 7c72303 ('home13122025')
         }
     }
 }

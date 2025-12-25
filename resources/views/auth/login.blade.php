@@ -1,6 +1,6 @@
 @extends('auth.layout')
 
-@section('header', app()->getLocale() == 'fr' ? 'Congres AAEA' : 'AfWASA Congress')
+@section('header', app()->getLocale() == 'fr' ? 'Congrès AAEA' : 'AfWASA Congress')
 
 @section('content')
     <div class="row justify-content-center">

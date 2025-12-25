@@ -4,17 +4,22 @@ use App\Http\Controllers\Admin\AdminRegistrationController;
 use App\Http\Controllers\Admin\BadgeController;
 use App\Http\Controllers\Admin\InvitationLetterController;
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\SendEmailsController;
 use App\Http\Controllers\Admin\ValidationPaymentController;
 use App\Http\Controllers\Admin\ValidationStudentYwpController;
 use App\Http\Controllers\Admin\viewAdminRegistrationController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\Payment\PaymentsController;
 use App\Http\Controllers\Registration\AccompagningRegistrant;
 use App\Http\Controllers\Registration\GroupeRegistrant;
 use App\Http\Controllers\Registration\ParticipantRegistrant;
+use App\Http\Controllers\Registration\RegisterInviteController;
+use App\Http\Controllers\Scanner\ScannerController;
 use App\Http\Controllers\Voyager\AdminController;
 use App\Http\Controllers\Voyager\VoyagerUserController;
+use App\Mail\InvitationLetterMail;
 use App\Models\InvitationLetter;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -127,20 +132,33 @@ Route::prefix('validator')->group(function () {
     Route::get('/{id}/details', [ValidationStudentYwpController::class, 'details'])->name('validation.details');
 });
 
+
 Route::prefix('payment')->group(function () {
     Route::get('/{id}/details', [ValidationPaymentController::class, 'details']);
-    Route::post('approve/{id}', [ValidationPaymentController::class, 'approve_payment'])->name('validation.approve.payment');
+    Route::post('approve-for-pending/{id}', [ValidationPaymentController::class, 'approve_for_pending']);
+    Route::post('approve/{id}', [ValidationPaymentController::class, 'approve_payment']);
+    Route::post('/group-pending', [ValidationPaymentController::class, 'approve_group_pending']);
     Route::post('/group', [ValidationPaymentController::class, 'approve_group'])->name('validation.approve_group.payment');
+
+    Route::post('reject/{id}', [ValidationPaymentController::class, 'rejectInvoice']);
+    Route::post('/reject-group', [ValidationPaymentController::class, 'reject_group'])->name('validation.reject_group.payment');
 });
 
 Route::prefix('badge')->group(function () {
     Route::get('/{id}/details', [BadgeController::class, 'view'])->name('badge.view');
+
+    Route::put('/update/{badge}', [BadgeController::class, 'ajaxUpdate'])
+        ->name('badge.ajax.update');
+
+    Route::post('/print-selected', [BadgeController::class, 'printSelected'])
+        ->name('badges.print.selected');
 });
 
 Route::get('/send_inv', function () {
     try {
         $invoice = App\Models\Invoice::latest('id')->first();
-        $mail = Mail::to($invoice->participant->email)->send(new App\Mail\Invoice\InvoiceMail($invoice));
+        //$mail = Mail::to($invoice->participant->email)->send(new App\Mail\Invoice\InvoiceMail($invoice));
+        Mail::to($invoice->participant->email)->send(new InvitationLetterMail($invoice->participant, $invoice->participant->langue ?? 'fr'));
         return true;
     } catch (\Exception $th) {
         return $th->getMessage();
@@ -169,3 +187,46 @@ Route::get('/participants/{id}/details', [viewAdminRegistrationController::class
 Route::get('/test', [AdminRegistrationController::class, 'home']);
 
 
+Route::prefix('scanner')->group(function () {
+    Route::get('/', [ScannerController::class, 'index'])->name('scanner.index');
+    Route::get('/session', [ScannerController::class, 'scan'])->name('scanner.participant');
+    Route::get('/add-session/{sessionId}', [ScannerController::class, 'GotoSession'])->name('scanner.goto.session');
+    Route::post('/remove-session', [ScannerController::class, 'RemoveSession'])->name('scanner.remove.session');
+});
+
+Route::prefix('payment')->group(function () {
+    Route::post('/payment', [PaymentsController::class, 'pay'])->name('payment.pay');
+    Route::post('/notify-webhooks', [PaymentsController::class, 'notify'])->name('payment.notify');
+    Route::get('/return', [PaymentsController::class, 'return'])->name('payment.return');
+
+    //Routes redirections
+    //success
+    Route::get('/success', fn() => view('payments.success'))
+        ->name('payment.success');
+    //pending
+    Route::get('/pending', fn() => view('payments.pending'))
+        ->name('payment.pending');
+    //failed
+    Route::get('/failed', fn() => view('payments.failed'))
+        ->name('payment.failed');
+});
+
+Route::prefix('invites')->group(function () {
+    Route::get('/', [RegisterInviteController::class, 'index'])->name('invites.list');
+    Route::post('/', [RegisterInviteController::class, 'store'])->name('invites.store');
+    Route::delete('/{id}', [RegisterInviteController::class, 'destroy']);
+    Route::get('/nationalities/list', [RegisterInviteController::class, 'listCountries'])->name('nationalities.list');
+});
+
+Route::prefix('resend')->group(function () {
+    Route::get('/{id}/resend-invoice', [SendEmailsController::class, 'resendInvoice'])
+        ->name('participants.resend.invoice');
+
+    Route::get('/{id}/resend-invitation', [SendEmailsController::class, 'resendInvitation'])
+        ->name('participants.resend.invitation');
+
+    Route::get('/{id}/resend-confirmation', [SendEmailsController::class, 'resendConfirmation'])
+        ->name('participants.resend.confirmation');
+});
+
+// Route pour les nationalités

@@ -111,7 +111,7 @@
                                 </div>
                             </div>
 
-                             <div class="col-md-2 col-sm-6">
+                            <div class="col-md-2 col-sm-6">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-primary">
                                         <i class="bi bi-signpost-fill"></i>
@@ -136,7 +136,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-2 col-sm-6">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-primary">
@@ -289,7 +289,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
         <div class="row">
             <div class="col-md-6">
@@ -625,7 +625,20 @@
         {{-- add scripts --}}
         <script>
             $(document).ready(function() {
-                let table = new DataTable('#dataTable');
+                let table = new DataTable('#dataTable', {
+                    layout: {
+                        topStart: {
+                            buttons: [{
+                                extend: 'excelHtml5',
+                                text: '📥 Exporter Excel',
+                                title: 'Liste complète',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }]
+                        }
+                    }
+                });
             });
         </script>
         <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>

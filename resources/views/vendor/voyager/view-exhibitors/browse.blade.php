@@ -7,10 +7,10 @@
 
     <style>
         /* body {
-            background: linear-gradient(135deg, #eaf3ff, #ffffff);
-            font-family: 'Segoe UI', sans-serif;
-            padding: 40px 0;
-        } */
+                            background: linear-gradient(135deg, #eaf3ff, #ffffff);
+                            font-family: 'Segoe UI', sans-serif;
+                            padding: 40px 0;
+                        } */
 
         .card {
             border: none;
@@ -272,6 +272,23 @@
         .badge {
             font-size: 0.75em;
         }
+
+        .panel-title {
+            color: #fff;
+            font-weight: light;
+        }
+        .btn-outline-success {
+            border: 2px solid green;
+            background: none;
+            color: green;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+
+        .btn-outline-success:hover {
+            background: green;
+            color: #fff;
+        }
     </style>
 @endsection
 
@@ -286,24 +303,44 @@
             'type_participant' => 'grouped',
         ])->get();
 
+        $edit = $edit ?? false;
     @endphp
 
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="box-header">
-                        <h1>{{ app()->getLocale() == 'fr' ? 'Enregistrement des exposants' : 'Exhibitor registration' }}
-                        </h1>
+                    <div class="box-header" style="font-weight: bold">
+                        @if ($edit == 'recap')
+                            <h1>{{ app()->getLocale() == 'fr' ? 'Recapitulatif d\'inscription' : 'Registration summary' }}
+                            </h1>
+                        @else
+                            <h1>{{ app()->getLocale() == 'fr' ? 'Enregistrement de groupe' : 'Group registration' }}
+                            </h1>
+                        @endif
                     </div>
+                    @if (!Route::currentRouteName()=='participant.recap')
+                        <div class="row">
+                        <div class="col-md-12 text-center">
+                            {!! __('registration.fields_required') !!}
+                        </div>
 
-                    @php
-                        $edit = $edit ?? false;
-
-                    @endphp
-
-                    @include('vendor.voyager.view-exhibitors.create')
+                    </div>
+                    @endif
                     
+
+
+
+                    @if ($edit == 'recap')
+                        @include('vendor.voyager.view-single-registrations.recap')
+                    @else
+                        @include('vendor.voyager.view-group-registrations.create')
+                    @endif
+                    {{-- @if ($edit)
+                        @include('vendor.voyager.view-group-registrations.edit_grouped')
+                    @else
+                        @include('vendor.voyager.view-group-registrations.add_grouped')
+                    @endif --}}
                 </div>
             </div>
         </div>

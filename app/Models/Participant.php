@@ -6,13 +6,13 @@ use App\Traits\GenerateCodeQrTrait;
 use Doctrine\DBAL\Types\Type;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use TCG\Voyager\Models\Category;
 
 class Participant extends Model
 {
     use GenerateCodeQrTrait;
-
     use Notifiable;
     protected $table = 'participants';
     protected $fillable = [
@@ -63,7 +63,8 @@ class Participant extends Model
         'ywp_or_student',
         'expiration_passeport_date',
         'code_path',
-        'sigle_organisation'
+        'sigle_organisation',
+        'role_badge_congres'
     ];
 
     protected static function booted()
@@ -79,6 +80,10 @@ class Participant extends Model
         });
     }
 
+    public function ScannHistories()
+    {
+        return $this->Hasmany(ScanneHistory::class);
+    }
 
     public function ageRange()
     {
@@ -205,7 +210,8 @@ class Participant extends Model
         }
 
 
-        return self::where('congres_id', $lastCongress->id)
+        return self::where('participants.congres_id', $lastCongress->id)
+            ->whereNotNull('participants.email')
             ->with([
                 'civility',
                 'country',
@@ -214,9 +220,10 @@ class Participant extends Model
                 'participantCategory',
                 'typeMember',
                 'organisationType',
-                'badge_color'
-            ])
-            ->orderBy('created_at', 'desc')
+                'badge_color',
+                'invoices'
+            ])->join('invoices', 'participants.id', '=', 'invoices.participant_id')
+            ->orderBy('participants.created_at', 'desc')
             ->get();
     }
 
@@ -231,7 +238,7 @@ class Participant extends Model
             return collect();
         }
 
-        return self::where('congres_id', $lastCongress->id)
+        return self::whereNotNull('participants.email')
             ->where(function ($query) {
                 $query->where('ywp_or_student', 'student');
             })
@@ -260,7 +267,7 @@ class Participant extends Model
             return collect();
         }
 
-        return self::where('congres_id', $lastCongress->id)
+        return self::whereNotNull('email')
             ->where(function ($query) {
                 $query->where('ywp_or_student', 'ywp');
             })
@@ -295,16 +302,15 @@ class Participant extends Model
             ];
         }
 
-        $total = self::where('congres_id', $lastCongress->id)->count();
 
-        $students = self::where('congres_id', $lastCongress->id)
+        $students = self::getLastCongressParticipants()
             ->where(function ($query) {
                 $query->where('ywp_or_student', 'student')
                     ->orWhere('isYwpOrStudent', 'student')
                     ->orWhereNotNull('student_level_id');
             })->count();
 
-        $ywp = self::where('congres_id', $lastCongress->id)
+        $ywp = self::getLastCongressParticipants()
             ->where(function ($query) {
                 $query->where('ywp_or_student', 'ywp')
                     ->orWhere('isYwpOrStudent', 'ywp')
@@ -316,21 +322,33 @@ class Participant extends Model
                     });
             })->count();
 
-        // Supposons que le statut soit géré par un champ 'status'
-        $validated = self::where('congres_id', $lastCongress->id)
-            ->where('status', 'validated')
-            ->count();
 
-        $pending = self::where('congres_id', $lastCongress->id)
-            ->where('status', 'pending')
-            ->count();
 
         return [
-            'total' => $total,
+            'total' => self::getLastCongressParticipants()->count(),
             'students' => $students,
             'ywp' => $ywp,
-            'validated' => $validated,
-            'pending' => $pending
         ];
+    }
+
+    public static function participantsByCountry()
+    {
+        return self::select(
+            'countries.id as country_id',
+            'countries.libelle_pays',
+            DB::raw('COUNT(participants.id) as total')
+        )
+            ->join('countries', 'countries.id', '=', 'participants.nationality_id')
+            ->whereNotNull('participants.email')
+            ->groupBy('countries.id', 'countries.libelle_fr')
+            ->orderByDesc('total')
+            ->get();
+    }
+
+    public static function countNationalities()
+    {
+        return self::whereNotNull('email')
+            ->distinct('nationality_id')
+            ->count('nationality_id');
     }
 }

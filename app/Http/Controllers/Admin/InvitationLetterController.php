@@ -7,6 +7,7 @@ use App\Mail\InvitationLetterMail;
 use App\Models\Participant;
 use App\Services\EmailService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class InvitationLetterController extends Controller
@@ -20,13 +21,16 @@ class InvitationLetterController extends Controller
 
     public function sendInvitationLetter($participantId)
     {
+        $adminEmails = Voyager::setting('admin.admin_finance')
+            ? array_map('trim', explode(',', Voyager::setting('admin.admin_finance')))
+            : [];
         try {
         $participant = Participant::where('uuid', $participantId)->first();
         
-        Mail::to('gouli1212@gmail.com')->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
+        Mail::to($participant->email)->bcc($adminEmails)->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            Log::error('Erreur envoi email d\'invitation : ',$e->getMessage());
         }
         /* $lang = app()->getLocale();
 

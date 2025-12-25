@@ -43,7 +43,7 @@ class ViewAdminRegistrationController extends VoyagerBaseController
                 ->where('ywp_or_student', 'ywp')
                 ->count(),
 
-            'TotalNationalites' => (clone $query)->whereNotNull('nationality_id')->pluck('nationality_id')->unique()->count(),
+            'TotalNationalites' => Participant::countNationalities(),
 
             'TotalOrganisations' => (clone $query)->whereNotNull('organisation')->pluck('organisation')->unique()->count(),
 
@@ -52,13 +52,13 @@ class ViewAdminRegistrationController extends VoyagerBaseController
 
             'TotalVisite' => (clone $query)->where('visite', 'oui')->count(),
 
-            'TotalPass' => (clone $query)->where('deleguate_day', '!=', null)->count(),
+            'TotalPass' => (clone $query)->where('pass_deleguate','oui')->count(),
 
-            'TotalPaid' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_PAID )->count(),
+            'TotalPaid' => Invoice::PaidInvoices($latestCongress->id)->count(),
 
-            'TotalUnpaid' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_UNPAID )->count(),
+            'TotalUnpaid' => Invoice::UnpaidInvoices($latestCongress->id)->count(),
 
-            'TotalExpired' => Invoice::whereIn('participant_id', $participantIds)->where('status',Invoice::PAYMENT_STATUS_EXPIRED )->count(),
+            'TotalExpired' => Invoice::ExpiredInvoices($latestCongress->id)->count(),
         ];
 
         //

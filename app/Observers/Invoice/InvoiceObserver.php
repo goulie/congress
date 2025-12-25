@@ -3,22 +3,9 @@
 namespace App\Observers\Invoice;
 
 use App\Models\CategorieRegistrant;
-<<<<<<< HEAD
 use App\Models\Invoice;
 use App\Models\JourPassDelegue;
 use App\Models\Participant;
-=======
-use App\Models\Congress;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\JourPassDelegue;
-use App\Models\Participant;
-use App\Models\Tarif;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
->>>>>>> 7c72303 ('home13122025')
 
 class InvoiceObserver
 {

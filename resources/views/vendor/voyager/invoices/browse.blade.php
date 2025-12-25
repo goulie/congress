@@ -85,7 +85,6 @@
                         <form method="POST" action="{{ route('participants.invoices.export') }}" target="_blank">
                             @csrf
                             <div class="panel panel-default panel-custom" style="padding-top: 50px">
-                                <!-- Toolbar -->
                                 <div class="panel panel-default">
                                     <div class="panel-heading clearfix">
                                         <h4 class="pull-left">
@@ -93,14 +92,46 @@
                                             {{ app()->getLocale() == 'fr' ? 'Liste des Factures' : 'Invoices List' }}
                                         </h4>
                                         <div class="pull-right">
-                                            <button class="btn btn-success">
-                                                <i class="glyphicon glyphicon-credit-card"></i>
-                                                {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay Invoice' }}
-                                            </button>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="glyphicon glyphicon-download-alt"></i>
-                                                {{ app()->getLocale() == 'fr' ? 'Télécharger les factures groupées' : 'Download Grouped Invoices' }}
-                                            </button>
+                                            {{-- <form id="paymentForm" action="{{ route('payment.pay') }}" method="POST"
+                                                style="display: inline-block; width: 100%;">
+                                                @csrf
+                                                <input type="hidden" name="uuid"
+                                                    value="{{ $participant->uuid ?? '' }}">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="glyphicon glyphicon-credit-card"></i>
+                                                        {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay Invoice' }}
+                                                    </button>
+                                            </form> --}}
+                                            <div class="row">
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-default" type="button">Email</button>
+                                                        </span>
+                                                        <input type="text" class="form-control"
+                                                            style="text-transform: lowercase" name="email"
+                                                            placeholder="Email de facturation">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-default" type="button">Organistation</button>
+                                                        </span>
+                                                        <input type="text" class="form-control" style="text-transform: uppercase" name="organization"
+                                                            placeholder="Organisation à mettre sur la facture">
+                                                        
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="input-group">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="glyphicon glyphicon-download-alt"></i>
+                                                            {{ app()->getLocale() == 'fr' ? 'Télécharger les factures groupées' : 'Download Grouped Invoices' }}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -258,10 +289,19 @@
                                                             class="btn btn-xs btn-success"> <i class="voyager-download"></i>
                                                             {{ app()->getLocale() == 'fr' ? 'Télécharger la facture' : 'Download the invoice' }}
                                                         </a>
-                                                        <a href="#" class="btn btn-xs btn-info"> <i
-                                                                class="bi bi-wallet2"></i>
-                                                            {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
-                                                        </a>
+                                                        @if (!$data->status == 'Paid')
+                                                            {{-- <form class="paymentForm" action="{{ route('payment.pay') }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="uuid"
+                                                                    value="{{ $data->participant->uuid ?? '' }}">
+                                                                <button type="submit" class="btn btn-xs btn-info">
+                                                                    <i class="bi bi-wallet2"></i>
+                                                                    {{ app()->getLocale() == 'fr' ? 'Payer la facture' : 'Pay the invoice' }}
+                                                                </button>
+                                                            </form> --}}
+                                                        @endif
+
                                                     </td>
                                                 </tr>
                                             @endif
@@ -338,6 +378,66 @@
 @stop
 
 @section('javascript')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            document.querySelectorAll('.paymentForm').forEach(form => {
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const url = form.action;
+                    const formData = new FormData(form);
+
+                    Swal.fire({
+                        title: '{{ app()->getLocale() == 'fr' ? 'Traitement du paiement...' : 'Processing payment...' }}',
+                        text: '{{ app()->getLocale() == 'fr' ? 'Veuillez patienter, ne fermez pas cette page.' : 'Please wait, do not close this page.' }}',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]')
+                                    .value,
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        })
+                        .then(async response => {
+                            const data = await response.json();
+
+                            if (!response.ok || !data.success) {
+                                throw data;
+                            }
+
+                            // ✅ Redirection vers la page de paiement DBS
+                            if (data.payment_url) {
+                                window.location.href = data.payment_url;
+                            } else {
+                                throw {
+                                    message: '{{ app()->getLocale() == 'fr' ? 'URL de paiement introuvable' : 'Payment URL not found' }}'
+                                };
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '{{ app()->getLocale() == 'fr' ? 'Erreur de paiement' : 'Payment error' }}',
+                                text: error.message ||
+                                    '{{ app()->getLocale() == 'fr' ? 'Une erreur est survenue' : 'An error occurred' }}'
+                            });
+                        });
+                });
+
+            });
+
+        });
+    </script>
+
+
     <!-- DataTables -->
     @if (!$dataType->server_side && config('dashboard.data_tables.responsive'))
         <script src="{{ voyager_asset('lib/js/dataTables.responsive.min.js') }}"></script>
@@ -369,6 +469,7 @@
                     $('.side-body').data('multilingual').init();
                 })
             @endif
+
             $('.select_all').on('click', function(e) {
                 $('input[name="row_id"]').prop('checked', $(this).prop('checked')).trigger('change');
             });

@@ -15,11 +15,30 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | 1️⃣ Traitement des factures en attente (génération / recalcul)
+        |--------------------------------------------------------------------------
+        */
         $schedule->command('invoices:process-pending')
             ->dailyAt('00:20')
-            ->timezone('GMT') // Adaptez à votre fuseau horaire
-            ->sendOutputTo(storage_path('logs/invoice-process.log')); // Optionnel : log dans un fichier
-            //->emailOutputTo(['gouli1212@gmail.com','jgouli@afwasa.org']); // Optionnel : envoi des résultats par email
+            ->timezone(config('app.timezone')) // évite les erreurs GMT
+            ->withoutOverlapping()
+            ->onOneServer() // important si plusieurs serveurs
+            ->appendOutputTo(storage_path('logs/invoice-process.log'));
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2️⃣ Rappel de paiement (participants non payés)
+        |--------------------------------------------------------------------------
+        */
+        $schedule->command('payments:remind')
+            //->dailyAt('09:00')
+            ->everyMinute()
+            ->timezone(config('app.timezone'))
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->appendOutputTo(storage_path('logs/payment-reminder.log'));
     }
 
     /**

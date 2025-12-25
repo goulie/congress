@@ -8,10 +8,13 @@ use App\Mail\CustomVerifyEmail;
 use App\Mail\AutomaticInvitationLetter;
 use App\Mail\InvitationLetterMail;
 use App\Mail\Invoice\InvoiceMail;
+use App\Mail\PaymentReminderMail;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use TCG\Voyager\Facades\Voyager;
 
 class EmailService
 {
@@ -114,9 +117,12 @@ class EmailService
      */
     public function sendAccountCreationEmail($user, $password = null)
     {
+        $adminEmails = Voyager::setting('admin.admin_email')
+            ? array_map('trim', explode(',', Voyager::setting('admin.admin_email')))
+            : [];
         try {
             $loginUrl = route('login');
-            Mail::to($user->email)->send(new AccountCreationMail($user, $password, $loginUrl));
+            Mail::to($user->email)->bcc($adminEmails)->send(new AccountCreationMail($user, $password, $loginUrl));
 
             Log::info('Email création de compte envoyé à: ' . $user->email);
             return true;
@@ -142,9 +148,12 @@ class EmailService
 
     public function sendInvitationEmail($participant)
     {
+        $adminEmails = Voyager::setting('admin.admin_email')
+            ? array_map('trim', explode(',', Voyager::setting('admin.admin_email')))
+            : [];
         try {
 
-            Mail::to($participant->email)->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
+            Mail::to($participant->email)->bcc($adminEmails)->send(new InvitationLetterMail($participant, $participant->langue ?? 'fr'));
 
             Log::info('Lettre d\'invitation envoyée à : ' . $participant->email);
 
@@ -160,8 +169,10 @@ class EmailService
     public function SendInvoiceEmail($invoice)
     {
         try {
-           
-            Mail::to($invoice->participant->email)->send(new InvoiceMail($invoice));
+            $adminEmails = Voyager::setting('admin.admin_finance')
+                ? array_map('trim', explode(',', Voyager::setting('admin.admin_finance')))
+                : [];
+            Mail::to($invoice->participant->email)->bcc($adminEmails)->send(new InvoiceMail($invoice));
             //Mail::to('gouli1212@gmail.com')->send(new InvoiceMail($invoice));
 
             Log::info('Email facture envoyé à: ' . $invoice->participant->email);
@@ -171,5 +182,15 @@ class EmailService
             Log::error('Erreur envoi email facture: ' . $e->getMessage());
             return false;
         }
+    }
+
+    public function sendPaymentReminder(Invoice $invoice)
+    {
+        $locale = $invoice->participant->langue ?? 'fr';
+
+        app()->setLocale($locale);
+
+        Mail::to($invoice->participant->email)
+            ->send(new PaymentReminderMail($invoice));
     }
 }

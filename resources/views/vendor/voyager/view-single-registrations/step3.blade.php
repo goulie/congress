@@ -8,7 +8,10 @@
                 return $level->libelle === 'Autre' || $level->libelle === 'Other' ? 'ZZZZZZZZ' : $level->libelle;
             });
     @endphp
+@if($errors->any())
 
+{!! implode('', $errors->all('<div class="text-danger">:message</div>')) !!}
+@endif
     <div class="box-body">
         <input type="hidden" name="uuid" value="{{ $participant->uuid }}">
 
@@ -19,9 +22,9 @@
                     <i class="bi bi-envelope"></i>
                     {{ __('registration.step2.fields.email') }}
                 </label>
-                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                <input name="email" type="email" class="form-control @error('email') is-invalid @enderror"
                     placeholder="{{ __('registration.step2.placeholders.email') }}" value="{{ auth()->user()->email }}"
-                    required disabled>
+                    required>
 
                 @error('email')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -61,14 +64,14 @@
         </div>
 
         <!-- Champ sigle (caché par défaut) -->
-        <div class="col-md-4 hidden" id="sigle-container">
+        <div class="col-md-4" id="sigle-container">
             <label class="control-label font-weight-bold text-dark required">
                 <i class="bi bi-abbr"></i>
                 {{ __('registration.sigle') }}
             </label>
             <input type="text" class="form-control text-uppercase" id="sigle" name="sigle_organisation"
                 placeholder="Ex: UNESCO, UNICEF, OMS..." maxlength="10"
-                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset>
+                @isset($participant) value="{{ old('sigle_organisation', $participant->sigle_organisation) }}" @else value="{{ old('sigle_organisation') }}" @endisset required>
 
             <div class="d-flex justify-content-between align-items-center mt-1">
                 <small class="text-muted">
@@ -270,14 +273,14 @@
                     // Générer un sigle suggéré si vide
                     if ($sigleInput.val() === '' && orgLength <= 30) {
                         const suggestedSigle = generateSigle(orgValue);
-                        $sigleInput.val(suggestedSigle);
+                        //$sigleInput.val(suggestedSigle);
                         updateSigleCounter();
                     }
                 } else {
                     // Cacher l'avertissement et le champ sigle
                     $orgWarning.addClass('hidden');
-                    $sigleContainer.addClass('hidden');
-                    $sigleInput.prop('required', false);
+                    //$sigleContainer.addClass('hidden');
+                    //$sigleInput.prop('required', false);
                 }
             }
 
